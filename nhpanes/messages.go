@@ -1,9 +1,7 @@
-package panes
+package gui
 
 import (
-	"strconv"
 	"strings"
-	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -11,24 +9,28 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/goccy/go-json"
 
-	//"github.com/nh30000-org/nats.go"
+	"github.com/nh3000-org/nh3000/nhcrypt"
+	"github.com/nh3000-org/nh3000/nhlang"
+	"github.com/nh3000-org/nh3000/nhpref"
+
 	"github.com/nats-io/nats.go"
+	"github.com/nh3000-org/nh3000/nhnats"
 )
 
-var EncMessage MessageStore   // message store
-const QueueCheckInterval = 30 // check interval in seconds
-var Labeltxt = widget.NewLabel(GetLangs("ms-header1"))
+var EncMessage nhnats.MessageStore // message store
+const QueueCheckInterval = 30      // check interval in seconds
+var Labeltxt = widget.NewLabel(nhlang.GetLangs("ms-header1"))
 var Errors = widget.NewLabel("...")
 
 func messagesScreen(win fyne.Window) fyne.CanvasObject {
 	Errors = widget.NewLabel("...")
 
 	mymessage := widget.NewMultiLineEntry()
-	mymessage.SetPlaceHolder(GetLangs("ms-mm"))
+	mymessage.SetPlaceHolder(nhlang.GetLangs("ms-mm"))
 	mymessage.SetMinRowsVisible(5)
 
 	icon := widget.NewIcon(nil)
-	Labeltxt = widget.NewLabel(GetLangs("ms-header1"))
+	Labeltxt = widget.NewLabel(nhlang.GetLangs("ms-header1"))
 	label := container.NewHScroll(Labeltxt)
 	//label := widget.NewLabel(GetLangs("ms-header1"))
 	hbox := container.NewVScroll(label)
@@ -37,39 +39,39 @@ func messagesScreen(win fyne.Window) fyne.CanvasObject {
 	hbox.Refresh()
 	List := widget.NewList(
 		func() int {
-			return len(NatsMessages)
+			return len(nhnats.NatsMessages)
 		},
 		func() fyne.CanvasObject {
 			return container.NewHBox(widget.NewIcon(theme.CheckButtonCheckedIcon()), widget.NewLabel("Template Object"))
 		},
 		func(id widget.ListItemID, item fyne.CanvasObject) {
-			var short = NatsMessages[id].MSmessage
-			if len(NatsMessages[id].MSmessage) > 12 {
-				var short1 = strings.ReplaceAll(NatsMessages[id].MSmessage, "\n", ".")
+			var short = nhnats.NatsMessages[id].MSmessage
+			if len(nhnats.NatsMessages[id].MSmessage) > 12 {
+				var short1 = strings.ReplaceAll(nhnats.NatsMessages[id].MSmessage, "\n", ".")
 				short = short1[0:12]
 			}
 
-			item.(*fyne.Container).Objects[1].(*widget.Label).SetText(NatsMessages[id].MSalias + " - " + short)
+			item.(*fyne.Container).Objects[1].(*widget.Label).SetText(nhnats.NatsMessages[id].MSalias + " - " + short)
 		},
 	)
 
 	List.OnSelected = func(id widget.ListItemID) {
-		var mytext = NatsMessages[id].MSmessage + "\n.................." + NatsMessages[id].MShostname + NatsMessages[id].MSipadrs + NatsMessages[id].MSnodeuuid + NatsMessages[id].MSiduuid + NatsMessages[id].MSdate
+		var mytext = nhnats.NatsMessages[id].MSmessage + "\n.................." + nhpref.NatsMessages[id].MShostname + nhpref.NatsMessages[id].MSipadrs + nhpref.NatsMessages[id].MSnodeuuid + nhpref.NatsMessages[id].MSiduuid + nhpref.NatsMessages[id].MSdate
 		Labeltxt.SetText(mytext)
 		icon.SetResource(theme.DocumentIcon())
 	}
 	List.OnUnselected = func(id widget.ListItemID) {
-		Labeltxt.SetText(GetLangs("ms-header1"))
+		Labeltxt.SetText(nhlang.GetLangs("ms-header1"))
 		icon.SetResource(nil)
 	}
 
 	List.Resize(fyne.NewSize(500, 5000))
 	List.Refresh()
 
-	if PasswordValid == true {
+	if nhpref.PasswordValid == true {
 
-		smbutton := widget.NewButton(GetLangs("ms-sm"), func() {
-			FormatMessage(mymessage.Text)
+		smbutton := widget.NewButton(nhlang.GetLangs("ms-sm"), func() {
+			nhnats.Send(mymessage.Text)
 		})
 
 		topbox := container.NewBorder(
@@ -82,15 +84,15 @@ func messagesScreen(win fyne.Window) fyne.CanvasObject {
 		)
 
 		// copy to clipboard messages
-		cpybutton := widget.NewButton(GetLangs("ms-cpy"), func() {
+		cpybutton := widget.NewButton(nhlang.GetLangs("ms-cpy"), func() {
 			win.Clipboard().SetContent(Labeltxt.Text)
 		})
-		go ReceiveMsg()
-		if !LoggedOn {
+
+		if !nhpref.LoggedOn {
 			mymessage.Disable()
 			smbutton.Disable()
 			//recbutton.Disable()
-			ErrorMessage = GetLangs("ms-err7")
+			nhpref.ErrorMessage = nhlang.GetLangs("ms-err7")
 		}
 		bottombox := container.NewBorder(
 			cpybutton,
@@ -110,72 +112,18 @@ func messagesScreen(win fyne.Window) fyne.CanvasObject {
 	}
 	return container.NewBorder(
 
-		widget.NewLabelWithStyle(GetLangs("ms-err7"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle(nhlang.GetLangs("ms-err7"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		nil,
 		nil,
 		nil,
 		container.NewHSplit(List, container.NewCenter(hbox)),
 	)
 }
-func ReceiveMsg() {
-
-	for {
-		NatsMessages = nil
-		Labeltxt.SetText(GetLangs("ms-header1"))
-
-		nc, err := nats.Connect(Server, nats.RootCAsMem([]byte(Caroot)), nats.ClientCertMem([]byte(Clientcert), []byte(Clientkey)))
-		if err != nil {
-			Errors.SetText(GetLangs("ms-err2"))
-
-		}
-
-		js, _ := nc.JetStream()
-		js.AddStream(&nats.StreamConfig{
-			Name: Queue + NodeUUID,
-
-			Subjects: []string{strings.ToLower(Queue) + ".>"},
-		})
-		var duration time.Duration = 604800000000
-		_, err1 := js.AddConsumer(Queue, &nats.ConsumerConfig{
-			Durable:           NodeUUID,
-			AckPolicy:         nats.AckExplicitPolicy,
-			InactiveThreshold: duration,
-			DeliverPolicy:     nats.DeliverAllPolicy,
-			ReplayPolicy:      nats.ReplayInstantPolicy,
-		})
-		if err1 != nil {
-			Errors.SetText(GetLangs("ms-err3") + err1.Error())
-		}
-		sub, errsub := js.PullSubscribe("", "", nats.BindStream(Queue))
-		if errsub != nil {
-			Errors.SetText(GetLangs("ms-err4") + errsub.Error())
-		}
-
-		msgs, errfetch := sub.Fetch(100)
-		if errfetch != nil {
-			Errors.SetText(GetLangs("ms-err5") + errfetch.Error())
-			//log.Println("messages.go PullSubscribe Fetch ", errfetch)
-		}
-		if errfetch != nil {
-			Errors.SetText(GetLangs("ms-err5") + errfetch.Error())
-
-		}
-		Errors.SetText(GetLangs("ms-err6-1") + strconv.Itoa(len(msgs)) + GetLangs("ms-err6-2"))
-		if len(msgs) > 0 {
-			for i := 0; i < len(msgs); i++ {
-				msgs[i].Nak()
-				HandleMessage(msgs[i])
-			}
-		}
-
-		time.Sleep(time.Minute)
-	}
-}
 
 func HandleMessage(m *nats.Msg) {
-	ms := MessageStore{}
+	ms := nhnats.MessageStore{}
 	var inmap = true // unique message id
-	ejson, err := Decrypt(string(m.Data), Queuepassword)
+	ejson, err := nhcrypt.Decrypt(string(m.Data), nhpref.Queuepassword)
 	if err != nil {
 		ejson = string(m.Data)
 	}
@@ -186,12 +134,12 @@ func HandleMessage(m *nats.Msg) {
 
 	inmap = NodeMap("MI" + ms.MSiduuid)
 	if inmap == false {
-		NatsMessages = append(NatsMessages, ms)
+		nhnats.NatsMessages = append(nhnats.NatsMessages, ms)
 	}
 
 }
 
 func NodeMap(node string) bool {
-	_, x := MyMap[node]
+	_, x := nhpref.MyMap[node]
 	return x
 }
