@@ -1,4 +1,4 @@
-package panes
+package gui
 
 import (
 	"strconv"
@@ -6,43 +6,46 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+	"github.com/nh3000-org/nh3000/nhcrypt"
+	"github.com/nh3000-org/nh3000/nhlang"
+	"github.com/nh3000-org/nh3000/nhutil"
 )
 
 func encdecScreen(win fyne.Window) fyne.CanvasObject {
 	errors := widget.NewLabel("...")
 
 	password := widget.NewEntry()
-	password.SetPlaceHolder(GetLangs("es-pass"))
+	password.SetPlaceHolder(nhlang.GetLangs("es-pass"))
 
 	myinputtext := widget.NewMultiLineEntry()
-	myinputtext.SetPlaceHolder(GetLangs("es-mv"))
+	myinputtext.SetPlaceHolder(nhlang.GetLangs("es-mv"))
 	myinputtext.SetMinRowsVisible(6)
 
 	myinputtext.SetText(win.Clipboard().Content())
 	myoutputtext := widget.NewMultiLineEntry()
-	myoutputtext.SetPlaceHolder(GetLangs("es-mo"))
+	myoutputtext.SetPlaceHolder(nhlang.GetLangs("es-mo"))
 	myoutputtext.SetMinRowsVisible(6)
 	var iserrors = false
 	errors.SetText("...")
-	encbutton := widget.NewButton(GetLangs("es-em"), func() {
-		iserrors = editEntry("STRING", password.Text)
+	encbutton := widget.NewButton(nhlang.GetLangs("es-em"), func() {
+		iserrors = nhutil.Edit("STRING", password.Text)
 		if iserrors == true {
-			errors.SetText(GetLangs("es-err1"))
+			errors.SetText(nhlang.GetLangs("es-err1"))
 			iserrors = true
 		}
 		if len(password.Text) != 24 {
 			iserrors = true
-			errors.SetText(GetLangs("es-err2-1") + strconv.Itoa(len(password.Text)) + GetLangs("es-err2-2"))
+			errors.SetText(nhlang.GetLangs("es-err2-1") + strconv.Itoa(len(password.Text)) + nhlang.GetLangs("es-err2-2"))
 		}
-		iserrors = editEntry("STRING", myinputtext.Text)
+		iserrors = nhutil.Edit("STRING", myinputtext.Text)
 		if iserrors == true {
-			errors.SetText(GetLangs("es-err3"))
+			errors.SetText(nhlang.GetLangs("es-err3"))
 			iserrors = true
 		}
 		if iserrors == false {
-			t, err := Encrypt(myinputtext.Text, password.Text)
+			t, err := nhcrypt.Encrypt(myinputtext.Text, password.Text)
 			if err != nil {
-				errors.SetText(GetLangs("es-err4"))
+				errors.SetText(nhlang.GetLangs("es-err4"))
 			} else {
 				myoutputtext.SetText(string(t))
 				win.Clipboard().SetContent(t)
@@ -52,25 +55,25 @@ func encdecScreen(win fyne.Window) fyne.CanvasObject {
 	})
 
 	decbutton := widget.NewButton("Decrypt Message", func() {
-		iserrors = editEntry("STRING", password.Text)
+		iserrors = nhutil.Edit("STRING", password.Text)
 		if iserrors == true {
-			errors.SetText(GetLangs("es-err1"))
+			errors.SetText(nhlang.GetLangs("es-err1"))
 			iserrors = true
 		}
 		if len(password.Text) != 24 {
 			iserrors = true
-			errors.SetText(GetLangs("es-err2-1") + strconv.Itoa(len(password.Text)) + GetLangs("es-err2-2"))
+			errors.SetText(nhlang.GetLangs("es-err2-1") + strconv.Itoa(len(password.Text)) + nhlang.GetLangs("es-err2-2"))
 		}
-		iserrors = editEntry("STRING", myinputtext.Text)
+		iserrors = nhutil.Edit("STRING", myinputtext.Text)
 		if iserrors == true {
-			errors.SetText(GetLangs("es-err3"))
+			errors.SetText(nhlang.GetLangs("es-err3"))
 			iserrors = true
 		}
 
 		if iserrors == false {
-			t, err := Decrypt(myinputtext.Text, password.Text)
+			t, err := nhcrypt.Decrypt(myinputtext.Text, password.Text)
 			if err != nil {
-				errors.SetText(GetLangs("es-err5"))
+				errors.SetText(nhlang.GetLangs("es-err5"))
 			} else {
 				myoutputtext.SetText(t)
 				win.Clipboard().SetContent(t)
@@ -92,14 +95,14 @@ func encdecScreen(win fyne.Window) fyne.CanvasObject {
 		nil,
 	)
 	inputbox := container.NewBorder(
-		widget.NewLabelWithStyle(GetLangs("es-head1"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle(nhlang.GetLangs("es-head1"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		myinputtext,
 		nil,
 		nil,
 		nil,
 	)
 	outputbox := container.NewBorder(
-		widget.NewLabelWithStyle(GetLangs("es-head2"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle(nhlang.GetLangs("es-head2"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		myoutputtext,
 		nil,
 		nil,
