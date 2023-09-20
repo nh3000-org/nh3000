@@ -1,5 +1,5 @@
 package panes
-
+ 
 import (
 	"log"
 	"os"
@@ -57,7 +57,43 @@ func tlsScreen(_ fyne.Window) fyne.CanvasObject {
 
 			password.Disable()
 			passwordc1.Enable()
-			passwordc2.Enable()
+			passwordc2.Enable()package panes
+
+import (
+	"log"
+	"os"
+
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/widget"
+	"golang.org/x/crypto/bcrypt"
+)
+
+func tlsScreen(_ fyne.Window) fyne.CanvasObject {
+
+	password := widget.NewPasswordEntry()
+	password.SetPlaceHolder(GetLangs("ps-password"))
+
+	passwordc1 := widget.NewPasswordEntry()
+	passwordc1.SetPlaceHolder(GetLangs("ps-passwordc1"))
+	passwordc1.Disable()
+
+	passwordc2 := widget.NewPasswordEntry()
+	passwordc2.SetPlaceHolder(GetLangs("ps-passwordc2"))
+	passwordc2.Disable()
+	errors := widget.NewLabel("...")
+	// try the password
+	tpbutton := widget.NewButton(GetLangs("ps-trypassword"), func() {
+		var iserrors = false
+		Password = password.Text
+		pwh, err := bcrypt.GenerateFromPassword([]byte(Password), bcrypt.DefaultCost)
+		Passwordhash = string(pwh)
+		if err != nil {
+			iserrors = true
+			errors.SetText(GetLangs("ps-err1"))
+		}
+		_, confighasherr := os.Stat(DataStore("config.hash").Path())
+
 
 		}
 	})
