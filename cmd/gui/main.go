@@ -1,27 +1,3 @@
-// MIT License
-
-// Copyright (c) 2023 nh3000-org
-
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-
-// A Secure client using NATS messaging system (https://newhorizons3000.org).
-
 package main
 
 import (
@@ -33,7 +9,10 @@ import (
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/nh3000-org/snats/nhlang"
+	"github.com/nh3000-org/nh3000/nhlang"
+	"github.com/nh3000-org/nh3000/nhnats"
+	"github.com/nh3000-org/nh3000/nhpref"
+	"github.com/nh3000-org/nh3000/nhutil"
 )
 
 const preferenceCurrentApplication = "logon"
@@ -46,18 +25,18 @@ type Pane struct {
 	SupportWeb   bool
 }
 
-var Panes = map[string]MyPane{}
+var Panes = map[string]Pane{}
 var PanesIndex = map[string][]string{}
 
 func main() {
 
 	Panes = map[string]Pane{
-		"password":     {GetLangs("ps-title"), "", passwordScreen, true},
-		"settings":     {GetLangs("ss-title"), "", settingsScreen, true},
-		"certificates": {GetLangs("cs-title"), "", certificatesScreen, true},
-		"logon":        {GetLangs("ls-title"), "", logonScreen, true},
-		"messages":     {GetLangs("ms-title"), "", messagesScreen, true},
-		"encdec":       {GetLangs("es-title"), "", encdecScreen, true},
+		"password":     {nhlang.GetLangs("ps-title"), "", panes.passwordScreen, true},
+		"settings":     {nhlang.GetLangs("ss-title"), "", panes.settingsScreen, true},
+		"certificates": {nhlang.GetLangs("cs-title"), "", panes.certificatesScreen, true},
+		"logon":        {nhlang.GetLangs("ls-title"), "", panes.logonScreen, true},
+		"messages":     {nhlang.GetLangs("ms-title"), "", panes.messagesScreen, true},
+		"encdec":       {nhlang.GetLangs("es-title"), "", panes.encdecScreen, true},
 	}
 
 	// PanesIndex  defines how our panes should be laid out in the index tree
@@ -65,34 +44,32 @@ func main() {
 		"": {"password", "logon", "settings", "certificates", "messages", "encdec"},
 	}
 
-	Json("LOAD")
-
-
+	nhpref.Load()
 
 	if strings.HasPrefix(os.Getenv("LANG"), "en") {
-		panes.PreferedLanguage = "eng"
+		nhpref.PreferedLanguage = "eng"
 	}
 	if strings.HasPrefix(os.Getenv("LANG"), "sp") {
-		panes.PreferedLanguage = "spa"
+		nhpref.PreferedLanguage = "spa"
 	}
 
 	MyLogo, _ := fyne.LoadResourceFromPath("logo.png")
-	panes.MyAppDup.SetIcon(MyLogo)
-	makeTray(panes.MyAppDup)
-	logLifecycle(panes.MyAppDup)
 
-	w := panes.MyAppDup.NewWindow("SNATS BETA.2")
+	w := nhutil.GetApp().NewWindow("SNATS BETA.3")
+	nhutil.GetApp().SetIcon(MyLogo)
+	makeTray(nhutil.GetApp())
+	logLifecycle(nhutil.GetApp())
 	TopWindow = w
 	w.SetMaster()
 
-	content := container.NewMax()
+	content := container.NewStack()
 	title := widget.NewLabel("SNATS")
 
-	intro := widget.NewLabel(panes.GetLangs("mn-intro-1") + "\n" + "nats.io" + panes.GetLangs("mn-intro-2"))
+	intro := widget.NewLabel(nhlang.GetLangs("mn-intro-1") + "\n" + "nats.io" + nhlang.GetLangs("mn-intro-2"))
 	intro.Wrapping = fyne.TextWrapWord
-	setPanes := func(t panes.MyPane) {
+	SetPanes := func(t Pane) {
 		if fyne.CurrentDevice().IsMobile() {
-			child := panes.MyAppDup.NewWindow(t.Title)
+			child := nhutil.GetApp().NewWindow(t.Title)
 			TopWindow = child
 			child.SetContent(t.View(TopWindow))
 			child.Show()
@@ -112,9 +89,9 @@ func main() {
 	pane := container.NewBorder(
 		container.NewVBox(title, widget.NewSeparator(), intro), nil, nil, nil, content)
 	if fyne.CurrentDevice().IsMobile() {
-		w.SetContent(makeNav(setPanes, false))
+		w.SetContent(makeNav(SetPanes, false))
 	} else {
-		split := container.NewHSplit(makeNav(setPanes, true), pane)
+		split := container.NewHSplit(makeNav(SetPanes, true), pane)
 		split.Offset = 0.2
 		w.SetContent(split)
 	}
@@ -126,7 +103,7 @@ func main() {
 func logLifecycle(a fyne.App) {
 
 	a.Lifecycle().SetOnStopped(func() {
-		panes.FormatMessage("Disconnected")
+		nhnats.Send("Disconnected")
 
 	})
 
@@ -134,29 +111,29 @@ func logLifecycle(a fyne.App) {
 
 func makeTray(a fyne.App) {
 	if desk, ok := a.(desktop.App); ok {
-		h := fyne.NewMenuItem(panes.GetLangs("mn-mt"), func() {})
-		menu := fyne.NewMenu(panes.GetLangs("mn-mt"), h)
+		h := fyne.NewMenuItem(nhlang.GetLangs("mn-mt"), func() {})
+		menu := fyne.NewMenu(nhlang.GetLangs("mn-mt"), h)
 		h.Action = func() {
-			h.Label = panes.GetLangs("mn-mt")
+			h.Label = nhlang.GetLangs("mn-mt")
 			menu.Refresh()
 		}
 		desk.SetSystemTrayMenu(menu)
 	}
 }
 
-func unsupportedApplication(t panes.MyPane) bool {
+func unsupportedApplication(t Pane) bool {
 	return !t.SupportWeb && fyne.CurrentDevice().IsBrowser()
 }
 
-func makeNav(setTutorial func(panes panes.MyPane), loadPrevious bool) fyne.CanvasObject {
+func makeNav(setGui func(panes Pane), loadPrevious bool) fyne.CanvasObject {
 	a := fyne.CurrentApp()
 	a.Settings().SetTheme(theme.DarkTheme())
 	tree := &widget.Tree{
 		ChildUIDs: func(uid string) []string {
-			return panes.MyPanesIndex[uid]
+			return PanesIndex[uid]
 		},
 		IsBranch: func(uid string) bool {
-			children, ok := panes.MyPanesIndex[uid]
+			children, ok := PanesIndex[uid]
 
 			return ok && len(children) > 0
 		},
@@ -164,9 +141,9 @@ func makeNav(setTutorial func(panes panes.MyPane), loadPrevious bool) fyne.Canva
 			return widget.NewLabel("Collection Widgets")
 		},
 		UpdateNode: func(uid string, branch bool, obj fyne.CanvasObject) {
-			t, ok := panes.MyPanes[uid]
+			t, ok := Panes[uid]
 			if !ok {
-				fyne.LogError(panes.GetLangs("mn-err1")+uid, nil)
+				fyne.LogError(nhlang.GetLangs("mn-err1")+uid, nil)
 				return
 			}
 			obj.(*widget.Label).SetText(t.Title)
@@ -177,12 +154,12 @@ func makeNav(setTutorial func(panes panes.MyPane), loadPrevious bool) fyne.Canva
 			}
 		},
 		OnSelected: func(uid string) {
-			if t, ok := panes.MyPanes[uid]; ok {
+			if t, ok := Panes[uid]; ok {
 				if unsupportedApplication(t) {
 					return
 				}
 				a.Preferences().SetString(preferenceCurrentApplication, "logon")
-				setTutorial(t)
+				setGui(t)
 			}
 		},
 	}
@@ -193,10 +170,10 @@ func makeNav(setTutorial func(panes panes.MyPane), loadPrevious bool) fyne.Canva
 	}
 
 	themes := container.NewGridWithColumns(2,
-		widget.NewButton(panes.GetLangs("mn-dark"), func() {
+		widget.NewButton(nhlang.GetLangs("mn-dark"), func() {
 			a.Settings().SetTheme(theme.DarkTheme())
 		}),
-		widget.NewButton(panes.GetLangs("mn-light"), func() {
+		widget.NewButton(nhlang.GetLangs("mn-light"), func() {
 			a.Settings().SetTheme(theme.LightTheme())
 		}),
 	)
