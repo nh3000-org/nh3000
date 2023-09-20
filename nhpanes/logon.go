@@ -6,25 +6,28 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/storage"
+
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/google/uuid"
+	"github.com/nh3000-org/nh3000/nhhash"
+	"github.com/nh3000-org/nh3000/nhlang"
+	"github.com/nh3000-org/nh3000/nhnats"
+	"github.com/nh3000-org/nh3000/nhpref"
+	"github.com/nh3000-org/nh3000/nhutil"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func logonScreen(MyWin fyne.Window) fyne.CanvasObject {
 	errors := widget.NewLabel("...")
 
-	MyJson("LOAD")
-
 	password := widget.NewPasswordEntry()
-	password.SetPlaceHolder(GetLangs("ls-password"))
-	password.SetText(Password)
+	password.SetPlaceHolder(nhlang.GetLangs("ls-password"))
+	password.SetText(nhpref.Password)
 
 	alias := widget.NewEntry()
-	alias.SetPlaceHolder(GetLangs("ls-alias"))
-	alias.SetText(Alias)
+	alias.SetPlaceHolder(nhlang.GetLangs("ls-alias"))
+	alias.SetText(nhpref.Alias)
 	alias.Disable()
 
 	server := widget.NewEntry()
@@ -32,85 +35,74 @@ func logonScreen(MyWin fyne.Window) fyne.CanvasObject {
 	server.Disable()
 
 	queue := widget.NewEntry()
-	queue.SetPlaceHolder(GetLangs("ls-queue"))
+	queue.SetPlaceHolder(nhlang.GetLangs("ls-queue"))
 	queue.Disable()
 
 	queuepassword := widget.NewEntry()
-	queuepassword.SetPlaceHolder(GetLangs("ls-queuepass"))
+	queuepassword.SetPlaceHolder(nhlang.GetLangs("ls-queuepass"))
 	queuepassword.Disable()
 
-	tpbutton := widget.NewButton(GetLangs("ls-trypass"), func() {
+	tpbutton := widget.NewButton(nhlang.GetLangs("ls-trypass"), func() {
 		errors.SetText("...")
 		var iserrors = false
-		Password = password.Text
-		pwh, err := bcrypt.GenerateFromPassword([]byte(Password), bcrypt.DefaultCost)
-		Passwordhash = string(pwh)
+		nhpref.Password = password.Text
+		pwh, err := bcrypt.GenerateFromPassword([]byte(nhpref.Password), bcrypt.DefaultCost)
+		nhpref.Passwordhash = string(pwh)
 		if err != nil {
 			iserrors = true
-			log.Println(GetLangs("ls-err1"))
-			errors.SetText(GetLangs("ls-err1"))
-		}
-		confighasherr, _ := storage.Exists(DataStore("config.hash"))
-		//log.Println("hash logon ", confighasherr, " at ", DataStore("config.hash"))
-		if confighasherr == false {
-			if MyHash("CREATE") {
-				log.Println(GetLangs("ls-err1"))
-				errors.SetText(GetLangs("ls-err1"))
-			}
+			log.Println(nhlang.GetLangs("ls-err1"))
+			errors.SetText(nhlang.GetLangs("ls-err1"))
 		}
 
-		if MyHash("LOAD") {
-			log.Println(GetLangs("ls-err2"))
-			errors.SetText(GetLangs("ls-err2"))
-		}
+		nhhash.LoadWithDefault("congig.hash", "123456")
 		// Comparing the password with the hash
-		errpw := bcrypt.CompareHashAndPassword([]byte(Passwordhash), []byte(Password))
+		errpw := bcrypt.CompareHashAndPassword([]byte(nhpref.Passwordhash), []byte(nhpref.Password))
 
 		if errpw != nil {
 			iserrors = true
-			log.Println(GetLangs("ls-err3"))
-			errors.SetText(GetLangs("ls-err3"))
+			log.Println(nhlang.GetLangs("ls-err3"))
+			errors.SetText(nhlang.GetLangs("ls-err3"))
 		}
 
 		if !iserrors {
 			errors.SetText("...")
-			PasswordValid = true
-			MyJson("LOAD")
-			alias.SetText(Alias)
-			server.SetText(Server)
-			queue.SetText(Queue)
-			queuepassword.SetText(Queuepassword)
+			nhpref.PasswordValid = true
+			nhpref.Load()
+			alias.SetText(nhpref.Alias)
+			server.SetText(nhpref.Server)
+			queue.SetText(nhpref.Queue)
+			queuepassword.SetText(nhpref.Queuepassword)
 			password.Disable()
 			server.Enable()
 			queue.Enable()
 			alias.Enable()
 			queuepassword.Enable()
+
 		}
 	})
 
-	SSbutton := widget.NewButton(GetLangs("ls-title"), func() {
+	SSbutton := widget.NewButton(nhlang.GetLangs("ls-title"), func() {
 
-		var iserrors = editEntry("URL", server.Text)
+		var iserrors = nhpref.Edit("URL", server.Text)
 		if iserrors == true {
-			log.Println(GetLangs("ls-err4"))
-			errors.SetText(GetLangs("ls-err4"))
+			errors.SetText(nhlang.GetLangs("ls-err4"))
 		}
-		iserrors = editEntry("STRING", queuepassword.Text)
+		iserrors = nhpref.Edit("STRING", queuepassword.Text)
 		if iserrors == true {
-			errors.SetText(GetLangs("ls-err5"))
+			errors.SetText(nhlang.GetLangs("ls-err5"))
 			iserrors = true
 		}
 		if len(queuepassword.Text) != 24 {
 			iserrors = true
-			errors.SetText(GetLangs("ls-err6-1") + strconv.Itoa(len(queuepassword.Text)) + "ls-err6-1")
+			errors.SetText(nhlang.GetLangs("ls-err6-1") + strconv.Itoa(len(queuepassword.Text)) + "ls-err6-1")
 		}
 
-		if !iserrors && PasswordValid {
-			NodeUUID = uuid.New().String()
-			Alias = alias.Text
-			Server = server.Text
-			Queue = queue.Text
-			Queuepassword = queuepassword.Text
+		if !iserrors && nhpref.PasswordValid {
+			nhpref.NodeUUID = uuid.New().String()
+			nhpref.Alias = alias.Text
+			nhpref.Server = server.Text
+			nhpref.Queue = queue.Text
+			nhpref.Queuepassword = queuepassword.Text
 			password.Disable()
 			server.Disable()
 
@@ -118,27 +110,27 @@ func logonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			queue.Disable()
 			queuepassword.Disable()
 
-			MyJson("SAVE")
+			nhpref.Save()
 
-			LoggedOn = true
+			nhpref.LoggedOn = true
 
 			errors.SetText("...")
 
-			FormatMessage("Connected")
+			nhnats.Send(nhlang.GetLangs("ls-con"))
 
 		}
 
 	})
 
 	// security erase
-	SEbutton := widget.NewButton(GetLangs("ls-erase"), func() {
-		if PasswordValid {
-			NATSErase()
+	SEbutton := widget.NewButton(nhlang.GetLangs("ls-erase"), func() {
+		if nhpref.PasswordValid {
+			nhnats.Erase()
 		}
 
 	})
 
-	if !PasswordValid {
+	if !nhpref.PasswordValid {
 		password.Enable()
 		server.Disable()
 		alias.Disable()
@@ -147,7 +139,7 @@ func logonScreen(MyWin fyne.Window) fyne.CanvasObject {
 	}
 
 	return container.NewCenter(container.NewVBox(
-		widget.NewLabelWithStyle(GetLangs("ls-clogon"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle(nhlang.GetLangs("ls-clogon"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		password,
 		tpbutton,
 		alias,
@@ -158,8 +150,8 @@ func logonScreen(MyWin fyne.Window) fyne.CanvasObject {
 		SEbutton,
 		errors,
 		container.NewHBox(
-			widget.NewHyperlink("newhorizons3000.org", parseURL("https://newhorizons3000.org/")),
-			widget.NewHyperlink("github.com", parseURL("https://github.com/nh3000-org/snats")),
+			widget.NewHyperlink("newhorizons3000.org", nhutil.ParseURL("https://newhorizons3000.org/")),
+			widget.NewHyperlink("github.com", nhutil.ParseURL("https://github.com/nh3000-org/snats")),
 		),
 		widget.NewLabel(""), // balance the header on the tutorial screen we leave blank on this content
 	))
