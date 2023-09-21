@@ -1,0 +1,7 @@
+[Unit]
+Description=NH3000 NATS 
+[Service]
+Type=simple
+ExecStart=/opt/startnats.sh
+[Install]
+WantedBy=multi-user.target
