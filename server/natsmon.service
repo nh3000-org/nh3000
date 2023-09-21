@@ -1,0 +1,9 @@
+[Unit]
+Description=NH3000 NATS Monitoring 
+[Service]
+Type=simple
+ExecStart=/opt/startnatsmon.sh
+[Install]
+WantedBy=multi-user.target
+[Unit]
+After=nats.service
