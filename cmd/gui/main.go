@@ -11,6 +11,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/nh3000-org/nh3000/nhlang"
 	"github.com/nh3000-org/nh3000/nhnats"
+	"github.com/nh3000-org/nh3000/nhpanes"
 	"github.com/nh3000-org/nh3000/nhpref"
 	"github.com/nh3000-org/nh3000/nhutil"
 )
@@ -29,14 +30,22 @@ var Panes = map[string]Pane{}
 var PanesIndex = map[string][]string{}
 
 func main() {
+	nhpref.Load()
+	nhpref.Save()
+	if strings.HasPrefix(os.Getenv("LANG"), "en") {
+		nhpref.PreferedLanguage = "eng"
+	}
+	if strings.HasPrefix(os.Getenv("LANG"), "sp") {
+		nhpref.PreferedLanguage = "spa"
+	}
 
 	Panes = map[string]Pane{
-		"password":     {nhlang.GetLangs("ps-title"), "", panes.passwordScreen, true},
-		"settings":     {nhlang.GetLangs("ss-title"), "", panes.settingsScreen, true},
-		"certificates": {nhlang.GetLangs("cs-title"), "", panes.certificatesScreen, true},
-		"logon":        {nhlang.GetLangs("ls-title"), "", panes.logonScreen, true},
-		"messages":     {nhlang.GetLangs("ms-title"), "", panes.messagesScreen, true},
-		"encdec":       {nhlang.GetLangs("es-title"), "", panes.encdecScreen, true},
+		"password":     {nhlang.GetLangs("ps-title"), "", nhpanes.PasswordScreen, true},
+		"settings":     {nhlang.GetLangs("ss-title"), "", nhpanes.SettingsScreen, true},
+		"certificates": {nhlang.GetLangs("cs-title"), "", nhpanes.CertificatesScreen, true},
+		"logon":        {nhlang.GetLangs("ls-title"), "", nhpanes.LogonScreen, true},
+		"messages":     {nhlang.GetLangs("ms-title"), "", nhpanes.MessagesScreen, true},
+		"encdec":       {nhlang.GetLangs("es-title"), "", nhpanes.EncdecScreen, true},
 	}
 
 	// PanesIndex  defines how our panes should be laid out in the index tree
@@ -44,14 +53,8 @@ func main() {
 		"": {"password", "logon", "settings", "certificates", "messages", "encdec"},
 	}
 
-	nhpref.Load()
+	//if strings.HasPrefix(os.Getenv("LANG"), "en") {
 
-	if strings.HasPrefix(os.Getenv("LANG"), "en") {
-		nhpref.PreferedLanguage = "eng"
-	}
-	if strings.HasPrefix(os.Getenv("LANG"), "sp") {
-		nhpref.PreferedLanguage = "spa"
-	}
 
 	MyLogo, _ := fyne.LoadResourceFromPath("logo.png")
 
