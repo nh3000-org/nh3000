@@ -1,0 +1,8 @@
+Website = "https://newhorizons3000.org"
+
+[Details]
+  Icon = "logo.png"
+  Name = "NH3000"
+  ID = "org.nh3000.nh3000"
+  Version = "1.0.0"
+  Build = 39
