@@ -1,6 +1,12 @@
 package nhlang
 
-var PreferedLanguage string // language string
+import (
+	"log"
+
+	"github.com/nh3000-org/nh3000/nhpref"
+)
+
+// var PreferedLanguage string // language string
 // eng esp cmn
 var MyLangs = map[string]string{
 	"eng-mn-intro-1":        "Encrypted Communications Using NATS ",
@@ -102,8 +108,8 @@ var MyLangs = map[string]string{
 	"spa-ls-queuepass":      "Contraseña de Cola",
 	"eng-ls-trypass":        "Try Password",
 	"spa-ls-trypass":        "Probar Contraseña",
-		"eng-ls-con":        "Connected",
-	"spa-ls-con":        "Conectada",
+	"eng-ls-con":            "Connected",
+	"spa-ls-con":            "Conectada",
 	"eng-ls-err1":           "logon.go Error Creating Password Hash 24",
 	"spa-ls-err1":           "logon.go Error al Crear el Hash de la Contraseña 24",
 	"eng-ls-err2":           "logon.go Error Loading Password Hash 24",
@@ -227,12 +233,12 @@ var MyLangs = map[string]string{
 	"spa-lang-err1": "Error de Idioma no Encontrado ",
 }
 
-func GetLangs(tr string) string {
+func GetLangs(c string) string {
 
-	value, err := MyLangs[PreferedLanguage+"-"+tr]
-	//log.Println("GetLangs ", PreferedLanguage+"-"+mystring)
+	value, err := MyLangs[nhpref.PreferedLanguage+"-"+c]
+	log.Println("GetLangs Prefered ", nhpref.PreferedLanguage+"-"+c)
 	if err == false {
-		return GetLangs("lang-err1") + " " + tr
+		return "lang-error" + " " + nhpref.PreferedLanguage + "-" + c
 	}
 	return value
 }
