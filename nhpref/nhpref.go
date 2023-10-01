@@ -2,6 +2,7 @@ package nhpref
 
 import (
 	"log"
+	"os"
 	"strconv"
 	"strings"
 	"unicode"
@@ -34,7 +35,7 @@ var Clientkey = ""
 // version
 const Version = "snats-beta.1"
 
-var MyApp fyne.App
+//var MyApp fyne.App
 
 var LoggedOn bool = false
 var PasswordValid bool = false
@@ -57,61 +58,78 @@ var PasswordMustContainSpecial string // password must contain special character
 // Server tab
 var Server string // server url
 
+// message
 var IdUUID string   // unique message id
 var Alias string    // name the queue user
 var NodeUUID string // nodeuuid created on logon
-
-//type json interface {
-//	Load()
-//	Save()
-//	DataStore(string) fyne.URI
-//}
+var Filter = false
+var SearchString = ""
 
 func DataStore(file string) fyne.URI {
-	DataLocation, dlerr := storage.Child(MyApp.Storage().RootURI(), file)
+	DataLocation, dlerr := storage.Child(nhutil.GetApp().Storage().RootURI(), file)
 	if dlerr != nil {
 		log.Println("DataStore error ", dlerr)
 	}
 	return DataLocation
 }
 
+func CertsToFS() {
+	_, err := os.Stat(DataStore("cert.pem").Path())
+	if os.IsNotExist(err) {
+		os.WriteFile(DataStore("cert.pem").Path(), []byte(Clientcert), 0644)
+	}
+	_, err1 := os.Stat(DataStore("key.pem").Path())
+	if os.IsNotExist(err1) {
+		os.WriteFile(DataStore("key.pem").Path(), []byte(Clientkey), 0644)
+	}
+}
+func CertsOffFS() {
+	err := os.Remove(DataStore("cert.pem").Path())
+	if err != nil {
+		log.Println("Unable to remove cert.pem")
+	}
+	err1 := os.Remove(DataStore("key.pem").Path())
+	if err1 != nil {
+		log.Println("Unable to remove key.pem")
+	}
+}
 func Load() {
 	if nhutil.GetApp() == nil {
-		MyApp = app.NewWithID("org.nh3000.snats")
-		nhutil.SetApp(app.NewWithID("org.nh3000.snats"))
+		//MyApp = app.NewWithID("org.nh3000.nh3000")
+		nhutil.SetApp(app.NewWithID("org.nh3000.nh3000"))
 	}
 
-	PreferedLanguage = MyApp.Preferences().StringWithFallback("PreferedLanguage", "eng")
+	PreferedLanguage = nhutil.GetApp().Preferences().StringWithFallback("PreferedLanguage", "eng")
 
 	xServer, _ := nhcrypt.Encrypt("nats://nats.newhorizons3000.org:4222", MySecret)
-	Server = MyApp.Preferences().StringWithFallback("Server", xServer)
+	Server = nhutil.GetApp().Preferences().StringWithFallback("Server", xServer)
 	xQueue, _ := nhcrypt.Encrypt("MESSAGES", MySecret)
-	Queue = MyApp.Preferences().StringWithFallback("Queue", xQueue)
+	Queue = nhutil.GetApp().Preferences().StringWithFallback("Queue", xQueue)
 	xAlias, _ := nhcrypt.Encrypt("MyAlias", MySecret)
-	Alias = MyApp.Preferences().StringWithFallback("Alias", xAlias)
+	Alias = nhutil.GetApp().Preferences().StringWithFallback("Alias", xAlias)
 	xQueuepassword, _ := nhcrypt.Encrypt("123456789012345678901234", MySecret)
-	Queuepassword = MyApp.Preferences().StringWithFallback("Queuepasword", xQueuepassword)
+	Queuepassword = nhutil.GetApp().Preferences().StringWithFallback("Queuepasword", xQueuepassword)
 
 	var xCaroot = strings.ReplaceAll("-----BEGIN CERTIFICATE-----\nMIICFDCCAbugAwIBAgIUDkHxHO1DwrlkTzUimG5PoiswB6swCgYIKoZIzj0EAwIw\nZjELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAkZMMQswCQYDVQQHEwJDVjEMMAoGA1UE\nChMDU0VDMQwwCgYDVQQLEwNuaDExITAfBgNVBAMTGG5hdHMubmV3aG9yaXpvbnMz\nMDAwLm9yZzAgFw0yMzAzMzExNzI5MDBaGA8yMDUzMDMyMzE3MjkwMFowZjELMAkG\nA1UEBhMCVVMxCzAJBgNVBAgTAkZMMQswCQYDVQQHEwJDVjEMMAoGA1UEChMDU0VD\nMQwwCgYDVQQLEwNuaDExITAfBgNVBAMTGG5hdHMubmV3aG9yaXpvbnMzMDAwLm9y\nZzBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABHXwMUfMXiJix3tuzFymcA+3RkeY\nZE7urUzVgaqkv/Oef3jhqhtf1XzK/qVYGxWWmpvADGB252PG1Mp7Z5wmzqyjRTBD\nMA4GA1UdDwEB/wQEAwIBBjASBgNVHRMBAf8ECDAGAQH/AgEBMB0GA1UdDgQWBBQm\nFA5caanuqxGFOf9DtZkVYv5dCzAKBggqhkjOPQQDAgNHADBEAiB3BheNP4XdBZ27\nxVBQ7ztMJqK7wDi1V3LuMy5jmXr7rQIgHCse0oaiAwcl4VwF00aSshlV+T/da0Tx\n1ANkaM+rie4=\n-----END CERTIFICATE-----\n", "\n", "<>")
 	ycaroot, _ := nhcrypt.Encrypt(xCaroot, MySecret)
-	Caroot = MyApp.Preferences().StringWithFallback("Caroot", ycaroot)
+	Caroot = nhutil.GetApp().Preferences().StringWithFallback("Caroot", ycaroot)
 
 	var xClientcert = strings.ReplaceAll("-----BEGIN CERTIFICATE-----\nMIIDUzCCAvigAwIBAgIUUyhlJt8mp1XApRbSkdrUS55LGV8wCgYIKoZIzj0EAwIw\nZjELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAkZMMQswCQYDVQQHEwJDVjEMMAoGA1UE\nChMDU0VDMQwwCgYDVQQLEwNuaDExITAfBgNVBAMTGG5hdHMubmV3aG9yaXpvbnMz\nMDAwLm9yZzAeFw0yMzAzMzExNzI5MDBaFw0yODAzMjkxNzI5MDBaMHIxCzAJBgNV\nBAYTAlVTMRAwDgYDVQQIEwdGbG9yaWRhMRIwEAYDVQQHEwlDcmVzdHZpZXcxGjAY\nBgNVBAoTEU5ldyBIb3Jpem9ucyAzMDAwMSEwHwYDVQQLExhuYXRzLm5ld2hvcml6\nb25zMzAwMC5vcmcwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDFttVH\nQ131JYwazAQMm0XAQvRvTjTjOY3aei1++mmQ+NQ9mrOFk6HlZFoKqsy6+HPXsB9x\nQbWlYvUOuqBgb9xFQZoL8jiKskLLrXoIxUAlIBTlyf76r4SV+ZpxJYoGzXNTedaU\n0EMTyAiUQ6nBbFMXiehN5q8VzxtTESk7QguGdAUYXYsCmYBvQtBXoFYO5CHyhPqu\nOZh7PxRAruYypEWVFBA+29+pwVeaRHzpfd/gKLY4j2paInFn7RidYUTqRH97BjdR\nSZpOJH6fD7bI4L09pnFtII5pAARSX1DntS0nWIWhYYI9use9Hi/B2DRQLcDSy1G4\n0t1z4cdyjXxbFENTAgMBAAGjgawwgakwDgYDVR0PAQH/BAQDAgWgMBMGA1UdJQQM\nMAoGCCsGAQUFBwMCMAwGA1UdEwEB/wQCMAAwHQYDVR0OBBYEFAzgPVB2/sfT7R0U\ne3iXRSvUkfoQMB8GA1UdIwQYMBaAFCYUDlxpqe6rEYU5/0O1mRVi/l0LMDQGA1Ud\nEQQtMCuCGG5hdHMubmV3aG9yaXpvbnMzMDAwLm9yZ4IJMTI3LDAsMCwxhwTAqABn\nMAoGCCqGSM49BAMCA0kAMEYCIQCDlUH2j69mJ4MeKvI8noOmvLHfvP4qMy5nFW2F\nPT5UxgIhAL6pHFyEbANtSkcVJqxTyKE4GTXcHc4DB43Z1F7VxSJj\n-----END CERTIFICATE-----\n", "\n", "<>")
 	yclientcert, _ := nhcrypt.Encrypt(xClientcert, MySecret)
-	Clientcert = MyApp.Preferences().StringWithFallback("Clientcert", yclientcert)
+	Clientcert = nhutil.GetApp().Preferences().StringWithFallback("Clientcert", yclientcert)
 
 	var xClientkey = strings.ReplaceAll("-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAxbbVR0Nd9SWMGswEDJtFwEL0b0404zmN2notfvppkPjUPZqz\nhZOh5WRaCqrMuvhz17AfcUG1pWL1DrqgYG/cRUGaC/I4irJCy616CMVAJSAU5cn+\n+q+ElfmacSWKBs1zU3nWlNBDE8gIlEOpwWxTF4noTeavFc8bUxEpO0ILhnQFGF2L\nApmAb0LQV6BWDuQh8oT6rjmYez8UQK7mMqRFlRQQPtvfqcFXmkR86X3f4Ci2OI9q\nWiJxZ+0YnWFE6kR/ewY3UUmaTiR+nw+2yOC9PaZxbSCOaQAEUl9Q57UtJ1iFoWGC\nPbrHvR4vwdg0UC3A0stRuNLdc+HHco18WxRDUwIDAQABAoIBACe0XMZP4Al//c/P\n0qxZbjt69q13jiVnhHYwfPx3+0UywySP8adMi4GOkop73Ftb05+n7diHspvA8KeB\nkP1s2VZLI01s2i/4NnPCpbQnMIeEFs5Cr2LWZpDbrEk2ma5eCd/kotQFssLBM//a\nSrfeMh2TA0TJo7WEft9Cnf4ZeEkKnycplfvwTyv286iFZCYo2dv66BfTej6kkVCo\nAi+ZVCe2zSqRYyr0u4/j/kE3b3eSkCnY2IVcqlP7epuEGVOZyxeFLwM5ljbWL816\npA6WIJgQo2EQ1N7L531neg5WjXQ/UwTQoXP1jvuuVtKtOBFqm1IshEyFk3WpsfpD\nr16OTdECgYEA6FB6NYxYtnWPaIYAOqP7GtMKoJujH8MtZy6J33LkxI7nPkMkn8Mv\nva32tvjU4Bu1FVNp9k5guC+b+8ixXK0URj25IOhDs6K57tck22W9WiTZlmnkCO01\nJOavrelWbvYt5xNWIdnPualoPfGB0iJKXsKY/bpH4eVfhWwpNPI5sMkCgYEA2d9G\nEPuWN6gUjZ+JfdS+0WHK1yGD7thXs7MPUlhGqDzBryh2dkywyo8U8+tMLuDok1RZ\njnT3PYkLQEpzoV0qBkpFFShL6ubaGmDz1UZsozl0YcIg4diZeuPHnIAeXOFrhgYf\n825163LmT3jYHCROFEMLtTYyIQP0EznE+qFT3TsCgYEApgtvbfqkJbWdDL5KR5+R\nCLky7VyQmVEtkIRI8zbxoDPrwCrJcI9X/iDrKBhuPshPA7EdGXkn1D3jJXFqo6zp\nwtK3EXgxe6Ghd766jz4Guvl/s+x3mpHA3GEtzAXtS14VrQW7GHLP8AnPggauHX14\n3oYER8XvPtxtC7YlNbyz01ECgYAe2b7SKM3ck7BVXYHaj4V1oKNYUyaba4b/qxtA\nTb+zkubaJqCfn7xo8lnFMExZVv+X3RnRUj6wN/ef4ur8rnSE739Yv5wAZy/7DD96\ns74uXrRcI2EEmechv59ESeACxuiy0as0jS+lZ1+1YSc41Os5c0T1I/d1NVoaXtPF\nqZJ2gQKBgBp/XavdULBPzC7B8tblySzmL01qJZV7MSSVo2/1vJ7gPM0nQPZdTDog\nTfA5QKSX9vFTGC9CZHSJ+fabYDDd6+3UNYUKINfr+kwu9C2cysbiPaM3H27WR5mW\n5LhStAfwuRRYBDsG2ndjraxcBrrPdtkbS0dpeQUDJxvkMIuLHnhQ\n-----END RSA PRIVATE KEY-----\n", "\n", "<>")
 	yclientkey, _ := nhcrypt.Encrypt(xClientkey, MySecret)
-	Clientkey = MyApp.Preferences().StringWithFallback("Clientkey", yclientkey)
+	Clientkey = nhutil.GetApp().Preferences().StringWithFallback("Clientkey", yclientkey)
 
 	var ymsgmaxage = []string{"12h", "24h", "161h", "8372h"}
 	xmsgmaxage, _ := nhcrypt.Encrypt(strings.Join(ymsgmaxage, ","), MySecret)
-	Msgmaxage = MyApp.Preferences().StringWithFallback("Msgmaxage", xmsgmaxage)
+	Msgmaxage = nhutil.GetApp().Preferences().StringWithFallback("Msgmaxage", xmsgmaxage)
 
-	PasswordMinimumSize = MyApp.Preferences().StringWithFallback("PasswordMinimumSize", "6")
-	PasswordMustContainNumber = MyApp.Preferences().StringWithFallback("PasswordMustContainNumber", "Yes")
-	PasswordMustContainLetter = MyApp.Preferences().StringWithFallback("PasswordMustContainLetter", "Yes")
-	PasswordMustContainSpecial = MyApp.Preferences().StringWithFallback("PasswordMustContainSpecial", "Yes")
+	PasswordMinimumSize = nhutil.GetApp().Preferences().StringWithFallback("PasswordMinimumSize", "6")
+	PasswordMustContainNumber = nhutil.GetApp().Preferences().StringWithFallback("PasswordMustContainNumber", "Yes")
+	PasswordMustContainLetter = nhutil.GetApp().Preferences().StringWithFallback("PasswordMustContainLetter", "Yes")
+	PasswordMustContainSpecial = nhutil.GetApp().Preferences().StringWithFallback("PasswordMustContainSpecial", "Yes")
 
 	// prepare for operations
 	yServer, _ := nhcrypt.Decrypt(Server, MySecret)
@@ -130,34 +148,35 @@ func Load() {
 	Clientcert = strings.ReplaceAll(yClientcert, "<>", "\n")
 	yClientkey, _ := nhcrypt.Decrypt(Clientkey, MySecret)
 	Clientkey = strings.ReplaceAll(yClientkey, "<>", "\n")
-
+	CertsToFS()
 }
 
 func Save() {
 	xCaroot, _ := nhcrypt.Encrypt(Caroot, MySecret)
-	MyApp.Preferences().SetString("Caroot", xCaroot)
+	nhutil.GetApp().Preferences().SetString("Caroot", xCaroot)
 	xClientcert, _ := nhcrypt.Encrypt(Clientcert, MySecret)
-	MyApp.Preferences().SetString("Clientcert", xClientcert)
+	nhutil.GetApp().Preferences().SetString("Clientcert", xClientcert)
 	xClientkey, _ := nhcrypt.Encrypt(Clientkey, MySecret)
-	MyApp.Preferences().SetString("Clientkey", xClientkey)
+	nhutil.GetApp().Preferences().SetString("Clientkey", xClientkey)
 
 	xMsgmaxage, _ := nhcrypt.Encrypt(Msgmaxage, MySecret)
-	MyApp.Preferences().SetString("Msgmaxage", xMsgmaxage)
+	nhutil.GetApp().Preferences().SetString("Msgmaxage", xMsgmaxage)
 
 	xServer, _ := nhcrypt.Encrypt(Server, MySecret)
-	MyApp.Preferences().SetString("Server", xServer)
+	nhutil.GetApp().Preferences().SetString("Server", xServer)
 	xQueue, _ := nhcrypt.Encrypt(Queue, MySecret)
-	MyApp.Preferences().SetString("Queue", xQueue)
+	nhutil.GetApp().Preferences().SetString("Queue", xQueue)
 	xAlias, _ := nhcrypt.Encrypt(Alias, MySecret)
-	MyApp.Preferences().SetString("Alias", xAlias)
-	MyApp.Preferences().SetString("PreferedLanguage", PreferedLanguage)
+	nhutil.GetApp().Preferences().SetString("Alias", xAlias)
+	nhutil.GetApp().Preferences().SetString("PreferedLanguage", PreferedLanguage)
 	xQueuepassword, _ := nhcrypt.Encrypt(Queuepassword, MySecret)
-	MyApp.Preferences().SetString("Queuepassword", xQueuepassword)
-	MyApp.Preferences().SetString("PasswordMinimumSize", PasswordMinimumSize)
-	MyApp.Preferences().SetString("PasswordMustContainNumber", PasswordMustContainNumber)
-	MyApp.Preferences().SetString("PasswordMustContainLetter", PasswordMustContainLetter)
-	MyApp.Preferences().SetString("PasswordMustContainSpecial", PasswordMustContainSpecial)
-
+	nhutil.GetApp().Preferences().SetString("Queuepassword", xQueuepassword)
+	nhutil.GetApp().Preferences().SetString("PasswordMinimumSize", PasswordMinimumSize)
+	nhutil.GetApp().Preferences().SetString("PasswordMustContainNumber", PasswordMustContainNumber)
+	nhutil.GetApp().Preferences().SetString("PasswordMustContainLetter", PasswordMustContainLetter)
+	nhutil.GetApp().Preferences().SetString("PasswordMustContainSpecial", PasswordMustContainSpecial)
+	CertsOffFS()
+	CertsToFS()
 }
 func Edit(action string, value string) bool {
 
