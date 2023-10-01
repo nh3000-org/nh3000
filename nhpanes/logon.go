@@ -1,4 +1,4 @@
-package panes
+package nhpanes
 
 import (
 	"log"
@@ -18,7 +18,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func logonScreen(MyWin fyne.Window) fyne.CanvasObject {
+func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 	errors := widget.NewLabel("...")
 
 	password := widget.NewPasswordEntry()
@@ -54,7 +54,7 @@ func logonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			errors.SetText(nhlang.GetLangs("ls-err1"))
 		}
 
-		nhhash.LoadWithDefault("congig.hash", "123456")
+		nhhash.LoadWithDefault("config.hash", "123456")
 		// Comparing the password with the hash
 		errpw := bcrypt.CompareHashAndPassword([]byte(nhpref.Passwordhash), []byte(nhpref.Password))
 
@@ -117,6 +117,8 @@ func logonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			errors.SetText("...")
 
 			nhnats.Send(nhlang.GetLangs("ls-con"))
+
+			go nhnats.Receive()
 
 		}
 
