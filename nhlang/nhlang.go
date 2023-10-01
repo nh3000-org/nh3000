@@ -1,8 +1,6 @@
 package nhlang
 
 import (
-	"log"
-
 	"github.com/nh3000-org/nh3000/nhpref"
 )
 
@@ -110,6 +108,8 @@ var MyLangs = map[string]string{
 	"spa-ls-trypass":        "Probar Contraseña",
 	"eng-ls-con":            "Connected",
 	"spa-ls-con":            "Conectada",
+	"eng-ls-dis":            "Disconnected",
+	"spa-ls-dis":            "Desconectada",
 	"eng-ls-err1":           "logon.go Error Creating Password Hash 24",
 	"spa-ls-err1":           "logon.go Error al Crear el Hash de la Contraseña 24",
 	"eng-ls-err2":           "logon.go Error Loading Password Hash 24",
@@ -140,37 +140,40 @@ var MyLangs = map[string]string{
 	"spa-ms-header1":        "Seleccione un Elemento de la Lista",
 	"eng-ms-err1":           "NATS No Connection",
 	"spa-ms-err1":           "NATS sin Conexión",
-	"eng-ms-sm":             "Send Message",
-	"spa-ms-sm":             "Enviar Mensaje",
-	"eng-ms-header2":        "NATS Messaging",
-	"spa-ms-header2":        "Mensajería NATS",
-	"eng-ms-cpy":            "Copy To Clipboard",
-	"spa-ms-cpy":            "Copiar al Portapapeles",
-	"eng-ms-err2":           "NATS No Connection",
-	"spa-ms-err2":           "NATS sin Conexión",
-	"eng-ms-err3":           "Could Not Add Consumer",
-	"spa-ms-err3":           "No se Pudo Agregar el Consumidor",
-	"eng-ms-err4":           "Error Pull Subscribe ",
-	"spa-ms-err4":           "Error Extraer Suscribirse ",
-	"eng-ms-err5":           "Error Fetch ",
-	"spa-ms-err5":           "Recuperación de Errores ",
-	"eng-ms-err6-1":         "Recieved ",
-	"spa-ms-err6-1":         "Recibida ",
-	"eng-ms-err6-2":         " Messages ",
-	"spa-ms-err6-2":         " Mensajes ",
-	"eng-ms-err6-3":         " Logs",
-	"spa-ms-err6-3":         " Registros",
-	"eng-ms-err7":           "Please Logon First",
-	"spa-ms-err7":           "Por Favor Ingresa Primero",
+	"eng-ms-sm":             "Send",
+	"spa-ms-sm":             "Enviar",
+	"eng-ms-filter":         "Omit Connected/Disconnected",
+	"spa-ms-filter":         "Omitir Conectado/Desconectado",
 
-	"eng-ms-nhn":  "No Host Name",
-	"spa-ms-nhn":  "Sin Nombre de Host",
-	"eng-ms-hn":   "Host",
-	"spa-ms-hn":   "Nombre de Host",
+	"eng-ms-header2": "NATS Messaging",
+	"spa-ms-header2": "Mensajería NATS",
+	"eng-ms-cpy":     "Copy To Clipboard",
+	"spa-ms-cpy":     "Copiar al Portapapeles",
+	"eng-ms-err2":    "NATS No Connection",
+	"spa-ms-err2":    "NATS sin Conexión",
+	"eng-ms-err3":    "Could Not Add Consumer",
+	"spa-ms-err3":    "No se Pudo Agregar el Consumidor",
+	"eng-ms-err4":    "Error Pull Subscribe ",
+	"spa-ms-err4":    "Error Extraer Suscribirse ",
+	"eng-ms-err5":    "Error Fetch ",
+	"spa-ms-err5":    "Recuperación de Errores ",
+	"eng-ms-err6-1":  "Recieved ",
+	"spa-ms-err6-1":  "Recibida ",
+	"eng-ms-err6-2":  " Messages ",
+	"spa-ms-err6-2":  " Mensajes ",
+	"eng-ms-err6-3":  " Logs",
+	"spa-ms-err6-3":  " Registros",
+	"eng-ms-err7":    "Please Logon First",
+	"spa-ms-err7":    "Por Favor Ingresa Primero",
+
+	"eng-ms-nhn":  "No Host Name ",
+	"spa-ms-nhn":  "Sin Nombre de Host ",
+	"eng-ms-hn":   "Host ",
+	"spa-ms-hn":   "Nombre de Host ",
 	"eng-ms-mi":   "Mac ids",
 	"spa-ms-mi":   "ID de Mac",
 	"eng-ms-ad":   "Address",
-	"spa-ms-ad":   "DIRECCIÓN",
+	"spa-ms-ad":   "Direccion",
 	"eng-ms-ni":   "Node Id - ",
 	"spa-ms-ni":   "ID de Nodo - ",
 	"eng-ms-msg":  "Message Id - ",
@@ -206,7 +209,7 @@ var MyLangs = map[string]string{
 	"spa-es-mo":     "La Salida Aparece Aquí",
 	"eng-es-em":     "Encrypt Message",
 	"spa-es-em":     "Cifrar Mensaje",
-	"eng-esT-err1":  "Error Invalid Password",
+	"eng-es-err1":   "Error Invalid Password",
 	"spa-es-err1":   "Error Contraseña Inválida",
 	"eng-es-err2-1": "Error Password Length is ",
 	"spa-es-err2-1": "La Longitud de la Contraseña de Error es ",
@@ -218,6 +221,7 @@ var MyLangs = map[string]string{
 	"spa-es-err4":   "No se Puede Cifrar el Texto de Entrada",
 	"eng-es-err5":   "Cannot Decrypt Input Text",
 	"spa-es-err5":   "No se Puede Descifrar el Texto de Entrada",
+
 	"eng-es-head1":  "Input",
 	"spa-es-head1":  "Aporte",
 	"eng-es-head2":  "Output",
@@ -236,7 +240,6 @@ var MyLangs = map[string]string{
 func GetLangs(c string) string {
 
 	value, err := MyLangs[nhpref.PreferedLanguage+"-"+c]
-	log.Println("GetLangs Prefered ", nhpref.PreferedLanguage+"-"+c)
 	if err == false {
 		return "lang-error" + " " + nhpref.PreferedLanguage + "-" + c
 	}
