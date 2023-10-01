@@ -7,7 +7,7 @@ import (
 	"fyne.io/fyne/v2/storage"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/nh3000-org/nh3000/nhlang"
+	//"github.com/nh3000-org/nh3000/nhlang"
 	"github.com/nh3000-org/nh3000/nhpref"
 )
 
