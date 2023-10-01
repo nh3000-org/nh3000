@@ -11,37 +11,39 @@ import (
 	"github.com/nh3000-org/nh3000/nhpref"
 )
 
-var Hash string
+//var Hash string
 
-type hash interface {
-	LoadWithDefault(string) // file name
-	Save(string, string)    // file name, hash
-	HashAndSalt([]byte) string
-	ComparePasswords(string, []byte) bool
-}
+//type hash interface {
+//	LoadWithDefault(string) // file name
+//	Save(string, string)    // file name, hash
+//	HashAndSalt([]byte) string
+//	ComparePasswords(string, []byte) bool
+//}
 
 // provide file name and password to hash
 func LoadWithDefault(filename string, password string) (string, bool) {
 	lwderr, _ := storage.Exists(nhpref.DataStore(filename))
-	if lwderr == true {
-		wrt, errwrite := storage.Writer(nhpref.DataStore(filename))
-		_, err2 := wrt.Write([]byte(Hash))
+	if lwderr == false {
 		pwh, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		if err != nil {
+			log.Println("err ", err)
 			return nhlang.GetLangs("hash-err2"), true
 		}
+		wrt, errwrite := storage.Writer(nhpref.DataStore(filename))
+		_, err2 := wrt.Write([]byte(pwh))
 		if errwrite != nil || err2 != nil {
+			log.Println("err ", err, " errwrite ", errwrite)
 			return nhlang.GetLangs("hash-err1"), true
 		}
-		Hash = string(pwh)
-		return Hash, false
+		//Hash = string(pwh)
+		return string(pwh), false
 	}
 	ph, errf := os.ReadFile(nhpref.DataStore(filename).Path())
 	if errf != nil {
 		return nhlang.GetLangs("hash-err3"), true
 	}
-	Hash = string(ph)
-	return Hash, false
+
+	return string(ph), false
 }
 func Save(filename string, hash string) (string, bool) {
 	errf := storage.Delete(nhpref.DataStore(filename))
@@ -54,8 +56,8 @@ func Save(filename string, hash string) (string, bool) {
 	if errwrite != nil || err2 != nil {
 		return nhlang.GetLangs("hash-err2"), true
 	}
-	Hash = hash
-	return Hash, false
+	//Hash = hash
+	return hash, false
 }
 func HashAndSalt(pwd []byte) string {
 
