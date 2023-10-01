@@ -1,3 +1,18 @@
+// Copyright 2012-2023 The NH3000 Authors
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// A Go client for the NH3000 messaging system (https://newhorizons3000.org).
+
 package main
 
 import (
@@ -55,7 +70,6 @@ func main() {
 
 	//if strings.HasPrefix(os.Getenv("LANG"), "en") {
 
-
 	MyLogo, _ := fyne.LoadResourceFromPath("logo.png")
 
 	w := nhutil.GetApp().NewWindow("SNATS BETA.3")
@@ -98,16 +112,16 @@ func main() {
 		split.Offset = 0.2
 		w.SetContent(split)
 	}
-
 	w.Resize(fyne.NewSize(640, 460))
 	w.ShowAndRun()
 }
 
 func logLifecycle(a fyne.App) {
-
 	a.Lifecycle().SetOnStopped(func() {
-		nhnats.Send("Disconnected")
-
+		if nhpref.LoggedOn {
+			nhnats.Send(nhlang.GetLangs("ls-dis"))
+			nhpref.CertsOffFS()
+		}
 	})
 
 }
