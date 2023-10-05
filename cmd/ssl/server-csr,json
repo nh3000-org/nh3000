@@ -1,0 +1,22 @@
+{
+
+"hosts": [
+    "MYDNSDOMAIN",
+    "127,0,0,1",
+    "192.168.0.103"
+],
+"key": {
+    "algo": "rsa",
+    "size": 2048
+},
+"names": [
+    {
+        "C":  "US",
+        "L":  "Crestview",
+        "O":  "New Horizons 3000",
+        "OU": "nats",
+        "ST": "Florida",
+    "OU": "MYDNSDOMAIN"
+    }
+]
+}
