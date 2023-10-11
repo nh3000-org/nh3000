@@ -37,6 +37,7 @@ type MessageStore struct {
 var NatsMessages []MessageStore
 var MyAckMap = make(map[string]bool)
 var QuitReceive = make(chan bool)
+
 func Send(m string) bool {
 	EncMessage := MessageStore{}
 
@@ -256,8 +257,7 @@ func handleMessage(m *nats.Msg) string {
 func Erase() {
 	log.Println(nhlang.GetLangs("ms-era"))
 	//msgmaxage, _ := time.ParseDuration("148h")
-	msgmaxage, _ := time.ParseDuration(nhpref.Msgmaxage)
-		clientcert, err := tls.LoadX509KeyPair(nhpref.DataStore("cert.pem").Path(), nhpref.DataStore("key.pem").Path())
+	clientcert, err := tls.LoadX509KeyPair(nhpref.DataStore("cert.pem").Path(), nhpref.DataStore("key.pem").Path())
 	if err != nil {
 		log.Println("nhnats.go clientcert " + err.Error())
 	}
@@ -276,6 +276,7 @@ func Erase() {
 		Certificates: []tls.Certificate{clientcert},
 		//ClientAuth:   tls.RequireAndVerifyClientCert,
 	}
+	msgmaxage, _ := time.ParseDuration(nhpref.Msgmaxage)
 	nc, err := nats.Connect(nhpref.Server, nats.Secure(tlsConfig))
 	if err != nil {
 		log.Println(nhlang.GetLangs("ms-erac"), err.Error())
