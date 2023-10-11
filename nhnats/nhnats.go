@@ -249,7 +249,26 @@ func Erase() {
 	log.Println(nhlang.GetLangs("ms-era"))
 	//msgmaxage, _ := time.ParseDuration("148h")
 	msgmaxage, _ := time.ParseDuration(nhpref.Msgmaxage)
-	nc, err := nats.Connect(nhpref.Server, nats.RootCAsMem([]byte(nhpref.Caroot)), nats.ClientCertMem([]byte(nhpref.Clientcert), []byte(nhpref.Clientkey)))
+		clientcert, err := tls.LoadX509KeyPair(nhpref.DataStore("cert.pem").Path(), nhpref.DataStore("key.pem").Path())
+	if err != nil {
+		log.Println("nhnats.go clientcert " + err.Error())
+	}
+
+	rootCAs, _ := x509.SystemCertPool()
+	if rootCAs == nil {
+		rootCAs = x509.NewCertPool()
+	}
+
+	ok := rootCAs.AppendCertsFromPEM([]byte(nhpref.Caroot))
+	if !ok {
+		log.Println("nhnats.go rootCAs")
+	}
+	tlsConfig := &tls.Config{
+		RootCAs:      rootCAs,
+		Certificates: []tls.Certificate{clientcert},
+		//ClientAuth:   tls.RequireAndVerifyClientCert,
+	}
+	nc, err := nats.Connect(nhpref.Server, nats.Secure(tlsConfig))
 	if err != nil {
 		log.Println(nhlang.GetLangs("ms-erac"), err.Error())
 	}
