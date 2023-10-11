@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	fyne.io/fyne/v2 v2.4.0
-	github.com/goccy/go-json v0.10.2
+
 	github.com/google/uuid v1.3.1
 	github.com/nats-io/nats.go v1.30.0
 	golang.org/x/crypto v0.13.0
