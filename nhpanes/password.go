@@ -1,4 +1,4 @@
-package panes
+package nhpanes
 
 import (
 	"log"
@@ -13,7 +13,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func passwordScreen(_ fyne.Window) fyne.CanvasObject {
+func PasswordScreen(_ fyne.Window) fyne.CanvasObject {
 
 	password := widget.NewPasswordEntry()
 	password.SetPlaceHolder(nhlang.GetLangs("ps-password"))
@@ -94,7 +94,7 @@ func passwordScreen(_ fyne.Window) fyne.CanvasObject {
 
 		}
 		nhpref.Password = passwordc1.Text
-		_, err := nhhash.LoadWithDefault("config.hash", "123456")
+		_, err := nhhash.Save("config.hash", nhpref.Passwordhash)
 		if err {
 			errors.SetText(nhlang.GetLangs("ps-err10"))
 			iserrors = true

@@ -36,7 +36,7 @@ type MessageStore struct {
 
 var NatsMessages []MessageStore
 var MyAckMap = make(map[string]bool)
-
+var QuitReceive = make(chan bool)
 func Send(m string) bool {
 	EncMessage := MessageStore{}
 
@@ -122,90 +122,98 @@ func Send(m string) bool {
 			errflag = true
 		}
 	}
+	nc.Close()
 	return errflag
 }
 func Receive() {
-	clientcert, err := tls.LoadX509KeyPair(nhpref.DataStore("cert.pem").Path(), nhpref.DataStore("key.pem").Path())
-	if err != nil {
-		log.Println("nhnats.go clientcert " + err.Error())
-	}
 
-	rootCAs, _ := x509.SystemCertPool()
-	if rootCAs == nil {
-		rootCAs = x509.NewCertPool()
-	}
 
-	ok := rootCAs.AppendCertsFromPEM([]byte(nhpref.Caroot))
-	if !ok {
-		log.Println("nhnats.go rootCAs")
-	}
-	//m = make(MyAckMap[string]bool)
+	nhpref.ReceivingMessages = true
 	for {
-		NatsMessages = nil
+		select {
+		case <-QuitReceive:
+			return
+		default:
+			clientcert, err := tls.LoadX509KeyPair(nhpref.DataStore("cert.pem").Path(), nhpref.DataStore("key.pem").Path())
+			if err != nil {
+				log.Println("nhnats.go clientcert " + err.Error())
+			}
 
-		tlsConfig := &tls.Config{
-			RootCAs:      rootCAs,
-			Certificates: []tls.Certificate{clientcert},
-			//ClientAuth:   tls.RequireAndVerifyClientCert,
-		}
+			rootCAs, _ := x509.SystemCertPool()
+			if rootCAs == nil {
+				rootCAs = x509.NewCertPool()
+			}
 
-		//nc, err := nats.Connect(nhpref.Server, nats.RootCAsMem([]byte(nhpref.Caroot)), nats.ClientCertMem([]byte(nhpref.Clientcert), []byte(nhpref.Clientkey)))
-		nc, err := nats.Connect(nhpref.Server, nats.Secure(tlsConfig))
+			ok := rootCAs.AppendCertsFromPEM([]byte(nhpref.Caroot))
+			if !ok {
+				log.Println("nhnats.go rootCAs")
+			}
+			NatsMessages = nil
 
-		//nc, err := nats.Connect(nhpref.Server, nats.RootCAsMem([]byte(nhpref.Caroot)), nats.ClientCertMem([]byte(nhpref.Clientcert), []byte(nhpref.Clientkey)))
-		if err != nil {
-			log.Println(nhlang.GetLangs("ms-err2"))
+			tlsConfig := &tls.Config{
+				RootCAs:      rootCAs,
+				Certificates: []tls.Certificate{clientcert},
+				//ClientAuth:   tls.RequireAndVerifyClientCert,
+			}
 
-		}
+			//nc, err := nats.Connect(nhpref.Server, nats.RootCAsMem([]byte(nhpref.Caroot)), nats.ClientCertMem([]byte(nhpref.Clientcert), []byte(nhpref.Clientkey)))
+			nc, err := nats.Connect(nhpref.Server, nats.Secure(tlsConfig))
 
-		js, _ := nc.JetStream()
-		js.AddStream(&nats.StreamConfig{
-			Name: nhpref.Queue + nhpref.NodeUUID,
+			//nc, err := nats.Connect(nhpref.Server, nats.RootCAsMem([]byte(nhpref.Caroot)), nats.ClientCertMem([]byte(nhpref.Clientcert), []byte(nhpref.Clientkey)))
+			if err != nil {
+				log.Println(nhlang.GetLangs("ms-err2"))
+			}
 
-			Subjects: []string{strings.ToLower(nhpref.Queue) + ".>"},
-		})
-		var duration time.Duration = 604800000000
-		_, err1 := js.AddConsumer(nhpref.Queue, &nats.ConsumerConfig{
-			Durable:           nhpref.NodeUUID,
-			AckPolicy:         nats.AckExplicitPolicy,
-			InactiveThreshold: duration,
-			DeliverPolicy:     nats.DeliverAllPolicy,
-			ReplayPolicy:      nats.ReplayInstantPolicy,
-		})
-		if err1 != nil {
-			log.Println(nhlang.GetLangs("ms-err3") + err1.Error())
-		}
-		sub, errsub := js.PullSubscribe("", "", nats.BindStream(nhpref.Queue))
-		if errsub != nil {
-			log.Println(nhlang.GetLangs("ms-err4") + errsub.Error())
-		}
+			js, _ := nc.JetStream()
+			js.AddStream(&nats.StreamConfig{
+				Name: nhpref.Queue + nhpref.NodeUUID,
 
-		msgs, errfetch := sub.Fetch(100)
-		if errfetch != nil {
-			log.Panic(nhlang.GetLangs("ms-err5") + errfetch.Error())
+				Subjects: []string{strings.ToLower(nhpref.Queue) + ".>"},
+			})
+			var duration time.Duration = 604800000000
+			_, err1 := js.AddConsumer(nhpref.Queue, &nats.ConsumerConfig{
+				Durable:           nhpref.NodeUUID,
+				AckPolicy:         nats.AckExplicitPolicy,
+				InactiveThreshold: duration,
+				DeliverPolicy:     nats.DeliverAllPolicy,
+				ReplayPolicy:      nats.ReplayInstantPolicy,
+			})
+			if err1 != nil {
+				log.Println(nhlang.GetLangs("ms-err3") + err1.Error())
+			}
+			sub, errsub := js.PullSubscribe("", "", nats.BindStream(nhpref.Queue))
+			if errsub != nil {
+				log.Println(nhlang.GetLangs("ms-err4") + errsub.Error())
+			}
+
+			msgs, _ := sub.Fetch(100)
+			//if errfetch != nil {
+			//log.Println(nhlang.GetLangs("ms-err5") + errfetch.Error())
 
 			//log.Println("messages.go PullSubscribe Fetch ", errfetch)
-		}
+			//}
 
-		//log.Println(nhlang.GetLangs("ms-err6-1") + strconv.Itoa(len(msgs)) + nhlang.GetLangs("ms-err6-2"))
-		if len(msgs) > 0 {
-			for i := 0; i < len(msgs); i++ {
+			//log.Println(nhlang.GetLangs("ms-err6-1") + strconv.Itoa(len(msgs)) + nhlang.GetLangs("ms-err6-2"))
+			if len(msgs) > 0 {
+				for i := 0; i < len(msgs); i++ {
 
-				handleMessage(msgs[i])
-				//if AckMap(node) {
-				//	log.Println("acking " + node)
-				//	msgs[i].Ack()
-				//	delete(MyAckMap, node)
-				//} else {
-				msgs[i].Nak()
-				//}
+					handleMessage(msgs[i])
+					//if AckMap(node) {
+					//	log.Println("acking " + node)
+					//	msgs[i].Ack()
+					//	delete(MyAckMap, node)
+					//} else {
+					msgs[i].Nak()
+					//}
+				}
 			}
-		}
 
-		if nhutil.GetMessageWin() != nil {
-			nhutil.GetMessageWin().SetTitle(nhlang.GetLangs("ms-err6-1") + strconv.Itoa(len(msgs)) + nhlang.GetLangs("ms-err6-2"))
+			if nhutil.GetMessageWin() != nil {
+				nhutil.GetMessageWin().SetTitle(nhlang.GetLangs("ms-err6-1") + strconv.Itoa(len(msgs)) + nhlang.GetLangs("ms-err6-2"))
+			}
+			nc.Close()
+			time.Sleep(30 * time.Second)
 		}
-		time.Sleep(30 * time.Second)
 	}
 }
 

@@ -1,4 +1,4 @@
-package panes
+package nhpanes
 
 import (
 	"fyne.io/fyne/v2"
@@ -9,7 +9,7 @@ import (
 	"github.com/nh3000-org/nh3000/nhutil"
 )
 
-func settingsScreen(_ fyne.Window) fyne.CanvasObject {
+func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 	//	MyJson("LOAD")
 	lalabel := widget.NewLabel(nhlang.GetLangs("ss-la"))
 	la := widget.NewRadioGroup([]string{"eng", "spa"}, func(string) {})

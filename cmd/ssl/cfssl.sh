@@ -5,4 +5,8 @@ cfssl gencert -ca ca-root.pem -ca-key ca-root-key.pem -config=ca-config.json -pr
 cfssl gencert -ca ca-root.pem -ca-key ca-root-key.pem -config=ca-config.json -profile=client client-csr.json | cfssljson -bare client
 openssl x509 -noout -text -in ca-root.pem
 openssl x509 -noout -text -in server.pem
+<<<<<<< HEAD
 openssl x509 -noout -text -in client.pem
+=======
+openssl x509 -noout -text -in client.pem
+>>>>>>> 99fb7ce (V0.9)

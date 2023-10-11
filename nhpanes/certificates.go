@@ -1,4 +1,4 @@
-package panes
+package nhpanes
 
 import (
 	"fyne.io/fyne/v2"
@@ -9,7 +9,7 @@ import (
 	"github.com/nh3000-org/nh3000/nhutil"
 )
 
-func certificatesScreen(_ fyne.Window) fyne.CanvasObject {
+func CertificatesScreen(_ fyne.Window) fyne.CanvasObject {
 
 	errors := widget.NewLabel("...")
 	if nhpref.PasswordValid == false {

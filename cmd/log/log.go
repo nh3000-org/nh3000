@@ -188,17 +188,17 @@ func main() {
 		// load certs into memory
 		fClientcert, err := os.ReadFile(*ClientCert)
 		if err != nil {
-			log.Println("Failed to read clientCert: %v", err)
+			log.Println("Failed to read clientCert:" , err)
 		}
 		LogClientcert = string(fClientcert)
 		fClientKey, err := os.ReadFile(*ClientKey)
 		if err != nil {
-			log.Println("Failed to read clientKey: %v", err)
+			log.Println("Failed to read clientKey: ", err)
 		}
 		LogClientkey = string(fClientKey)
 		fCaroot, err := os.ReadFile(*CA)
 		if err != nil {
-			log.Println("Failed to read ca: %v", err)
+			log.Println("Failed to read ca: ", err)
 		}
 		LogCaroot = string(fCaroot)
 	}

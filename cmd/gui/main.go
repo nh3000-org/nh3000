@@ -72,7 +72,7 @@ func main() {
 
 	MyLogo, _ := fyne.LoadResourceFromPath("logo.png")
 
-	w := nhutil.GetApp().NewWindow("SNATS BETA.3")
+	w := nhutil.GetApp().NewWindow("NH3000")
 	nhutil.GetApp().SetIcon(MyLogo)
 	makeTray(nhutil.GetApp())
 	logLifecycle(nhutil.GetApp())
@@ -80,7 +80,7 @@ func main() {
 	w.SetMaster()
 
 	content := container.NewStack()
-	title := widget.NewLabel("SNATS")
+	title := widget.NewLabel("NH3000")
 
 	intro := widget.NewLabel(nhlang.GetLangs("mn-intro-1") + "\n" + "nats.io" + nhlang.GetLangs("mn-intro-2"))
 	intro.Wrapping = fyne.TextWrapWord
@@ -121,6 +121,9 @@ func logLifecycle(a fyne.App) {
 		if nhpref.LoggedOn {
 			nhnats.Send(nhlang.GetLangs("ls-dis"))
 			nhpref.CertsOffFS()
+		}
+		if nhpref.ReceivingMessages {
+			nhnats.QuitReceive <- true
 		}
 	})
 

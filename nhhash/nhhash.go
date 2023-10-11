@@ -8,6 +8,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	//"github.com/nh3000-org/nh3000/nhlang"
+<<<<<<< HEAD
+=======
+	"github.com/nh3000-org/nh3000/nhlang"
+>>>>>>> 99fb7ce (V0.9)
 	"github.com/nh3000-org/nh3000/nhpref"
 )
 

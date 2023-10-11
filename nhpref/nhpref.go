@@ -65,6 +65,8 @@ var NodeUUID string // nodeuuid created on logon
 var Filter = false
 var SearchString = ""
 
+var ReceivingMessages = false
+
 func DataStore(file string) fyne.URI {
 	DataLocation, dlerr := storage.Child(nhutil.GetApp().Storage().RootURI(), file)
 	if dlerr != nil {

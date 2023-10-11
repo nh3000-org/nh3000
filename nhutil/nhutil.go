@@ -15,6 +15,7 @@ type util interface {
 }
 
 var App fyne.App
+var Win fyne.Window
 
 func ParseURL(urlStr string) *url.URL {
 	link, err := url.Parse(urlStr)
@@ -30,4 +31,10 @@ func SetApp(a fyne.App) {
 }
 func GetApp() fyne.App {
 	return App
+}
+func SetMessageWindow(a fyne.Window) {
+	Win = a
+}
+func GetMessageWin() fyne.Window {
+	return Win
 }

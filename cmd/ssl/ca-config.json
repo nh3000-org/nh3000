@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
 "signing": {
     "default": {
         "expiry": "262800h"
@@ -38,3 +39,44 @@
     }
 }
 }
+=======
+    "signing": {
+        "default": {
+            "expiry": "262800h"
+        },
+        "profiles": {
+            "intermediate": {
+                "expiry": "262800h",
+                "ca_constraint": {
+                    "is_ca": true,
+                    "max_path_len": 1
+                },
+                "usages": [
+                    "digital signature",
+                    "signing",
+                    "key encipherment",
+                    "cert sign",
+                    "crl sign"
+                ]
+            },
+            "server": {
+                "expiry": "43800h",
+                "usages": [
+                    "signing",
+                    "key encipherment",
+                    "client auth",
+                    "server auth"
+                ]
+            },
+            "client": {
+                "expiry": "43800h",
+                "usages": [
+                    "signing",
+                    "key encipherment",
+                    "client auth"
+                ]
+            }
+        }
+    }
+}
+>>>>>>> 99fb7ce (V0.9)

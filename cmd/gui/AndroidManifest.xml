@@ -3,15 +3,25 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:versionCode="1"
     android:versionName="1.0"
+<<<<<<< HEAD
     package="org.nh3000.nh3000>
+=======
+    package="org.nh3000.nh3000">
+>>>>>>> 99fb7ce (V0.9)
     
     
     <uses-permission   android:name="android.permission.INTERNET" />
     
    
+<<<<<<< HEAD
     <application android:label="SNATS" android:debuggable="true" >
         
         <activity  android:name="org.golang.app.GoNativeActivity"  android:label="NH3000"  android:configChanges="orientation|keyboardHidden"> 
+=======
+    <application android:label="NH3000" android:debuggable="false" >
+        
+        <activity  android:name="org.golang.app.GoNativeActivity"  android:label="nh3000"  android:configChanges="orientation|keyboardHidden"> 
+>>>>>>> 99fb7ce (V0.9)
 		    <meta-data android:name="android.app.lib_name" android:value="org.nh3000.nh3000" />  
   
             <intent-filter>  
@@ -22,4 +32,8 @@
         </activity>  
     </application> 
  
+<<<<<<< HEAD
 </manifest>
+=======
+</manifest>
+>>>>>>> 99fb7ce (V0.9)
