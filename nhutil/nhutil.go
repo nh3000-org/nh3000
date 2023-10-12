@@ -6,17 +6,10 @@ import (
 	"fyne.io/fyne/v2"
 )
 
-type util interface {
-	ParseURL(string) *url.URL
-
-	SetApp(fyne.App)
-	GetApp() fyne.App
-	Edit(string, string) bool
-}
-
 var App fyne.App
 var Win fyne.Window
 
+// parse a url
 func ParseURL(urlStr string) *url.URL {
 	link, err := url.Parse(urlStr)
 	if err != nil {
@@ -26,12 +19,17 @@ func ParseURL(urlStr string) *url.URL {
 	return link
 }
 
+// set app id
 func SetApp(a fyne.App) {
 	App = a
 }
+
+// return app id
 func GetApp() fyne.App {
 	return App
 }
+
+// set message window
 func SetMessageWindow(a fyne.Window) {
 	Win = a
 }

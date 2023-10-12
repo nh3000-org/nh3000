@@ -2,7 +2,7 @@ package nhpref
 
 import (
 	"log"
-	"os"
+	//"os"
 	"strconv"
 	"strings"
 	"unicode"
@@ -75,26 +75,29 @@ func DataStore(file string) fyne.URI {
 	return DataLocation
 }
 
-func CertsToFS() {
-	_, err := os.Stat(DataStore("cert.pem").Path())
-	if os.IsNotExist(err) {
-		os.WriteFile(DataStore("cert.pem").Path(), []byte(Clientcert), 0644)
+/*
+	 func CertsToFS() {
+		_, err := os.Stat(DataStore("cert.pem").Path())
+		if os.IsNotExist(err) {
+			os.WriteFile(DataStore("cert.pem").Path(), []byte(Clientcert), 0644)
+		}
+		_, err1 := os.Stat(DataStore("key.pem").Path())
+		if os.IsNotExist(err1) {
+			os.WriteFile(DataStore("key.pem").Path(), []byte(Clientkey), 0644)
+		}
 	}
-	_, err1 := os.Stat(DataStore("key.pem").Path())
-	if os.IsNotExist(err1) {
-		os.WriteFile(DataStore("key.pem").Path(), []byte(Clientkey), 0644)
+
+	func CertsOffFS() {
+		err := os.Remove(DataStore("cert.pem").Path())
+		if err != nil {
+			log.Println("Unable to remove cert.pem")
+		}
+		err1 := os.Remove(DataStore("key.pem").Path())
+		if err1 != nil {
+			log.Println("Unable to remove key.pem")
+		}
 	}
-}
-func CertsOffFS() {
-	err := os.Remove(DataStore("cert.pem").Path())
-	if err != nil {
-		log.Println("Unable to remove cert.pem")
-	}
-	err1 := os.Remove(DataStore("key.pem").Path())
-	if err1 != nil {
-		log.Println("Unable to remove key.pem")
-	}
-}
+*/
 func Load() {
 	if nhutil.GetApp() == nil {
 		//MyApp = app.NewWithID("org.nh3000.nh3000")
@@ -150,7 +153,7 @@ func Load() {
 	Clientcert = strings.ReplaceAll(yClientcert, "<>", "\n")
 	yClientkey, _ := nhcrypt.Decrypt(Clientkey, MySecret)
 	Clientkey = strings.ReplaceAll(yClientkey, "<>", "\n")
-	CertsToFS()
+	//CertsToFS()
 }
 
 func Save() {
@@ -177,8 +180,8 @@ func Save() {
 	nhutil.GetApp().Preferences().SetString("PasswordMustContainNumber", PasswordMustContainNumber)
 	nhutil.GetApp().Preferences().SetString("PasswordMustContainLetter", PasswordMustContainLetter)
 	nhutil.GetApp().Preferences().SetString("PasswordMustContainSpecial", PasswordMustContainSpecial)
-	CertsOffFS()
-	CertsToFS()
+	//CertsOffFS()
+	//CertsToFS()
 }
 func Edit(action string, value string) bool {
 

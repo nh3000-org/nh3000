@@ -44,6 +44,7 @@ type Pane struct {
 var Panes = map[string]Pane{}
 var PanesIndex = map[string][]string{}
 
+// app
 func main() {
 	nhpref.Load()
 	nhpref.Save()
@@ -54,6 +55,7 @@ func main() {
 		nhpref.PreferedLanguage = "spa"
 	}
 
+	// app windows
 	Panes = map[string]Pane{
 		"password":     {nhlang.GetLangs("ps-title"), "", nhpanes.PasswordScreen, true},
 		"settings":     {nhlang.GetLangs("ss-title"), "", nhpanes.SettingsScreen, true},
@@ -67,8 +69,6 @@ func main() {
 	PanesIndex = map[string][]string{
 		"": {"password", "logon", "settings", "certificates", "messages", "encdec"},
 	}
-
-	//if strings.HasPrefix(os.Getenv("LANG"), "en") {
 
 	MyLogo, _ := fyne.LoadResourceFromPath("logo.png")
 
@@ -95,10 +95,8 @@ func main() {
 			})
 			return
 		}
-
 		title.SetText(t.Title)
 		intro.SetText(t.Intro)
-
 		content.Objects = []fyne.CanvasObject{t.View(w)}
 		content.Refresh()
 	}
@@ -116,11 +114,11 @@ func main() {
 	w.ShowAndRun()
 }
 
+// handle app close
 func logLifecycle(a fyne.App) {
 	a.Lifecycle().SetOnStopped(func() {
 		if nhpref.LoggedOn {
 			nhnats.Send(nhlang.GetLangs("ls-dis"))
-			nhpref.CertsOffFS()
 		}
 		if nhpref.ReceivingMessages {
 			nhnats.QuitReceive <- true
@@ -129,6 +127,7 @@ func logLifecycle(a fyne.App) {
 
 }
 
+// create system tray
 func makeTray(a fyne.App) {
 	if desk, ok := a.(desktop.App); ok {
 		h := fyne.NewMenuItem(nhlang.GetLangs("mn-mt"), func() {})
@@ -141,10 +140,12 @@ func makeTray(a fyne.App) {
 	}
 }
 
+// is supported
 func unsupportedApplication(t Pane) bool {
 	return !t.SupportWeb && fyne.CurrentDevice().IsBrowser()
 }
 
+// create navigation
 func makeNav(setGui func(panes Pane), loadPrevious bool) fyne.CanvasObject {
 	a := fyne.CurrentApp()
 	a.Settings().SetTheme(theme.DarkTheme())
@@ -154,7 +155,6 @@ func makeNav(setGui func(panes Pane), loadPrevious bool) fyne.CanvasObject {
 		},
 		IsBranch: func(uid string) bool {
 			children, ok := PanesIndex[uid]
-
 			return ok && len(children) > 0
 		},
 		CreateNode: func(branch bool) fyne.CanvasObject {
@@ -201,6 +201,7 @@ func makeNav(setGui func(panes Pane), loadPrevious bool) fyne.CanvasObject {
 	return container.NewBorder(nil, themes, nil, nil, tree)
 }
 
+// handle shortcuts
 func shortcutFocused(s fyne.Shortcut, w fyne.Window) {
 	switch sh := s.(type) {
 	case *fyne.ShortcutCopy:

@@ -237,11 +237,12 @@ var MyLangs = map[string]string{
 	"spa-lang-err1": "Error de Idioma no Encontrado ",
 }
 
+// do translation
 func GetLangs(c string) string {
-
 	value, err := MyLangs[nhpref.PreferedLanguage+"-"+c]
 	if err == false {
 		return "lang-error" + " " + nhpref.PreferedLanguage + "-" + c
 	}
+
 	return value
 }
