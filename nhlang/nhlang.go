@@ -149,6 +149,8 @@ var MyLangs = map[string]string{
 	"spa-ms-header2": "Mensajería NATS",
 	"eng-ms-cpy":     "Copy To Clipboard",
 	"spa-ms-cpy":     "Copiar al Portapapeles",
+	"eng-ms-carrier": "Carrier",
+	"spa-ms-carrier": "Transportador",
 	"eng-ms-err2":    "NATS No Connection",
 	"spa-ms-err2":    "NATS sin Conexión",
 	"eng-ms-err3":    "Could Not Add Consumer",
