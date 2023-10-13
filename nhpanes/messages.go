@@ -63,7 +63,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 
 		smbutton := widget.NewButton(nhlang.GetLangs("ms-sm"), func() {
 			nhnats.Send(message.Text)
-			message.Text = ""
+			message.SetText("")
 		})
 		/* 		ackbutton := widget.NewButton(nhlang.GetLangs("ms-ack"), func() {
 			SendAck(Acknode)
@@ -111,5 +111,3 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 		container.NewHSplit(List, container.NewCenter(DetailsHS)),
 	)
 }
-
-
