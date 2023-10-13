@@ -44,6 +44,7 @@ func Send(m string) bool {
 	} else {
 		EncMessage.MShostname = "\n" + nhlang.GetLangs("ms-hn") + name
 	}
+
 	ifas, err := net.Interfaces()
 	if err != nil {
 		EncMessage.MShostname += "\n-  " + nhlang.GetLangs("ms-carrier")

@@ -144,7 +144,6 @@ var MyLangs = map[string]string{
 	"spa-ms-sm":             "Enviar",
 	"eng-ms-filter":         "Omit Connected/Disconnected",
 	"spa-ms-filter":         "Omitir Conectado/Desconectado",
-
 	"eng-ms-header2": "NATS Messaging",
 	"spa-ms-header2": "Mensajería NATS",
 	"eng-ms-cpy":     "Copy To Clipboard",
