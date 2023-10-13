@@ -63,6 +63,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 
 		smbutton := widget.NewButton(nhlang.GetLangs("ms-sm"), func() {
 			nhnats.Send(message.Text)
+			message.Text = ""
 		})
 		/* 		ackbutton := widget.NewButton(nhlang.GetLangs("ms-ack"), func() {
 			SendAck(Acknode)
@@ -111,7 +112,4 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	)
 }
 
-/* func SendAck(node string) {
-	log.Println("ack ", node)
-	nhnats.MyAckMap[node] = true
-} */
+
