@@ -168,9 +168,9 @@ func main() {
 	logLang := flag.String("loglang", lang, "NATS Language to Use eng esp")
 	logAlias := flag.String("logalias", "Intrusion", "NATS Logging Alias")
 	logPattern := flag.String("logpattern", "[ERR]", "Log Pattern to Identify")
-	CA := flag.String("ca", "./ca.pem", "Path to TLS CA Certificate Authority")
-	ClientCert := flag.String("clientcert", "./clientcert.pem", "Path to TLS Client Cert")
-	ClientKey := flag.String("clientkey", "./clientkey.pem", "Path to TLS Client Key")
+	//CA := flag.String("ca", "./ca.pem", "Path to TLS CA Certificate Authority")
+	//ClientCert := flag.String("clientcert", "./clientcert.pem", "Path to TLS Client Cert")
+	//ClientKey := flag.String("clientkey", "./clientkey.pem", "Path to TLS Client Key")
 	ServerIP := flag.String("serverip", "nats://127.0.0.1:4222", "Server IP or DNS Name")
 	flag.Parse()
 	fmt.Println("Usage:")
@@ -185,9 +185,9 @@ func main() {
 	MyLogAlias = *logAlias
 	fmt.Println("serverip", *ServerIP)
 	fmt.Println("-logpattern: ", *logPattern)
-	fmt.Println("-ca: ", *CA)
-	fmt.Println("-clientkey: ", *ClientKey)
-	fmt.Println("-clientcert", *ClientCert)
+	//fmt.Println("-ca: ", *CA)
+	//fmt.Println("-clientkey: ", *ClientKey)
+	//fmt.Println("-clientcert", *ClientCert)
 
 	r := bufio.NewReader(os.Stdin)
 	buf := make([]byte, 0, 4*1024)
@@ -210,7 +210,7 @@ func main() {
 					log.Println("nhnats.go clientcert " + err.Error())
 				}
 				rootCAs, _ := x509.SystemCertPool()
-				if rootCAs == nil {
+			if rootCAs == nil {
 					rootCAs = x509.NewCertPool()
 				}
 				ok := rootCAs.AppendCertsFromPEM([]byte(LogCaroot))
