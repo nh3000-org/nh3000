@@ -13,6 +13,8 @@ import (
 	"github.com/nh3000-org/nh3000/nhutil"
 )
 
+var Details = widget.NewLabel(nhlang.GetLangs("ms-header1"))
+
 func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	nhutil.SetMessageWindow(win)
 	//var Acknode = ""
@@ -23,7 +25,11 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	message.SetMinRowsVisible(2)
 
 	Filter := widget.NewCheck(nhlang.GetLangs("ms-filter"), func(on bool) { nhpref.Filter = on })
-
+	if nhpref.ClearMessageDetail {
+		Details.SetText("")
+		Details.Refresh()
+		nhpref.ClearMessageDetail = false
+	}
 	DetailsHS := container.NewHScroll(Details)
 	DetailsVS := container.NewVScroll(DetailsHS)
 

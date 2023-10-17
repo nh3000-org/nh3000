@@ -66,6 +66,7 @@ var Filter = false
 var SearchString = ""
 
 var ReceivingMessages = false
+var ClearMessageDetail = true
 
 func DataStore(file string) fyne.URI {
 	DataLocation, dlerr := storage.Child(nhutil.GetApp().Storage().RootURI(), file)
@@ -75,29 +76,6 @@ func DataStore(file string) fyne.URI {
 	return DataLocation
 }
 
-/*
-	 func CertsToFS() {
-		_, err := os.Stat(DataStore("cert.pem").Path())
-		if os.IsNotExist(err) {
-			os.WriteFile(DataStore("cert.pem").Path(), []byte(Clientcert), 0644)
-		}
-		_, err1 := os.Stat(DataStore("key.pem").Path())
-		if os.IsNotExist(err1) {
-			os.WriteFile(DataStore("key.pem").Path(), []byte(Clientkey), 0644)
-		}
-	}
-
-	func CertsOffFS() {
-		err := os.Remove(DataStore("cert.pem").Path())
-		if err != nil {
-			log.Println("Unable to remove cert.pem")
-		}
-		err1 := os.Remove(DataStore("key.pem").Path())
-		if err1 != nil {
-			log.Println("Unable to remove key.pem")
-		}
-	}
-*/
 func Load() {
 	if nhutil.GetApp() == nil {
 		//MyApp = app.NewWithID("org.nh3000.nh3000")
@@ -131,7 +109,7 @@ func Load() {
 	xmsgmaxage, _ := nhcrypt.Encrypt(strings.Join(ymsgmaxage, ","), MySecret)
 	Msgmaxage = nhutil.GetApp().Preferences().StringWithFallback("Msgmaxage", xmsgmaxage)
 
-	PasswordMinimumSize = nhutil.GetApp().Preferences().StringWithFallback("PasswordMinimumSize", "6")
+	PasswordMinimumSize = nhutil.GetApp().Preferences().StringWithFallback("PasswordMinimumSize", "12")
 	PasswordMustContainNumber = nhutil.GetApp().Preferences().StringWithFallback("PasswordMustContainNumber", "Yes")
 	PasswordMustContainLetter = nhutil.GetApp().Preferences().StringWithFallback("PasswordMustContainLetter", "Yes")
 	PasswordMustContainSpecial = nhutil.GetApp().Preferences().StringWithFallback("PasswordMustContainSpecial", "Yes")

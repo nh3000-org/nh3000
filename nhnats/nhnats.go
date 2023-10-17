@@ -17,6 +17,8 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/nh3000-org/nh3000/nhcrypt"
 	"github.com/nh3000-org/nh3000/nhlang"
+
+	//"github.com/nh3000-org/nh3000/nhpanes"
 	"github.com/nh3000-org/nh3000/nhpref"
 	"github.com/nh3000-org/nh3000/nhutil"
 )
@@ -167,6 +169,7 @@ func Receive() {
 				log.Println(nhlang.GetLangs("ms-err4") + errsub.Error())
 			}
 			msgs, _ := sub.Fetch(100)
+			nhpref.ClearMessageDetail = true
 			if len(msgs) > 0 {
 				for i := 0; i < len(msgs); i++ {
 
