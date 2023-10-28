@@ -25,16 +25,20 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	message.SetMinRowsVisible(2)
 
 	Filter := widget.NewCheck(nhlang.GetLangs("ms-filter"), func(on bool) { nhpref.Filter = on })
+
+	DetailsHS := container.NewHScroll(Details)
+	DetailsHS.Refresh()
+	DetailsVS := container.NewVScroll(DetailsHS)
+	DetailsVS.SetMinSize(fyne.NewSize(300, 240))
+	DetailsVS.Refresh()
 	if nhpref.ClearMessageDetail {
 		Details.SetText("")
 		Details.Refresh()
+		DetailsHS.Refresh()
+		DetailsVS.Refresh()
 		nhpref.ClearMessageDetail = false
 	}
-	DetailsHS := container.NewHScroll(Details)
-	DetailsVS := container.NewVScroll(DetailsHS)
 
-	DetailsVS.SetMinSize(fyne.NewSize(300, 240))
-	DetailsVS.Refresh()
 	List := widget.NewList(
 		func() int {
 			return len(nhnats.NatsMessages)

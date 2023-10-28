@@ -27,7 +27,6 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 
 	alias := widget.NewEntry()
 	alias.SetPlaceHolder(nhlang.GetLangs("ls-alias"))
-	alias.SetText(nhpref.Alias)
 	alias.Disable()
 
 	server := widget.NewEntry()

@@ -24,10 +24,12 @@ import (
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+
 	"github.com/nh3000-org/nh3000/nhlang"
 	"github.com/nh3000-org/nh3000/nhnats"
 	"github.com/nh3000-org/nh3000/nhpanes"
 	"github.com/nh3000-org/nh3000/nhpref"
+	"github.com/nh3000-org/nh3000/nhskin"
 	"github.com/nh3000-org/nh3000/nhutil"
 )
 
@@ -48,6 +50,7 @@ var PanesIndex = map[string][]string{}
 func main() {
 	nhpref.Load()
 	nhpref.Save()
+
 	if strings.HasPrefix(os.Getenv("LANG"), "en") {
 		nhpref.PreferedLanguage = "eng"
 	}
@@ -73,6 +76,11 @@ func main() {
 	MyLogo, _ := fyne.LoadResourceFromPath("logo.png")
 
 	w := nhutil.GetApp().NewWindow("NH3000")
+	nhskin.Selected = nhskin.Dark
+	nhutil.GetApp().Settings().SetTheme(theme.DarkTheme())
+
+	nhutil.GetApp().Settings().SetTheme(nhskin.MyTheme{})
+
 	nhutil.GetApp().SetIcon(MyLogo)
 	makeTray(nhutil.GetApp())
 	logLifecycle(nhutil.GetApp())
@@ -148,7 +156,7 @@ func unsupportedApplication(t Pane) bool {
 // create navigation
 func makeNav(setGui func(panes Pane), loadPrevious bool) fyne.CanvasObject {
 	a := fyne.CurrentApp()
-	a.Settings().SetTheme(theme.DarkTheme())
+
 	tree := &widget.Tree{
 		ChildUIDs: func(uid string) []string {
 			return PanesIndex[uid]
@@ -189,12 +197,19 @@ func makeNav(setGui func(panes Pane), loadPrevious bool) fyne.CanvasObject {
 		tree.Select(currentPref)
 	}
 
-	themes := container.NewGridWithColumns(2,
+	themes := container.NewGridWithColumns(3,
 		widget.NewButton(nhlang.GetLangs("mn-dark"), func() {
-			a.Settings().SetTheme(theme.DarkTheme())
+			nhskin.Selected = nhskin.Dark
+			a.Settings().SetTheme(nhskin.MyTheme{})
+
 		}),
 		widget.NewButton(nhlang.GetLangs("mn-light"), func() {
-			a.Settings().SetTheme(theme.LightTheme())
+			nhskin.Selected = nhskin.Light
+			a.Settings().SetTheme(nhskin.MyTheme{})
+		}),
+		widget.NewButton(nhlang.GetLangs("mn-retro"), func() {
+			nhskin.Selected = nhskin.Retro
+			a.Settings().SetTheme(nhskin.MyTheme{})
 		}),
 	)
 
