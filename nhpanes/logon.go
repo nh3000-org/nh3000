@@ -1,7 +1,6 @@
 package nhpanes
 
 import (
-	"log"
 	"strconv"
 
 	"fyne.io/fyne/v2"
@@ -49,17 +48,15 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 		nhpref.Passwordhash = string(pwh)
 		if err != nil {
 			iserrors = true
-			log.Println(nhlang.GetLangs("ls-err1"))
 			errors.SetText(nhlang.GetLangs("ls-err1"))
 		}
 
-		nhhash.LoadWithDefault("config.hash", "123456")
+		ph, _ := nhhash.LoadWithDefault("config.hash", "123456")
 		// Comparing the password with the hash
-		errpw := bcrypt.CompareHashAndPassword([]byte(nhpref.Passwordhash), []byte(nhpref.Password))
+		errpw := bcrypt.CompareHashAndPassword([]byte(ph), []byte(nhpref.Password))
 
 		if errpw != nil {
 			iserrors = true
-			log.Println(nhlang.GetLangs("ls-err3"))
 			errors.SetText(nhlang.GetLangs("ls-err3"))
 		}
 
@@ -72,6 +69,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			queue.SetText(nhpref.Queue)
 			queuepassword.SetText(nhpref.Queuepassword)
 			password.Disable()
+
 			server.Enable()
 			queue.Enable()
 			alias.Enable()
@@ -104,7 +102,6 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			nhpref.Queuepassword = queuepassword.Text
 			password.Disable()
 			server.Disable()
-
 			alias.Disable()
 			queue.Disable()
 			queuepassword.Disable()
@@ -139,7 +136,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 		queuepassword.Disable()
 	}
 
-	return container.NewCenter(container.NewVBox(
+	return container.NewVBox(
 		widget.NewLabelWithStyle(nhlang.GetLangs("ls-clogon"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		password,
 		tpbutton,
@@ -149,11 +146,12 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 		queuepassword,
 		SSbutton,
 		SEbutton,
-		errors,
 		container.NewHBox(
 			widget.NewHyperlink("newhorizons3000.org", nhutil.ParseURL("https://newhorizons3000.org/")),
 			widget.NewHyperlink("github.com", nhutil.ParseURL("https://github.com/nh3000-org/snats")),
 		),
+		errors,
+
 		widget.NewLabel(""), // balance the header on the tutorial screen we leave blank on this content
-	))
+	)
 }

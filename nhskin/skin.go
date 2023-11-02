@@ -3,7 +3,6 @@ package nhskin
 import (
 	"image/color"
 	"log"
-	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
@@ -11,47 +10,104 @@ import (
 
 type MyTheme struct{}
 
-//var _ fyne.Theme = (*MyTheme)(nil)
-
 var Dark = 0
 var Light = 1
 var Retro = 2
 
 var Selected = 0
 
-// var DarkBlue = color.RGBA{87, 82, 222, 1}
-// var LightBlue = color.RGBA{57, 94, 169, 1}
-//var Blue = color.RGBA{57, 134, 189, 1}
-//var Gray = color.RGBA{186, 198, 207, 1}
-//var blueColor = color.RGBA{151, 240, 173, 1}
+var DarkButton = color.RGBA{162, 168, 250, 64}
+var DarkHover = color.RGBA{187, 188, 201, 64}
+var DarkPressed = color.RGBA{187, 188, 201, 220}
+var DarkSelection = color.RGBA{187, 188, 201, 128}
+var DarkInputBackground = color.RGBA{187, 188, 201, 32}
+var DarkInputBorder = color.RGBA{187, 188, 201, 64}
+var DarkSeparator = color.RGBA{187, 188, 201, 64}
+var DarkShadow = color.RGBA{187, 188, 201, 64}
+var DarkScrollBar = color.RGBA{187, 188, 201, 64}
+var DarkFocus = color.RGBA{187, 188, 201, 64}
+var DarkPlaceholder = color.RGBA{187, 188, 201, 220}
+var DarkDisabled = color.RGBA{187, 188, 201, 64}
+var DarkHyperlink = color.RGBA{187, 188, 201, 255}
+var DarkPrimary = color.RGBA{187, 188, 201, 255}
+
+var LightButton = color.RGBA{129, 137, 252, 250}
+var LightHover = color.RGBA{129, 137, 252, 250}
+var LightPressed = color.RGBA{129, 137, 252, 220}
+var LightSelection = color.RGBA{129, 137, 252, 200}
+var LightInputBackground = color.RGBA{129, 137, 252, 32}
+var LightInputBorder = color.RGBA{129, 137, 252, 64}
+
+// var LightSeparator = color.RGBA{129, 137, 252, 1}
+var LightSeparator = color.Black
+var LightShadow = color.RGBA{129, 137, 252, 64}
+var LightScrollBar = color.RGBA{129, 137, 252, 64}
+var LightFocus = color.RGBA{129, 137, 252, 64}
+var LightPlaceholder = color.RGBA{129, 137, 252, 220}
+var LightDisabled = color.RGBA{129, 137, 252, 64}
+var LightHyperlink = color.RGBA{129, 137, 252, 1}
+var LightPrimary = color.RGBA{129, 137, 252, 255}
+
+var RetroButton = color.RGBA{116, 207, 103, 250}
+var RetroHover = color.RGBA{116, 207, 103, 255}
+var RetroPressed = color.RGBA{116, 207, 103, 220}
+var RetroSelection = color.RGBA{116, 207, 103, 200}
+var RetroInputBackground = color.RGBA{116, 207, 103, 32}
+var RetroInputBorder = color.RGBA{116, 207, 103, 250}
+var RetroSeparator = color.Black
+var RetroShadow = color.RGBA{116, 207, 103, 64}
+var RetroScrollBar = color.RGBA{116, 207, 103, 64}
+var RetroFocus = color.RGBA{116, 207, 103, 64}
+var RetroPlaceholder = color.RGBA{116, 207, 103, 255}
+var RetroDisabled = color.RGBA{116, 207, 103, 64}
+var RetroHyperlink = color.RGBA{116, 207, 103, 1}
+var RetroPrimary = color.RGBA{116, 207, 103, 255}
 
 func (m MyTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
 
-	var Blue = color.RGBA{57, 134, 189, 1}
-	var Gray = color.RGBA{186, 198, 207, 1}
-	//var blueColor = color.RGBA{151, 240, 173, 1}
-	log.Println("skin "+strconv.Itoa(Selected)+" name ", name)
+	//log.Println("skin "+strconv.Itoa(Selected)+" name ", name)
 	if Selected == Dark {
+		if name == "separator" {
+			return DarkSeparator
+		}
+		if name == "shadow" {
+			return DarkShadow
+		}
+		if name == "scrollBar" {
+			return DarkScrollBar
+		}
+		if name == "focus" {
+			return DarkFocus
+		}
+		if name == "placeholder" {
+			return DarkPlaceholder
+		}
+		if name == "disabled" {
+			return DarkDisabled
+		}
+		if name == "hyperlink" {
+			return DarkHyperlink
+		}
+		if name == "primary" {
+			return DarkPrimary
+		}
 		if name == "hover" {
-			blueColor := color.RGBA{129, 137, 252, 1}
-			return blueColor
+			return DarkHover
 		}
 		if name == "pressed" {
-			blueColor := color.RGBA{129, 137, 252, 1}
-			return blueColor
+			return DarkPressed
 		}
 		if name == "selection" {
-			blueColor := color.RGBA{129, 137, 252, 1}
-			return blueColor
+			return DarkSelection
 		}
 		if name == "inputBackground" {
-			return Gray
+			return DarkInputBackground
 		}
 		if name == "inputBorder" {
-			return color.Black
+			return DarkInputBorder
 		}
 		if name == "button" {
-			return Blue
+			return DarkButton
 		}
 		if name == "foreground" {
 			return color.White
@@ -59,34 +115,53 @@ func (m MyTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) colo
 		if name == "background" {
 			return color.Black
 		}
-
 		if name != "disabled" {
-
 			log.Println("default ", name)
 		}
 	}
 
 	if Selected == Light {
+		if name == "separator" {
+			return LightSeparator
+		}
+		if name == "shadow" {
+			return LightShadow
+		}
+		if name == "scrollBar" {
+			return LightScrollBar
+		}
+		if name == "focus" {
+			return LightFocus
+		}
+		if name == "placeholder" {
+			return LightPlaceholder
+		}
+		if name == "disabled" {
+			return LightDisabled
+		}
+		if name == "hyperlink" {
+			return LightHyperlink
+		}
+		if name == "primary" {
+			return LightPrimary
+		}
 		if name == "hover" {
-			blueColor := color.RGBA{129, 137, 252, 1}
-			return blueColor
+			return LightHover
 		}
 		if name == "pressed" {
-			blueColor := color.RGBA{129, 137, 252, 1}
-			return blueColor
+			return LightPressed
 		}
 		if name == "selection" {
-			blueColor := color.RGBA{129, 137, 252, 1}
-			return blueColor
+			return LightSelection
 		}
 		if name == "inputBackground" {
-			return color.White
+			return LightInputBackground
 		}
 		if name == "inputBorder" {
-			return color.Black
+			return LightInputBorder
 		}
 		if name == "button" {
-			return color.White
+			return LightButton
 		}
 		if name == "foreground" {
 			return color.Black
@@ -104,27 +179,47 @@ func (m MyTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) colo
 	}
 
 	if Selected == Retro {
+		if name == "separator" {
+			return RetroSeparator
+		}
+		if name == "shadow" {
+			return RetroShadow
+		}
+		if name == "scrollBar" {
+			return RetroScrollBar
+		}
+		if name == "focus" {
+			return RetroFocus
+		}
+		if name == "placeholder" {
+			return RetroPlaceholder
+		}
+		if name == "disabled" {
+			return RetroDisabled
+		}
+		if name == "hyperlink" {
+			return RetroHyperlink
+		}
+		if name == "primary" {
+			return RetroPrimary
+		}
 		if name == "hover" {
-			blueColor := color.RGBA{151, 240, 173, 1}
-			return blueColor
+			return RetroHover
 		}
 		if name == "selection" {
-			blueColor := color.RGBA{151, 240, 173, 1}
-			return blueColor
+			return RetroSelection
 		}
 		if name == "pressed" {
-			greenColor := color.RGBA{151, 240, 173, 1}
-			return greenColor
+			return RetroPressed
 		}
 		if name == "inputBackground" {
-			return color.White
+			return RetroInputBackground
 		}
 		if name == "inputBorder" {
-			greenColor := color.RGBA{151, 240, 173, 1}
-			return greenColor
+			return RetroInputBorder
 		}
 		if name == "button" {
-			return color.White
+			return RetroButton
 		}
 		if name == "foreground" {
 			return color.Black

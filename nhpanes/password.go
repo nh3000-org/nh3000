@@ -102,7 +102,7 @@ func PasswordScreen(_ fyne.Window) fyne.CanvasObject {
 
 	})
 
-	return container.NewCenter(container.NewVBox(
+	return container.NewVBox(
 		widget.NewLabelWithStyle(nhlang.GetLangs("ps-title1"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		widget.NewLabelWithStyle("config.json", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		widget.NewLabelWithStyle(nhlang.GetLangs("ps-title2"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
@@ -113,12 +113,13 @@ func PasswordScreen(_ fyne.Window) fyne.CanvasObject {
 		passwordc1,
 		passwordc2,
 		cpbutton,
-		errors,
 		container.NewHBox(
 			widget.NewHyperlink("newhorizons3000.org", nhutil.ParseURL("https://newhorizons3000.org/")),
 			widget.NewHyperlink("github.com", nhutil.ParseURL("https://github.com/nh3000-org/snats")),
 		),
+		errors,
+
 		widget.NewLabel(""), // balance the header on the tutorial screen we leave blank on this content
-	))
+	)
 
 }

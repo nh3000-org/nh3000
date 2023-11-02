@@ -22,7 +22,8 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/driver/desktop"
-	"fyne.io/fyne/v2/theme"
+
+	//"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/nh3000-org/nh3000/nhlang"
@@ -77,7 +78,7 @@ func main() {
 
 	w := nhutil.GetApp().NewWindow("NH3000")
 	nhskin.Selected = nhskin.Dark
-	nhutil.GetApp().Settings().SetTheme(theme.DarkTheme())
+	//nhutil.GetApp().Settings().SetTheme(theme.DarkTheme())
 
 	nhutil.GetApp().Settings().SetTheme(nhskin.MyTheme{})
 
