@@ -32,16 +32,16 @@ var DarkHyperlink = color.RGBA{187, 188, 201, 255}
 var DarkPrimary = color.RGBA{187, 188, 201, 255}
 
 var LightButton = color.RGBA{129, 137, 252, 250}
-var LightHover = color.RGBA{129, 137, 252, 1}
+var LightHover = color.RGBA{129, 137, 252, 250}
 var LightPressed = color.RGBA{129, 137, 252, 220}
 var LightSelection = color.RGBA{129, 137, 252, 200}
 var LightInputBackground = color.RGBA{129, 137, 252, 32}
-var LightInputBorder = color.RGBA{129, 137, 252, 64}
+var LightInputBorder = color.RGBA{129, 137, 252, 250}
 
 // var LightSeparator = color.RGBA{129, 137, 252, 1}
 var LightSeparator = color.Black
 var LightShadow = color.RGBA{129, 137, 252, 64}
-var LightScrollBar = color.RGBA{129, 137, 252, 64}
+var LightScrollBar = color.RGBA{129, 137, 252, 250}
 var LightFocus = color.RGBA{129, 137, 252, 64}
 var LightPlaceholder = color.RGBA{129, 137, 252, 220}
 var LightDisabled = color.RGBA{129, 137, 252, 64}
