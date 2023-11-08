@@ -1,6 +1,6 @@
 #!/bin/sh
 export GOPATH=/home/oem/go/bin
-go build main.go
+go build log.go
 rm log-linux.zip
-zip log-linux.zip main 
-rm main
+zip log-linux.zip log 
+rm log

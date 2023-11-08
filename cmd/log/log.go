@@ -17,11 +17,8 @@ package main
 
 import (
 	"bufio"
-	"crypto/aes"
-	"crypto/cipher"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -35,9 +32,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
+	"github.com/nh3000-org/nh3000/nhcrypt"
 )
 
-var MyBytes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05} // must be 16 bytes
 var idcount int
 var MyLogLang string
 var MyLogAlias string
@@ -93,25 +90,6 @@ func GetLangs(mystring string) string {
 	return value
 }
 
-// encode string to base64
-func Encode(b []byte) string {
-	return base64.StdEncoding.EncodeToString(b)
-}
-
-// encrypt string
-func Encrypt(text string, MySecret string) (string, error) {
-	block, err := aes.NewCipher([]byte(MySecret))
-	if err != nil {
-		return "", err
-	}
-	plainText := []byte(text)
-	cfb := cipher.NewCFBEncrypter(block, MyBytes)
-	cipherText := make([]byte, len(plainText))
-	cfb.XORKeyStream(cipherText, plainText)
-
-	return Encode(cipherText), nil
-}
-
 // send message to nats
 func Send(m string) []byte {
 	EncMessage := MessageStore{}
@@ -151,7 +129,7 @@ func Send(m string) []byte {
 	if jsonerr != nil {
 		log.Println(GetLangs("fm-fm"), jsonerr)
 	}
-	ejson, _ := Encrypt(string(jsonmsg), LogQueuePassword)
+	ejson, _ := nhcrypt.Encrypt(string(jsonmsg), LogQueuePassword)
 
 	return []byte(ejson)
 }
@@ -168,9 +146,6 @@ func main() {
 	logLang := flag.String("loglang", lang, "NATS Language to Use eng esp")
 	logAlias := flag.String("logalias", "Intrusion", "NATS Logging Alias")
 	logPattern := flag.String("logpattern", "[ERR]", "Log Pattern to Identify")
-	//CA := flag.String("ca", "./ca.pem", "Path to TLS CA Certificate Authority")
-	//ClientCert := flag.String("clientcert", "./clientcert.pem", "Path to TLS Client Cert")
-	//ClientKey := flag.String("clientkey", "./clientkey.pem", "Path to TLS Client Key")
 	ServerIP := flag.String("serverip", "nats://127.0.0.1:4222", "Server IP or DNS Name")
 	flag.Parse()
 	fmt.Println("Usage:")
@@ -185,9 +160,6 @@ func main() {
 	MyLogAlias = *logAlias
 	fmt.Println("serverip", *ServerIP)
 	fmt.Println("-logpattern: ", *logPattern)
-	//fmt.Println("-ca: ", *CA)
-	//fmt.Println("-clientkey: ", *ClientKey)
-	//fmt.Println("-clientcert", *ClientCert)
 
 	r := bufio.NewReader(os.Stdin)
 	buf := make([]byte, 0, 4*1024)
@@ -210,7 +182,7 @@ func main() {
 					log.Println("nhnats.go clientcert " + err.Error())
 				}
 				rootCAs, _ := x509.SystemCertPool()
-			if rootCAs == nil {
+				if rootCAs == nil {
 					rootCAs = x509.NewCertPool()
 				}
 				ok := rootCAs.AppendCertsFromPEM([]byte(LogCaroot))
