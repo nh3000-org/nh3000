@@ -55,6 +55,20 @@ type MessageStore struct {
 
 // eng esp cmn
 var MyLangs = map[string]string{
+	"eng-fl-ll":    "NATS Language to Use eng or esp",
+	"spa-fl-ll":    "Lenguaje NATS Para Usar ENG o ESP",
+	"eng-fl-la":    "NATS Logging Alias",
+	"spa-fl-la":    "Alias de Registro de NATS",
+	"eng-fl-lp":    "Log Pattern to Identify",
+	"spa-fl-lp":    "Patrón de Registro Para Identificar",
+	"eng-fl-si":    "Server IP or DNS Name",
+	"spa-fl-si":    "Nombre de IP o DNS del Servidor",
+	"eng-fl-us":    "Usage:",
+	"spa-fl-us":    "Uso:",
+	"eng-fl-uh":    "-logpattern will be Logged to the -serverip Using the -logalias",
+	"spa-fl-uh":    "-logPattern se Registrará a -serverip Usando las -logalias",
+	"eng-fl-ro":    "Run Options:",
+	"spa-fl-ro":    "Opciones de Ejecución:",
 	"eng-mn-alias": "Intrusion Detection",
 	"spa-mn-alias": "Detección de Intrusos",
 	"eng-mn-lc":    "Log Connection",
@@ -85,7 +99,7 @@ var MyLangs = map[string]string{
 func GetLangs(mystring string) string {
 	value, err := MyLangs[MyLogLang+"-"+mystring]
 	if err == false {
-		return "eng"
+		return "xxx"
 	}
 	return value
 }
@@ -136,29 +150,28 @@ func Send(m string) []byte {
 
 // main loop for receiving pipe
 func main() {
-	var lang = "en"
+	MyLogLang = "eng"
 	if strings.HasPrefix(os.Getenv("LANG"), "en") {
-		lang = "eng"
+		MyLogLang = "eng"
 	}
 	if strings.HasPrefix(os.Getenv("LANG"), "sp") {
-		lang = "spa"
+		MyLogLang = "spa"
 	}
-	logLang := flag.String("loglang", lang, "NATS Language to Use eng esp")
-	logAlias := flag.String("logalias", "Intrusion", "NATS Logging Alias")
-	logPattern := flag.String("logpattern", "[ERR]", "Log Pattern to Identify")
-	ServerIP := flag.String("serverip", "nats://127.0.0.1:4222", "Server IP or DNS Name")
+	logLang := flag.String("loglang", MyLogLang, GetLangs("fl-ll"))
+	logAlias := flag.String("logalias", GetLangs("mn-alias"), GetLangs("fl-la"))
+	logPattern := flag.String("logpattern", "[ERR]", GetLangs("fl-lp"))
+	ServerIP := flag.String("serverip", "nats://127.0.0.1:4222", GetLangs("fl-si"))
 	flag.Parse()
-	fmt.Println("Usage:")
+	fmt.Println(GetLangs("fl-ll"))
 	fmt.Println("tail -f log.file | log -serverip nats://?.?.?.? -logpattern ??? -logalias ????")
-	fmt.Println("LOGPATTERN will be logged to the nats server using the alias")
-	fmt.Println("fully encrypted")
+	fmt.Println(GetLangs("fl-uh"))
 	fmt.Println("")
-	fmt.Println("Run Options:")
+	fmt.Println(GetLangs("fl-ro"))
 	fmt.Println("-loglang: ", *logLang)
 	MyLogLang = *logLang
-	fmt.Println("logAlias", *logAlias)
+	fmt.Println("-logAlias", *logAlias)
 	MyLogAlias = *logAlias
-	fmt.Println("serverip", *ServerIP)
+	fmt.Println("-serverip", *ServerIP)
 	fmt.Println("-logpattern: ", *logPattern)
 
 	r := bufio.NewReader(os.Stdin)

@@ -3,11 +3,12 @@ package nhcrypt
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/hmac"
+
 	"crypto/rand"
-	"crypto/sha256"
+
 	"encoding/base64"
 	"io"
+
 	"os"
 )
 
@@ -17,103 +18,112 @@ const BUFFER_SIZE int = 4096
 const IV_SIZE int = 16
 
 func EncryptFile(filePathIn, filePathOut string) error {
-	inFile, err := os.Open(filePathIn)
-	if err != nil {
-		return err
-	}
-	defer inFile.Close()
+	infile, err := os.Open(filePathIn)
+	defer infile.Close()
 
-	outFile, err := os.Create(filePathOut)
-	if err != nil {
-		return err
-	}
-	defer outFile.Close()
+	// The key should be 16 bytes (AES-128), 24 bytes (AES-192) or
+	// 32 bytes (AES-256)
 
-	iv := make([]byte, IV_SIZE)
-	_, err = rand.Read(iv)
+	block, err := aes.NewCipher(keyHmac)
 	if err != nil {
 		return err
 	}
 
-	aes, err := aes.NewCipher(keyAes)
-	if err != nil {
+	// Never use more than 2^32 random nonces with a given key
+	// because of the risk of repeat.
+	iv := make([]byte, block.BlockSize())
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
 		return err
 	}
 
-	ctr := cipher.NewCTR(aes, iv)
-	hmac := hmac.New(sha256.New, keyHmac)
+	outfile, err := os.OpenFile(filePathOut, os.O_RDWR|os.O_CREATE, 0777)
+	if err != nil {
+		return err
+	}
+	defer outfile.Close()
 
-	buf := make([]byte, BUFFER_SIZE)
+	// The buffer size must be multiple of 16 bytes
+	buf := make([]byte, 1024)
+	stream := cipher.NewCTR(block, iv)
 	for {
-		n, err := inFile.Read(buf)
-		if err != nil && err != io.EOF {
-			return err
+		n, err := infile.Read(buf)
+		if n > 0 {
+			stream.XORKeyStream(buf, buf[:n])
+			// Write into file
+			outfile.Write(buf[:n])
 		}
-
-		outBuf := make([]byte, n)
-		ctr.XORKeyStream(outBuf, buf[:n])
-		hmac.Write(outBuf)
-		outFile.Write(outBuf)
 
 		if err == io.EOF {
 			break
 		}
+
+		if err != nil {
+			return err
+		}
 	}
-
-	outFile.Write(iv)
-	hmac.Write(iv)
-	outFile.Write(hmac.Sum(nil))
-
+	// Append the IV
+	outfile.Write(iv)
 	return nil
 }
 func DecryptFile(filePathIn, filePathOut string) error {
-	inFile, err := os.Open(filePathIn)
+	infile, err := os.Open(filePathIn)
 	if err != nil {
 		return err
 	}
-	defer inFile.Close()
+	defer infile.Close()
 
-	outFile, err := os.Create(filePathOut)
-	if err != nil {
-		return err
-	}
-	defer outFile.Close()
+	// The key should be 16 bytes (AES-128), 24 bytes (AES-192) or
+	// 32 bytes (AES-256)
 
-	iv := make([]byte, IV_SIZE)
-	_, err = rand.Read(iv)
+	block, err := aes.NewCipher(keyHmac)
 	if err != nil {
 		return err
 	}
 
-	aes, err := aes.NewCipher(keyAes)
+	// Never use more than 2^32 random nonces with a given key
+	// because of the risk of repeat.
+	fi, err := infile.Stat()
 	if err != nil {
 		return err
 	}
 
-	ctr := cipher.NewCTR(aes, iv)
-	hmac := hmac.New(sha256.New, keyHmac)
+	iv := make([]byte, block.BlockSize())
+	msgLen := fi.Size() - int64(len(iv))
+	_, err = infile.ReadAt(iv, msgLen)
+	if err != nil {
+		return err
+	}
 
-	buf := make([]byte, BUFFER_SIZE)
+	outfile, err := os.OpenFile(filePathOut, os.O_RDWR|os.O_CREATE, 0777)
+	if err != nil {
+		return err
+	}
+	defer outfile.Close()
+
+	// The buffer size must be multiple of 16 bytes
+	buf := make([]byte, 1024)
+	stream := cipher.NewCTR(block, iv)
 	for {
-		n, err := inFile.Read(buf)
-		if err != nil && err != io.EOF {
-			return err
+		n, err := infile.Read(buf)
+		if n > 0 {
+			// The last bytes are the IV, don't belong the original message
+			if n > int(msgLen) {
+				n = int(msgLen)
+			}
+			msgLen -= int64(n)
+			stream.XORKeyStream(buf, buf[:n])
+			// Write into file
+			outfile.Write(buf[:n])
 		}
-
-		outBuf := make([]byte, n)
-		ctr.XORKeyStream(outBuf, buf[:n])
-		hmac.Write(outBuf)
-		outFile.Write(outBuf)
 
 		if err == io.EOF {
 			break
 		}
+
+		if err != nil {
+			return err
+		}
 	}
-
-	outFile.Write(iv)
-	hmac.Write(iv)
-	outFile.Write(hmac.Sum(nil))
-
 	return nil
 }
 
