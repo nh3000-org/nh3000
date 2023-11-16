@@ -58,6 +58,9 @@ func main() {
 	if strings.HasPrefix(os.Getenv("LANG"), "sp") {
 		nhpref.PreferedLanguage = "spa"
 	}
+		if strings.HasPrefix(os.Getenv("LANG"), "hn") {
+		nhpref.PreferedLanguage = "hin"
+	}
 
 	// app windows
 	Panes = map[string]Pane{

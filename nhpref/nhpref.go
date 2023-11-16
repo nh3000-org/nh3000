@@ -78,7 +78,6 @@ func DataStore(file string) fyne.URI {
 
 func Load() {
 	if nhutil.GetApp() == nil {
-		//MyApp = app.NewWithID("org.nh3000.nh3000")
 		nhutil.SetApp(app.NewWithID("org.nh3000.nh3000"))
 	}
 
@@ -131,7 +130,7 @@ func Load() {
 	Clientcert = strings.ReplaceAll(yClientcert, "<>", "\n")
 	yClientkey, _ := nhcrypt.Decrypt(Clientkey, MySecret)
 	Clientkey = strings.ReplaceAll(yClientkey, "<>", "\n")
-	//CertsToFS()
+
 }
 
 func Save() {
@@ -141,10 +140,8 @@ func Save() {
 	nhutil.GetApp().Preferences().SetString("Clientcert", xClientcert)
 	xClientkey, _ := nhcrypt.Encrypt(Clientkey, MySecret)
 	nhutil.GetApp().Preferences().SetString("Clientkey", xClientkey)
-
 	xMsgmaxage, _ := nhcrypt.Encrypt(Msgmaxage, MySecret)
 	nhutil.GetApp().Preferences().SetString("Msgmaxage", xMsgmaxage)
-
 	xServer, _ := nhcrypt.Encrypt(Server, MySecret)
 	nhutil.GetApp().Preferences().SetString("Server", xServer)
 	xQueue, _ := nhcrypt.Encrypt(Queue, MySecret)
@@ -158,11 +155,8 @@ func Save() {
 	nhutil.GetApp().Preferences().SetString("PasswordMustContainNumber", PasswordMustContainNumber)
 	nhutil.GetApp().Preferences().SetString("PasswordMustContainLetter", PasswordMustContainLetter)
 	nhutil.GetApp().Preferences().SetString("PasswordMustContainSpecial", PasswordMustContainSpecial)
-	//CertsOffFS()
-	//CertsToFS()
 }
 func Edit(action string, value string) bool {
-
 	if action == "cvtbool" {
 		if value == "True" {
 			return true
@@ -172,7 +166,6 @@ func Edit(action string, value string) bool {
 		}
 
 	}
-
 	if action == "URL" {
 		valid := strings.Contains(strings.ToLower(value), "nats://")
 		if valid == false {
@@ -190,7 +183,6 @@ func Edit(action string, value string) bool {
 		return false
 	}
 	if action == "STRING" {
-
 		if len(value) == 0 {
 			return true
 		}
@@ -203,7 +195,6 @@ func Edit(action string, value string) bool {
 		if (len(value) <= vlen) == false {
 			iserrors = true
 		}
-
 		if PasswordMustContainLetter == "Yes" && !iserrors {
 
 			for _, r := range value {
@@ -213,7 +204,6 @@ func Edit(action string, value string) bool {
 				}
 			}
 		}
-
 		if PasswordMustContainNumber == "Yes" && !iserrors {
 			iserrors = true
 			for _, r := range value {

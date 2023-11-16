@@ -10,9 +10,8 @@ import (
 )
 
 func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
-	//	MyJson("LOAD")
 	lalabel := widget.NewLabel(nhlang.GetLangs("ss-la"))
-	la := widget.NewRadioGroup([]string{"eng", "spa"}, func(string) {})
+	la := widget.NewRadioGroup([]string{"eng", "spa", "hin"}, func(string) {})
 	la.Horizontal = true
 	la.SetSelected(nhpref.PreferedLanguage)
 
