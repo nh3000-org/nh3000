@@ -101,7 +101,13 @@ func PasswordScreen(_ fyne.Window) fyne.CanvasObject {
 		}
 
 	})
-
+	if !nhpref.LoggedOn {
+		password.Disable()
+	
+		passwordc1.Disable()
+		passwordc2.Disable()
+		cpbutton.Disable()
+	}
 	return container.NewVBox(
 		widget.NewLabelWithStyle(nhlang.GetLangs("ps-title1"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		widget.NewLabelWithStyle("config.json", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),

@@ -10,6 +10,8 @@ import (
 )
 
 func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
+	errors := widget.NewLabel("...")
+
 	lalabel := widget.NewLabel(nhlang.GetLangs("ss-la"))
 	la := widget.NewRadioGroup([]string{"eng", "spa", "hin"}, func(string) {})
 	la.Horizontal = true
@@ -47,8 +49,13 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 		nhpref.PasswordMinimumSize = pl.Selected
 		nhpref.PasswordMustContainLetter = mcletter.Selected
 		nhpref.PasswordMustContainSpecial = mcspecial.Selected
-		if nhpref.PasswordValid {
+		if nhpref.LoggedOn {
+			errors.SetText(nhlang.GetLangs("ss-sserr"))
 			nhpref.Save()
+		}
+		if !nhpref.LoggedOn {
+			errors.SetText(nhlang.GetLangs("ss-sserr1"))
+
 		}
 	})
 
@@ -71,6 +78,6 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 			widget.NewHyperlink("newhorizons3000.org", nhutil.ParseURL("https://newhorizons3000.org/")),
 		),
 		widget.NewLabel(""),
+		errors,
 	))
-
 }

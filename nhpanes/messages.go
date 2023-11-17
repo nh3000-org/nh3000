@@ -69,7 +69,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	List.Resize(fyne.NewSize(500, 5000))
 	List.Refresh()
 
-	if nhpref.PasswordValid == true {
+	if nhpref.LoggedOn == true {
 
 		smbutton := widget.NewButton(nhlang.GetLangs("ms-sm"), func() {
 			nhnats.Send(message.Text)

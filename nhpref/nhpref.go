@@ -38,7 +38,8 @@ const Version = "snats-beta.1"
 //var MyApp fyne.App
 
 var LoggedOn bool = false
-var PasswordValid bool = false
+
+//var PasswordValid bool = false
 
 var ErrorMessage = "None"
 
@@ -236,12 +237,15 @@ func Edit(action string, value string) bool {
 		}
 	}
 	if action == "KEY" {
+		log.Println("key")
 		valid := strings.Contains(value, "-----BEGIN RSA PRIVATE KEY-----")
 		if valid == false {
+			log.Println("begin")
 			return false
 		}
 		valid2 := strings.Contains(value, "-----END RSA PRIVATE KEY-----")
 		if valid2 == false {
+			log.Println("end")
 			return false
 		}
 	}

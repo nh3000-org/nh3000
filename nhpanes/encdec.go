@@ -16,9 +16,6 @@ func EncdecScreen(win fyne.Window) fyne.CanvasObject {
 
 	password := widget.NewEntry()
 
-	//var cd = password.OnChanged
-	//strconv.Itoa(Password.Size()
-
 	password.SetPlaceHolder(nhlang.GetLangs("es-pass"))
 
 	myinputtext := widget.NewMultiLineEntry()
@@ -60,7 +57,7 @@ func EncdecScreen(win fyne.Window) fyne.CanvasObject {
 		}
 	})
 
-	decbutton := widget.NewButton("Decrypt Message", func() {
+	decbutton := widget.NewButton(nhlang.GetLangs("es-dm"), func() {
 		iserrors = nhpref.Edit("STRING", password.Text)
 		if !iserrors {
 			errors.SetText(nhlang.GetLangs("es-err1"))
@@ -90,7 +87,10 @@ func EncdecScreen(win fyne.Window) fyne.CanvasObject {
 		}
 
 	})
-
+	if !nhpref.LoggedOn {
+		encbutton.Disable()
+		decbutton.Disable()
+	}
 	if iserrors == true {
 		//encbutton.Disable()
 		//decbutton.Disable()

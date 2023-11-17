@@ -40,7 +40,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 	queuepassword.SetPlaceHolder(nhlang.GetLangs("ls-queuepass"))
 	queuepassword.Disable()
 
-	tpbutton := widget.NewButton(nhlang.GetLangs("ls-trypass"), func() {
+	TPbutton := widget.NewButton(nhlang.GetLangs("ls-trypass"), func() {
 		errors.SetText("...")
 		var iserrors = false
 		nhpref.Password = password.Text
@@ -50,36 +50,29 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			iserrors = true
 			errors.SetText(nhlang.GetLangs("ls-err1"))
 		}
-
 		ph, _ := nhhash.LoadWithDefault("config.hash", "123456")
 		// Comparing the password with the hash
 		errpw := bcrypt.CompareHashAndPassword([]byte(ph), []byte(nhpref.Password))
-
 		if errpw != nil {
 			iserrors = true
 			errors.SetText(nhlang.GetLangs("ls-err3"))
 		}
-
 		if !iserrors {
 			errors.SetText("...")
-			nhpref.PasswordValid = true
 			nhpref.Load()
 			alias.SetText(nhpref.Alias)
 			server.SetText(nhpref.Server)
 			queue.SetText(nhpref.Queue)
 			queuepassword.SetText(nhpref.Queuepassword)
 			password.Disable()
-
 			server.Enable()
 			queue.Enable()
 			alias.Enable()
 			queuepassword.Enable()
-
 		}
 	})
 
 	SSbutton := widget.NewButton(nhlang.GetLangs("ls-title"), func() {
-
 		var iserrors = nhpref.Edit("URL", server.Text)
 		if iserrors == true {
 			errors.SetText(nhlang.GetLangs("ls-err4"))
@@ -93,8 +86,8 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			iserrors = true
 			errors.SetText(nhlang.GetLangs("ls-err6-1") + strconv.Itoa(len(queuepassword.Text)) + "ls-err6-1")
 		}
-
-		if !iserrors && nhpref.PasswordValid {
+		if !iserrors {
+			nhpref.LoggedOn = true
 			nhpref.NodeUUID = uuid.New().String()
 			nhpref.Alias = alias.Text
 			nhpref.Server = server.Text
@@ -105,30 +98,29 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			alias.Disable()
 			queue.Disable()
 			queuepassword.Disable()
-
 			nhpref.Save()
-
 			nhpref.LoggedOn = true
-
 			errors.SetText("...")
-
 			nhnats.Send(nhlang.GetLangs("ls-con"))
-
 			go nhnats.Receive()
-
 		}
-
 	})
 
 	// security erase
 	SEbutton := widget.NewButton(nhlang.GetLangs("ls-erase"), func() {
-		if nhpref.PasswordValid {
+		if nhpref.LoggedOn {
 			nhnats.Erase()
 		}
-
 	})
-
-	if !nhpref.PasswordValid {
+	if nhpref.LoggedOn {
+		TPbutton.Disable()
+		TPbutton.Refresh()
+		SSbutton.Disable()
+		SSbutton.Refresh()
+		SEbutton.Enable()
+		SEbutton.Refresh()
+	}
+	if !nhpref.LoggedOn {
 		password.Enable()
 		server.Disable()
 		alias.Disable()
@@ -139,7 +131,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 	return container.NewVBox(
 		widget.NewLabelWithStyle(nhlang.GetLangs("ls-clogon"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		password,
-		tpbutton,
+		TPbutton,
 		alias,
 		server,
 		queue,
@@ -151,7 +143,6 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			widget.NewHyperlink("github.com", nhutil.ParseURL("https://github.com/nh3000-org/snats")),
 		),
 		errors,
-
 		widget.NewLabel(""), // balance the header on the tutorial screen we leave blank on this content
 	)
 }

@@ -16,7 +16,8 @@ var Retro = 2
 
 var Selected = 0
 
-var DarkButton = color.RGBA{162, 168, 250, 64}
+// var DarkButton = color.RGBA{162, 168, 250, 64}
+var DarkButton = color.RGBA{187, 188, 201, 32}
 var DarkHover = color.RGBA{187, 188, 201, 64}
 var DarkPressed = color.RGBA{187, 188, 201, 220}
 var DarkSelection = color.RGBA{187, 188, 201, 128}
@@ -83,6 +84,9 @@ func (m MyTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) colo
 		if name == "disabled" {
 			return DarkDisabled
 		}
+		if name == "disabledButton" {
+			return DarkDisabled
+		}
 		if name == "hyperlink" {
 			return DarkHyperlink
 		}
@@ -135,6 +139,9 @@ func (m MyTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) colo
 			return LightPlaceholder
 		}
 		if name == "disabled" {
+			return LightDisabled
+		}
+		if name == "disabledButton" {
 			return LightDisabled
 		}
 		if name == "hyperlink" {
@@ -193,6 +200,9 @@ func (m MyTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) colo
 			return RetroPlaceholder
 		}
 		if name == "disabled" {
+			return RetroDisabled
+		}
+		if name == "disabledButton" {
 			return RetroDisabled
 		}
 		if name == "hyperlink" {

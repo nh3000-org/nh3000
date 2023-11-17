@@ -49,8 +49,6 @@ var PanesIndex = map[string][]string{}
 
 // app
 func main() {
-	nhpref.Load()
-	nhpref.Save()
 
 	if strings.HasPrefix(os.Getenv("LANG"), "en") {
 		nhpref.PreferedLanguage = "eng"
@@ -58,10 +56,11 @@ func main() {
 	if strings.HasPrefix(os.Getenv("LANG"), "sp") {
 		nhpref.PreferedLanguage = "spa"
 	}
-		if strings.HasPrefix(os.Getenv("LANG"), "hn") {
+	if strings.HasPrefix(os.Getenv("LANG"), "hn") {
 		nhpref.PreferedLanguage = "hin"
 	}
-
+	nhpref.Load()
+	nhpref.Save()
 	// app windows
 	Panes = map[string]Pane{
 		"password":     {nhlang.GetLangs("ps-title"), "", nhpanes.PasswordScreen, true},
