@@ -1,4 +1,5 @@
-# snats
+# NH3000
+
 Create a publically accessible nats server
 
 Setup tls
