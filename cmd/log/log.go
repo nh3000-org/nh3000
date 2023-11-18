@@ -57,42 +57,52 @@ type MessageStore struct {
 var MyLangs = map[string]string{
 	"eng-fl-ll":    "NATS Language to Use eng or esp",
 	"spa-fl-ll":    "Lenguaje NATS Para Usar ENG o ESP",
+	"hin-fl-ll":    "अंग्रेजी या एएसपी या हिन का उपयोग करने के लिए NATS भाषा",
 	"eng-fl-la":    "NATS Logging Alias",
 	"spa-fl-la":    "Alias de Registro de NATS",
+	"hin-fl-la":    "NATS लॉगिंग उपनाम",
 	"eng-fl-lp":    "Log Pattern to Identify",
 	"spa-fl-lp":    "Patrón de Registro Para Identificar",
+	"hin-fl-lp":    "पहचानने के लिए लॉग पैटर्न",
 	"eng-fl-si":    "Server IP or DNS Name",
 	"spa-fl-si":    "Nombre de IP o DNS del Servidor",
-	"eng-fl-us":    "Usage:",
-	"spa-fl-us":    "Uso:",
-	"eng-fl-uh":    "-logpattern will be Logged to the -serverip Using the -logalias",
-	"spa-fl-uh":    "-logPattern se Registrará a -serverip Usando las -logalias",
-	"eng-fl-ro":    "Run Options:",
-	"spa-fl-ro":    "Opciones de Ejecución:",
-	"eng-mn-alias": "Intrusion Detection",
-	"spa-mn-alias": "Detección de Intrusos",
+	"hin-fl-si":    "सर्वर आईपी या डीएनएस नाम",
+	"eng-mn-alias": "Log Capture",
+	"spa-mn-alias": "Captura de registros",
+	"hin-mn-alias": "लॉग कैप्चर",
 	"eng-mn-lc":    "Log Connection",
 	"spa-mn-lc":    "Conexión de Registro",
+	"hin-mn-lc":    "लॉग कनेक्शन",
 	"eng-fm-nhn":   "No Host Name",
 	"spa-fm-nhn":   "Sin Nombre de Host",
+	"hin-fm-nhn":   "कोई होस्ट नाम नहीं",
 	"eng-fm-hn":    "Host Name",
 	"spa-fm-hn":    "Nombre de Host",
+	"hin-fm-hn":    "होस्ट का नाम",
 	"eng-fm-mi":    "Mac Ids",
 	"spa-fm-mi":    "Identificadores de Mac",
+	"hin-fm-mi":    "मैक आईडी",
 	"eng-fm-ad":    "Address",
 	"spa-fm-ad":    "Direccion",
+	"hin-fm-ad":    "पता",
 	"eng-fm-ni":    "Node Id",
 	"spa-fm-ni":    "Identificación del Nodo",
+	"hin-fm-ni":    "नोड आईडी",
 	"eng-fm-msg":   "Message Id",
-	"spa-fm-msg":   "Identificación del mensaje",
+	"spa-fm-msg":   "Identificación del Mensaje",
+	"hin-fm-msg":   "संदेश आईडी",
 	"eng-fm-on":    "On",
 	"spa-fm-on":    "En",
+	"hin-fm-on":    "पर",
 	"eng-fm-fm":    "Format Message",
 	"spa-fm-fm":    "Dar Formato al Mensaje",
+	"hin-fm-fm":    "संदेश प्रारूप",
 	"eng-fm-con":   "Connection ",
 	"spa-fm-con":   "Conexión ",
+	"hin-fm-con":   "संबंध ",
 	"eng-fm-js":    "Jet Stream ",
 	"spa-fm-js":    "Corriente en Chorro ",
+	"hin-fm-js":    "जेट धारा ",
 }
 
 // return translation strings
@@ -159,20 +169,11 @@ func main() {
 	}
 	logLang := flag.String("loglang", MyLogLang, GetLangs("fl-ll"))
 	logAlias := flag.String("logalias", GetLangs("mn-alias"), GetLangs("fl-la"))
+	MyLogAlias = *logAlias
 	logPattern := flag.String("logpattern", "[ERR]", GetLangs("fl-lp"))
 	ServerIP := flag.String("serverip", "nats://127.0.0.1:4222", GetLangs("fl-si"))
 	flag.Parse()
-	fmt.Println(GetLangs("fl-ll"))
-	fmt.Println("tail -f log.file | log -serverip nats://?.?.?.? -logpattern ??? -logalias ????")
-	fmt.Println(GetLangs("fl-uh"))
-	fmt.Println("")
-	fmt.Println(GetLangs("fl-ro"))
-	fmt.Println("-loglang: ", *logLang)
-	MyLogLang = *logLang
-	fmt.Println("-logAlias", *logAlias)
-	MyLogAlias = *logAlias
-	fmt.Println("-serverip", *ServerIP)
-	fmt.Println("-logpattern: ", *logPattern)
+	fmt.Println("tail -f log.file | log ", " -loglang ", *logLang, " -serverip ", *ServerIP, " -logpattern ", *logPattern, " -logalias ", *logAlias)
 
 	r := bufio.NewReader(os.Stdin)
 	buf := make([]byte, 0, 4*1024)
