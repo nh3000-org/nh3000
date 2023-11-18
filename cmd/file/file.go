@@ -31,24 +31,27 @@ var MyFileLang = "eng"
 
 // eng esp cmn
 var MyLangs = map[string]string{
-	"eng-fl-fl":   "Language to Use eng or esp",
-	"spa-fl-fl":   "Idioma a Utilizar eng o esp",
-	"eng-fl-fa":   "ENCRYPT or DECRYPT",
+	"eng-fl-fl":   "Language to Use eng or esp or hin",
+	"spa-fl-fl":   "Idioma a utilizar eng o esp o hin",
+	"hin-fl-fl":   "उपयोग करने के लिए भाषा eng या esp या hin",
+	"hin-fl-fa":   "ENCRYPT or DECRYPT",
 	"spa-fl-fa":   "CIFRAR o DESCIFRAR",
+	"eng-fl-fa":   "एन्क्रिप्ट या डिक्रिप्ट",
 	"eng-fl-if":   "Input File",
 	"spa-fl-if":   "Fichero de Entrada",
+	"hin-fl-if":   "इनपुट फ़ाइल",
 	"eng-fl-of":   "Output File",
-	"spa-fl-of":   "Archivo de salida",
-	"eng-fl-us":   "Usage:",
-	"spa-fl-us":   "Uso:",
-	"eng-fl-ro":   "Run Options:",
-	"spa-fl-ro":   "Opciones de Ejecución:",
+	"spa-fl-of":   "Archivo de Salida",
+	"hin-fl-of":   "आउटपुट फ़ाइल",
 	"eng-fl-err1": "File Does Not Exist",
 	"spa-fl-err1": "El Archivo no Existe",
+	"hin-fl-err1": "फ़ाइल मौजूद नहीं है",
 	"eng-fl-err2": "File Already Exists",
 	"spa-fl-err2": "El Archivo ya Existe",
+	"hin-fl-err2": "फ़ाइल पहले से ही मौजूद है",
 	"eng-fl-err3": "Must be ENCRYPT or DECRYPT",
 	"spa-fl-err3": "Debe ser CIFRADO o DESCIFRADO",
+	"hin-fl-err3": "एन्क्रिप्ट या डिक्रिप्ट होना चाहिए",
 }
 
 // return translation strings
@@ -68,35 +71,30 @@ func main() {
 	if strings.HasPrefix(os.Getenv("LANG"), "sp") {
 		MyFileLang = "spa"
 	}
+
 	fileLang := flag.String("filelang", MyFileLang, GetLangs("fl-fl"))
 	fileAction := flag.String("fileaction", "UNKNOWN", GetLangs("fl-fa"))
+	MyFileLang = *fileLang
 	fileInput := flag.String("fileinput", "UNKNOWN", GetLangs("fl-if"))
 	fileOutput := flag.String("fileoutput", "UNKNOWN", GetLangs("fl-of"))
 
 	flag.Parse()
-	fmt.Println(GetLangs("fl-us"))
-	fmt.Println("file -filelang FILELANG -fileinput FILEINPUT -fileoutput FILEOUTPUT -fileaction FILEACTION")
-	fmt.Println("")
-	fmt.Println(GetLangs("fl-ro"))
-	fmt.Println("-loglang: ", *fileLang)
-	MyFileLang = *fileLang
-	fmt.Println("-fileaction: ", *fileAction)
-	fmt.Println("-fileinput: ", *fileInput)
-	fmt.Println("-fileoutput: ", *fileOutput)
+
+	fmt.Println("file -filelang ", *fileLang, " -fileinput ", *fileInput, " -fileoutput ", *fileOutput, " -fileaction ", *fileAction)
 
 	// edit inputs
 	var errors = false
 	if *fileAction != "ENCRYPT" && *fileAction != "DECRYPT" {
 		errors = true
-		fmt.Println(*fileAction + " - " + GetLangs("fl-err3"))
+		fmt.Println("-fileaction " + " - " + GetLangs("fl-err3"))
 	}
 	if _, err := os.Stat(*fileInput); err != nil {
 		errors = true
-		fmt.Println(*fileInput + " - " + GetLangs("fl-err1"))
+		fmt.Println("-fileinput" + " - " + GetLangs("fl-err1"))
 	}
 	if _, err := os.Stat(*fileOutput); err == nil {
 		errors = true
-		fmt.Println(*fileOutput + " - " + GetLangs("fl-err2"))
+		fmt.Println("-fileoutput" + " - " + GetLangs("fl-err2"))
 	}
 	if errors == false {
 		fmt.Println(*fileAction + " " + *fileInput + " > " + *fileOutput)
