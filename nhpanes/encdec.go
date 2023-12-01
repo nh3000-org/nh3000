@@ -15,8 +15,7 @@ func EncdecScreen(win fyne.Window) fyne.CanvasObject {
 	errors := widget.NewLabel("...")
 
 	password := widget.NewEntry()
-
-	password.SetPlaceHolder(nhlang.GetLangs("es-pass"))
+	password.SetText(nhpref.MySecret)
 
 	myinputtext := widget.NewMultiLineEntry()
 	myinputtext.SetPlaceHolder(nhlang.GetLangs("es-mv"))
@@ -26,8 +25,9 @@ func EncdecScreen(win fyne.Window) fyne.CanvasObject {
 	myoutputtext := widget.NewMultiLineEntry()
 	myoutputtext.SetPlaceHolder(nhlang.GetLangs("es-mo"))
 	myoutputtext.SetMinRowsVisible(6)
-	var iserrors = false
+
 	encbutton := widget.NewButton(nhlang.GetLangs("es-em"), func() {
+		var iserrors = false
 		iserrors = nhpref.Edit("STRING", password.Text)
 		if iserrors {
 			errors.SetText(nhlang.GetLangs("es-err1"))
@@ -58,8 +58,9 @@ func EncdecScreen(win fyne.Window) fyne.CanvasObject {
 	})
 
 	decbutton := widget.NewButton(nhlang.GetLangs("es-dm"), func() {
+		var iserrors = false
 		iserrors = nhpref.Edit("STRING", password.Text)
-		if !iserrors {
+		if iserrors {
 			errors.SetText(nhlang.GetLangs("es-err1"))
 			iserrors = true
 		}
@@ -91,13 +92,10 @@ func EncdecScreen(win fyne.Window) fyne.CanvasObject {
 		encbutton.Disable()
 		decbutton.Disable()
 	}
-	if iserrors == true {
-		//encbutton.Disable()
-		//decbutton.Disable()
-	}
+
 	keybox := container.NewBorder(
+		widget.NewLabelWithStyle(nhlang.GetLangs("es-head0"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		password,
-		nil,
 		nil,
 		nil,
 		nil,

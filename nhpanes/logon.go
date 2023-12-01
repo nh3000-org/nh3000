@@ -128,7 +128,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 		queuepassword.Disable()
 	}
 
-	return container.NewVBox(
+	topbox := container.NewVBox(
 		widget.NewLabelWithStyle(nhlang.GetLangs("ls-clogon"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		password,
 		TPbutton,
@@ -142,7 +142,15 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			widget.NewHyperlink("newhorizons3000.org", nhutil.ParseURL("https://newhorizons3000.org/")),
 			widget.NewHyperlink("github.com", nhutil.ParseURL("https://github.com/nh3000-org/snats")),
 		),
+		widget.NewLabel(""),
 		errors,
-		widget.NewLabel(""), // balance the header on the tutorial screen we leave blank on this content
+	)
+
+	return container.NewBorder(
+		topbox,
+		errors,
+		nil,
+		nil,
+		nil,
 	)
 }

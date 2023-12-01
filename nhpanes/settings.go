@@ -6,7 +6,6 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/nh3000-org/nh3000/nhlang"
 	"github.com/nh3000-org/nh3000/nhpref"
-	"github.com/nh3000-org/nh3000/nhutil"
 )
 
 func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
@@ -59,7 +58,7 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 		}
 	})
 
-	return container.NewCenter(container.NewVBox(
+	topbox := container.NewVBox(
 		widget.NewLabelWithStyle(nhlang.GetLangs("ss-heading"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		lalabel,
 		la,
@@ -74,10 +73,12 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 		mcspeciallabel,
 		mcspecial,
 		ssbutton,
-		container.NewHBox(
-			widget.NewHyperlink("newhorizons3000.org", nhutil.ParseURL("https://newhorizons3000.org/")),
-		),
-		widget.NewLabel(""),
+	)
+	return container.NewBorder(
+		topbox,
 		errors,
-	))
+		nil,
+		nil,
+		nil,
+	)
 }

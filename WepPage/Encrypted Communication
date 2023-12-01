@@ -1,0 +1,27 @@
+ENCRYPTED COMMUNICATIONS
+SEPTEMBER 20, 2022 EDIT
+End-to-End Encryption with Encrypted Data-At-Rest using NATS Cloud Messaging. Data at rest is the definition of your email, texts and other types of information when it is not moving and resting on a hard drive somewhere where you do not have access to the raw data.
+
+Encryption services for use in email, social media, or anything requiring privacy. Uses entered 24 digit password and reads and posts to the clipboard. This method allows the use of encryption with a totally unique password.
+
+This software provides an encryption tool for messaging, log analysis, and large file encryption. To evaluate the usefulness of this software the pre-compiled binaries use our encryption keys and NATS server. Use our server to test, then transition to your own NATS server and encryption keys..
+
+Public infrastructure is compromised. Back doors are real, your data is at risk to prying eyes, even though it says it is secure. Mail servers do not store encrypted mail messages. Only the transport layer IE: https:// is encrypted but your message is stored clear text. If your email provider asks you to create an encryption key set, it means they can decrypt your mail. Providers monetize security and fail to provide data at rest encryption.
+
+Use this transparent software to ensure private communications.
+
+Use our NATS server to evaluate this software, and when your ready implement your own server.
+
+Use a private server for storing and distributing encrypted messages or just encrypt some text for use in email and other applications. The GUI application uses the system clipboard to encrypt/decrypt text as a convenience factor.
+
+GUI FOR NATS MESSAGING
+Use our server for testing and move to your own server. Change the Queue Password to change the default keys for messaging, while anyone can see the message, only users with the password will be able to decrypt them. Once your satisfied with the capabilities, you can create a NATS server which is private to you group and enjoy communications without eves-dropping. The major reason for setting up your private NATS server is to easily deploy a secure TLS and password unique to you. There is a text encrypter built in that uses the clipboard to encrypt/decrypt test for use in email and social media applications.
+
+FILE ENCRYPTION/DECRYPTION
+Encrypt files in place for protecting transfers between locations. This is a CLI program with a very small footprint. The files are encrypted in place and require 2 passes for operations.
+
+LOG ANALYSIS FOR MONITORING
+This utility posts messages to a NATS server by analyzing input (usually a pipe) looking for a pattern and posting it to the server.
+
+TRANSPARENCY
+Open source transparency ensure your data protection from prying eyes.

@@ -114,10 +114,10 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	}
 	return container.NewBorder(
 
+		nil,
 		widget.NewLabelWithStyle(nhlang.GetLangs("ms-err7"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		nil,
 		nil,
 		nil,
-		container.NewHSplit(List, container.NewCenter(DetailsHS)),
 	)
 }

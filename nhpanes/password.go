@@ -103,7 +103,7 @@ func PasswordScreen(_ fyne.Window) fyne.CanvasObject {
 	})
 	if !nhpref.LoggedOn {
 		password.Disable()
-	
+
 		passwordc1.Disable()
 		passwordc2.Disable()
 		cpbutton.Disable()
@@ -123,9 +123,8 @@ func PasswordScreen(_ fyne.Window) fyne.CanvasObject {
 			widget.NewHyperlink("newhorizons3000.org", nhutil.ParseURL("https://newhorizons3000.org/")),
 			widget.NewHyperlink("github.com", nhutil.ParseURL("https://github.com/nh3000-org/snats")),
 		),
+		widget.NewLabel(""),
 		errors,
-
-		widget.NewLabel(""), // balance the header on the tutorial screen we leave blank on this content
 	)
 
 }

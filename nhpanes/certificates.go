@@ -7,7 +7,6 @@ import (
 
 	"github.com/nh3000-org/nh3000/nhlang"
 	"github.com/nh3000-org/nh3000/nhpref"
-	"github.com/nh3000-org/nh3000/nhutil"
 )
 
 func CertificatesScreen(_ fyne.Window) fyne.CanvasObject {
@@ -55,23 +54,27 @@ func CertificatesScreen(_ fyne.Window) fyne.CanvasObject {
 		}
 	})
 
-	return container.NewVBox(
+	topbox := container.NewVBox(
 		widget.NewLabelWithStyle(nhlang.GetLangs("cs-heading"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		calabel,
 		ca,
 		cclabel,
 		cc,
 		cklabel,
-		cklabel,
 		ck,
-
 		ssbutton,
-
-		container.NewHBox(
-			widget.NewHyperlink("newhorizons3000.org", nhutil.ParseURL("https://newhorizons3000.org/")),
-			//widget.NewLabel("_                _"),
-		),
-		errors,
 	)
-
+	if !nhpref.LoggedOn {
+		topbox = container.NewVBox(
+			widget.NewLabelWithStyle(nhlang.GetLangs("cs-heading"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		)
+		errors.SetText(nhlang.GetLangs("cs-lf"))
+	}
+	return container.NewBorder(
+		topbox,
+		errors,
+		nil,
+		nil,
+		nil,
+	)
 }
