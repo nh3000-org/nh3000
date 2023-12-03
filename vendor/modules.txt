@@ -1,4 +1,4 @@
-# fyne.io/fyne/v2 v2.4.0
+# fyne.io/fyne/v2 v2.4.2
 ## explicit; go 1.17
 fyne.io/fyne/v2
 fyne.io/fyne/v2/app
@@ -40,7 +40,7 @@ fyne.io/fyne/v2/storage/repository
 fyne.io/fyne/v2/test
 fyne.io/fyne/v2/theme
 fyne.io/fyne/v2/widget
-# fyne.io/systray v1.10.1-0.20230722100817-88df1e0ffa9a
+# fyne.io/systray v1.10.1-0.20231115130155-104f5ef7839e
 ## explicit; go 1.13
 fyne.io/systray
 fyne.io/systray/internal/generated/menu
@@ -69,8 +69,6 @@ github.com/go-gl/gl/v2.1/gl
 github.com/go-gl/gl/v2.1/gl/KHR
 github.com/go-gl/gl/v3.1/gles2
 github.com/go-gl/gl/v3.1/gles2/KHR
-github.com/go-gl/gl/v3.2-core/gl
-github.com/go-gl/gl/v3.2-core/gl/KHR
 # github.com/go-gl/glfw/v3.3/glfw v0.0.0-20221017161538-93cebf72946b
 ## explicit; go 1.10
 github.com/go-gl/glfw/v3.3/glfw
@@ -154,7 +152,7 @@ github.com/yuin/goldmark/renderer
 github.com/yuin/goldmark/renderer/html
 github.com/yuin/goldmark/text
 github.com/yuin/goldmark/util
-# golang.org/x/crypto v0.13.0
+# golang.org/x/crypto v0.14.0
 ## explicit; go 1.17
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blake2b
@@ -180,16 +178,15 @@ golang.org/x/image/vector
 # golang.org/x/mobile v0.0.0-20230531173138-3c911d8e3eda
 ## explicit; go 1.17
 golang.org/x/mobile/exp/f32
-# golang.org/x/net v0.14.0
+# golang.org/x/net v0.17.0
 ## explicit; go 1.17
 golang.org/x/net/html
 golang.org/x/net/html/atom
 golang.org/x/net/html/charset
-# golang.org/x/sys v0.12.0
+# golang.org/x/sys v0.13.0
 ## explicit; go 1.17
 golang.org/x/sys/cpu
 golang.org/x/sys/execabs
-golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/windows/registry

@@ -1,0 +1,18 @@
+FILE-ENCRYPTION
+Utility to use standalone to encrypt and decrypt files. It is intended to be used to protect information of importance from snooping eyes.
+
+The important thing here is when your data arrives at it target, it is fully encrypted.
+
+The encryption keys are stored in the application. It is important to change the keys in file.go and recompile to deploy. Anyone with the keys will be able to decrypt the file.
+
+Usage
+FILE			
+-filelang	eng	hin will be supported in fyne version 2.5	
+spa		
+hin		
+-fileinput	file to be encrypted		
+-fileoutput	file to encrypt to		
+USE CASE
+Typically, you have a file that needs to be sent to another location using the public infrastructure that needs to be protected.
+
+file -filelang eng -fileinput ./input.txt-fileoutput ./input.txt.bin -fileaction ENCRYPT

@@ -25,3 +25,6 @@ This utility posts messages to a NATS server by analyzing input (usually a pipe)
 
 TRANSPARENCY
 Open source transparency ensure your data protection from prying eyes.
+
+Multi Language Support
+English and Spanish are supported out of the box

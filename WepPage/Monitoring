@@ -1,0 +1,18 @@
+MONITORING
+This is a convenience function to analyze files for abnormalities. Upon detection the program will send a message to the NATS server with the details.
+
+This function reads a 4k buffer from STDIN. We usually use tail -f LOGFILE and pipe it to the log program.
+
+LOG		
+-loglang	eng	hin will be available in fyne 2.5
+spa	
+hin	
+-serverip	nats//127.0.0.1	specify the NATS server to post the event to
+-logpattern	ERR	text to scan for in incoming buffer
+-logalias	name	name to use in post
+USE CASE
+Since most of the worlds server run Linux, our example will concentrate on the Linux command structure.
+
+tailf /opt/nats.log | /opt/log -logpattern ERR -serverip nats://192.168.0.103:4222 -logalias 103nats
+
+This command reads as: send the latest content of the nats.log file to the nats server using 103nats as the alias when the input buffer matches the text ERR
