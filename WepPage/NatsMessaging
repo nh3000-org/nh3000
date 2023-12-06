@@ -1,0 +1,20 @@
+
+NATS-Messaging
+Messaging is the GUI for Desktops and Mobile applications for communicating with the NATS server.
+
+For testing purposes, a server has been provisioned.  The testing parameters are provided in the binaries.  Data on the server is erased daily.  To gain true privacy, a NATS server should be setup to handle traffic from trusted sources.
+
+Please see the SERVERSETUPPAGE for details on how to setup a private server, even on a consumer network as provided by most ISP's.
+
+The screenshot provided are for the desktop application but apply for all platforms.
+
+The features of the software are explained below:
+
+Logon (Try Password)
+The password is used to decrypt the configuration file stored on the device.
+
+Logon (Logon)
+Logon stuff
+
+Logon (Security Erase)
+Logon erase
