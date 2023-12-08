@@ -1,0 +1,26 @@
+
+Server
+Instructions for setting up the NATS server.  There are multiple steps involved to correctly setup a server with a self sighed certificate for TLS communications.  Not only is the wire encrypted, the payload is also encrypted.  This is called end-to-end encryption. 
+
+The short story is that you can place the server anywhere and be confident that NO ONE can inspect the hard drive to read your messages.  Big providers do not want your data encrypted,  it is impossible for them to harvest your data for advertising or nefarious purposes. 
+
+This software even provides necessary encryption/decryption for use with Gmail, FaceBook, Twitter, etc.....
+
+Here is the cliff notes version of NATS server setup:
+
+Locate your servers home. Could be anywhere where you have SSH access to the hardware
+2. Install Linux of you choice.
+
+3. Install NATS Server using these instructions
+4. Create TLS Certificate and Client Certificates using Cloudfare Tool
+5. Config server to use the certificates.
+
+6. Automate starting of server on boot
+
+7. Copy certificate data info your nhpref.go in your repository and possibly log.go and file.go. which can have separate encryption keys.
+
+8. Compile GUI for platforms to deploy to such as Linux, Android, MAC.
+
+9.  Deploy this apps to the target audience whether it be by USB drive or side-loading for Android. MAC.
+
+I know it a lot to digest, but it is worth it to keep your communications safe from harvesting.
