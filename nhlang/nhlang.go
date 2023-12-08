@@ -101,7 +101,7 @@ var MyLangs = map[string]string{
 	"eng-ss-sserr1":      "Logon First",
 	"spa-ss-sserr1":      "Iniciar Sesión Primero",
 	"hin-ss-sserr1":      "लॉगऑन प्रथम",
-	"eng-ss-la":          "Prefered Language",
+	"eng-ss-la":          "Preferred Language",
 	"spa-ss-la":          "Idioma Preferido",
 	"hin-ss-la":          "पसंदीदा भाषा",
 	"eng-ss-pl":          "Minimum Password Length",

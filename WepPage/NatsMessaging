@@ -6,15 +6,106 @@ For testing purposes, a server has been provisioned.  The testing parameters are
 
 Please see the SERVERSETUPPAGE for details on how to setup a private server, even on a consumer network as provided by most ISP's.
 
-The screenshot provided are for the desktop application but apply for all platforms.
+The screenshots provided are for the desktop application but apply for all platforms.
 
 The features of the software are explained below:
 
 Logon (Try Password)
-The password is used to decrypt the configuration file stored on the device.
+The password is used to decrypt the configuration file stored on the device.  The password is hashed and can be changed by using "Password Reset".  To provide maximum protection from prying eyes at the device level, the configuration options are encrypted within the config.json data store.
+
+This image has an empty alt attribute; its file name is 1.png
+>>> Enter Password then press "Try Password" 
+
+  If the password is correct previously stored parameters are loaded and available for modification.
 
 Logon (Logon)
-Logon stuff
+Parameters crucial to successful operations are presented cor change and saved once "Logon" is pressed.
+
+This image has an empty alt attribute; its file name is 2.png
+They are:
+
+Alias - Name used to identify the source of message (beta3 in this case)
+
+ URL - Address of the NATS server.  This can be a local or public sever and can use an IP Address or DNS name. (nats://nats.newhorizons3000.org:4222 in this case)
+
+Queue - NATS queue name to post messages to.  This can be a queue that everyone uses or a private queue for more specialized messaging.
+
+Queue Password - 24 character password that is used to encrypt/decrypt the payload.  Change this to truly privatize messaging between certain users.
+
+>>>Change Setting then Press LOGON
+The settings are loaded and the thread for NATS messaging is started using the settings provided.
 
 Logon (Security Erase)
-Logon erase
+This is a convenience function to completely erase and rebuild the NATS server and JETSTREAM functions on the server using the GUI.  There is no turning back, once this function is called ALL messages on the NATS server are removed (DELETED).
+
+This image has an empty alt attribute; its file name is 3.png
+>>> Security Erase - Erase all NATS data
+
+Password Reset
+Change this password from the default "123456" to your choice,  This password is used to open and allow encrypt/decrypt funtions on  the config.json data store located on each device the GUI is stored on.
+
+This image has an empty alt attribute; its file name is 4.png
+Enter original Password - Provide the original password
+
+>>> Try Password - To unlock the change functions
+
+Enter New Password - Put your new password here according the the rules setup in SETTINGS
+
+Enter New Password Again
+>>>Change Password - Resets the password used to unlock the config.json file
+
+Settings
+Settings allow the override of base language from OS language to another.  Language settings current allow ENG and SPA with HIN on the way.
+
+This image has an empty alt attribute; its file name is 5.png
+Preferred Language - Overrides OS Default Laqnguage
+
+Message Max Age In Hours - Used during security erase to setup NATS server.
+
+Minimum Password Length - For Password Reset
+
+Password Must Contain Letter - For Password Reset
+
+Password Must Contain Number - For Password Reset
+
+Password Must Contain Special - For Password Reset
+
+>>>Change Settings - Save Changes
+
+Certificates
+Provide easy method for updating certificate in GUI
+
+This image has an empty alt attribute; its file name is 6.png
+CAROOT Certificate - Provides a self-signed certificate root for client verification
+
+Client Certificate - Client certificate signed by CAROOT
+
+Client Key - Client key for validation
+
+>>>Save Certificates - Update the config.json, Need to restart after certificate update
+
+Messages
+All Messages to/from NATS server are decoded here.
+
+This image has an empty alt attribute; its file name is 7.png
+Enter Message For Encryption - Text to be posted
+
+>>>Send - Send the message to the NATS server
+
+Omit Connected.Disconnected - Filter
+
+Copy to Clipboard - Copy the decoded message to the clipboard.
+
+Enc/Dec
+A convienience function to encrypt/decrypt text for use in email, social media or other applications.
+
+This image has an empty alt attribute; its file name is 8.png
+24 Character Password - Default is system, but you may override this to suit your needs.
+
+Input - The text to work with
+
+>>>Decrypt - Execute decrypt operation using given password
+
+>>>Encrypt - Execute encrypt using the given password
+
+Output - Completed operation
