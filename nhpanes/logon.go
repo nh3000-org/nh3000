@@ -43,6 +43,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 	TPbutton := widget.NewButton(nhlang.GetLangs("ls-trypass"), func() {
 		errors.SetText("...")
 		var iserrors = false
+		ph, _ := nhhash.LoadWithDefault("config.hash", "123456")
 		nhpref.Password = password.Text
 		pwh, err := bcrypt.GenerateFromPassword([]byte(nhpref.Password), bcrypt.DefaultCost)
 		nhpref.Passwordhash = string(pwh)
@@ -50,7 +51,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			iserrors = true
 			errors.SetText(nhlang.GetLangs("ls-err1"))
 		}
-		ph, _ := nhhash.LoadWithDefault("config.hash", "123456")
+
 		// Comparing the password with the hash
 		errpw := bcrypt.CompareHashAndPassword([]byte(ph), []byte(nhpref.Password))
 		if errpw != nil {

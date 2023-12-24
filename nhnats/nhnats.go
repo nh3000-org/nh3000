@@ -15,6 +15,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
+	"github.com/nh3000-org/nh3000/nhauth"
 	"github.com/nh3000-org/nh3000/nhcrypt"
 	"github.com/nh3000-org/nh3000/nhlang"
 
@@ -76,11 +77,12 @@ func Send(m string) bool {
 	EncMessage.MSdate = "\n" + nhlang.GetLangs("ms-on") + time.Now().Format(time.UnixDate)
 	EncMessage.MSmessage = m
 	jsonmsg, jsonerr := json.Marshal(EncMessage)
+	log.Println("FormatMessage Content", EncMessage.MSmessage)
 	if jsonerr != nil {
 		log.Println("FormatMessage ", jsonerr)
 	}
 	ejson, _ := nhcrypt.Encrypt(string(jsonmsg), nhpref.Queuepassword)
-	clientcert, err := tls.X509KeyPair([]byte(nhpref.Clientcert), []byte(nhpref.Clientkey))
+	clientcert, err := tls.X509KeyPair([]byte(nhauth.Clientcert), []byte(nhauth.Clientkey))
 	if err != nil {
 		log.Println("nhnats.go clientcert " + err.Error())
 	}
@@ -88,23 +90,27 @@ func Send(m string) bool {
 	if rootCAs == nil {
 		rootCAs = x509.NewCertPool()
 	}
-	ok := rootCAs.AppendCertsFromPEM([]byte(nhpref.Caroot))
+	ok := rootCAs.AppendCertsFromPEM([]byte(nhauth.Caroot))
 	if !ok {
 		log.Println("nhnats.go rootCAs")
 	}
 	tlsConfig := &tls.Config{
-		RootCAs:      rootCAs,
-		Certificates: []tls.Certificate{clientcert},
+		RootCAs:            rootCAs,
+		Certificates:       []tls.Certificate{clientcert},
+		ServerName:         "nats.newhorizons3000.org",
+		MinVersion:         tls.VersionTLS12,
+		InsecureSkipVerify: true,
 	}
+
 	var errflag = false
-	nc, err := nats.Connect(nhpref.Server, nats.Secure(tlsConfig))
+	nc, err := nats.Connect(nhpref.Server, nats.UserInfo(nhauth.User, nhauth.UserPassword), nats.Secure(tlsConfig))
 	if err != nil {
-		fmt.Println(nhlang.GetLangs("ls-err7") + err.Error())
+		fmt.Println("Send " + nhlang.GetLangs("ls-err7") + err.Error())
 		errflag = true
 	}
 	js, err := nc.JetStream()
 	if err != nil {
-		fmt.Println(nhlang.GetLangs("ls-err7") + err.Error())
+		fmt.Println("Send " + nhlang.GetLangs("ls-err7") + err.Error())
 		errflag = true
 	}
 	if errflag == false {
@@ -126,7 +132,7 @@ func Receive() {
 			return
 		default:
 			//clientcert, err := tls.LoadX509KeyPair(nhpref.DataStore("cert.pem").Path(), nhpref.DataStore("key.pem").Path())
-			clientcert, err := tls.X509KeyPair([]byte(nhpref.Clientcert), []byte(nhpref.Clientkey))
+			clientcert, err := tls.X509KeyPair([]byte(nhauth.Clientcert), []byte(nhauth.Clientkey))
 			if err != nil {
 				log.Println("nhnats.go clientcert " + err.Error())
 			}
@@ -134,20 +140,26 @@ func Receive() {
 			if rootCAs == nil {
 				rootCAs = x509.NewCertPool()
 			}
-			ok := rootCAs.AppendCertsFromPEM([]byte(nhpref.Caroot))
+			ok := rootCAs.AppendCertsFromPEM([]byte(nhauth.Caroot))
 			if !ok {
 				log.Println("nhnats.go rootCAs")
 			}
 			NatsMessages = nil
 			tlsConfig := &tls.Config{
-				RootCAs:      rootCAs,
-				Certificates: []tls.Certificate{clientcert},
+				RootCAs:            rootCAs,
+				Certificates:       []tls.Certificate{clientcert},
+				ServerName:         "nats.newhorizons3000.org",
+				MinVersion:         tls.VersionTLS12,
+				InsecureSkipVerify: true,
 			}
-			nc, err := nats.Connect(nhpref.Server, nats.Secure(tlsConfig))
+			nc, err := nats.Connect(nhpref.Server, nats.UserInfo(nhauth.User, nhauth.UserPassword), nats.Secure(tlsConfig))
 			if err != nil {
 				log.Println(nhlang.GetLangs("ms-err2"))
 			}
-			js, _ := nc.JetStream()
+			js, err := nc.JetStream()
+			if err != nil {
+				log.Println("add stream ", err)
+			}
 			js.AddStream(&nats.StreamConfig{
 				Name: nhpref.Queue + nhpref.NodeUUID,
 
@@ -213,7 +225,7 @@ func handleMessage(m *nats.Msg) string {
 func Erase() {
 	log.Println(nhlang.GetLangs("ms-era"))
 	//msgmaxage, _ := time.ParseDuration("148h")
-	clientcert, err := tls.X509KeyPair([]byte(nhpref.Clientcert), []byte(nhpref.Clientkey))
+	clientcert, err := tls.X509KeyPair([]byte(nhauth.Clientcert), []byte(nhauth.Clientkey))
 	if err != nil {
 		log.Println("nhnats.go clientcert " + err.Error())
 	}
@@ -221,17 +233,19 @@ func Erase() {
 	if rootCAs == nil {
 		rootCAs = x509.NewCertPool()
 	}
-	ok := rootCAs.AppendCertsFromPEM([]byte(nhpref.Caroot))
+	ok := rootCAs.AppendCertsFromPEM([]byte(nhauth.Caroot))
 	if !ok {
 		log.Println("nhnats.go rootCAs")
 	}
 	tlsConfig := &tls.Config{
-		RootCAs:      rootCAs,
-		Certificates: []tls.Certificate{clientcert},
-		//ClientAuth:   tls.RequireAndVerifyClientCert,
+		RootCAs:            rootCAs,
+		Certificates:       []tls.Certificate{clientcert},
+		ServerName:         "nats.newhorizons3000.org",
+		MinVersion:         tls.VersionTLS12,
+		InsecureSkipVerify: true,
 	}
 	msgmaxage, _ := time.ParseDuration(nhpref.Msgmaxage)
-	nc, err := nats.Connect(nhpref.Server, nats.Secure(tlsConfig))
+	nc, err := nats.Connect(nhpref.Server, nats.UserInfo(nhauth.User, nhauth.UserPassword), nats.Secure(tlsConfig))
 	if err != nil {
 		log.Println(nhlang.GetLangs("ms-erac"), err.Error())
 	}
@@ -251,7 +265,7 @@ func Erase() {
 		MaxAge:   msgmaxage,
 	})
 	if err1 != nil {
-		log.Println(nhlang.GetLangs("ms-adds"), err1)
+		log.Println("nhnats addstream ", nhlang.GetLangs("ms-adds"), err1)
 	}
 	fmt.Printf("js1: %v\n", js1)
 

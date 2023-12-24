@@ -14,8 +14,8 @@ import (
 
 // create and load hash
 func LoadWithDefault(filename string, password string) (string, bool) {
-	_, lwderr := storage.Exists(nhpref.DataStore(filename))
-	if lwderr != nil {
+	nhexists, _ := storage.Exists(nhpref.DataStore(filename))
+	if !nhexists {
 		log.Println("err ")
 		pwh, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		if err != nil {

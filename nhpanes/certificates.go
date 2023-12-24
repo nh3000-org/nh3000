@@ -5,6 +5,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 
+	"github.com/nh3000-org/nh3000/nhauth"
 	"github.com/nh3000-org/nh3000/nhlang"
 	"github.com/nh3000-org/nh3000/nhpref"
 )
@@ -16,15 +17,15 @@ func CertificatesScreen(_ fyne.Window) fyne.CanvasObject {
 	calabel := widget.NewLabel(nhlang.GetLangs("cs-ca"))
 	ca := widget.NewMultiLineEntry()
 	ca.Resize(fyne.NewSize(320, 240))
-	ca.SetText(nhpref.Caroot)
+	ca.SetText(nhauth.Caroot)
 
 	cclabel := widget.NewLabel(nhlang.GetLangs("cs-cc"))
 	cc := widget.NewMultiLineEntry()
-	cc.SetText(nhpref.Clientcert)
+	cc.SetText(nhauth.Clientcert)
 
 	cklabel := widget.NewLabel(nhlang.GetLangs("cs-ck"))
 	ck := widget.NewMultiLineEntry()
-	ck.SetText(nhpref.Clientkey)
+	ck.SetText(nhauth.Clientkey)
 
 	ssbutton := widget.NewButton(nhlang.GetLangs("cs-ss"), func() {
 		errors.SetText("...")
