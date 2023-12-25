@@ -48,7 +48,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 		},
 		func(id widget.ListItemID, item fyne.CanvasObject) {
 			var short = nhnats.NatsMessages[id].MSmessage
-			if len(nhnats.NatsMessages[id].MSmessage) > 12 {
+			if len(nhnats.NatsMessages[id].MSmessage) > 20 {
 				var short1 = strings.ReplaceAll(nhnats.NatsMessages[id].MSmessage, "\n", ".")
 				short = short1[0:12]
 			}

@@ -106,7 +106,6 @@ func Send(m string) bool {
 	EncMessage.MSdate = "\n" + nhlang.GetLangs("ms-on") + time.Now().Format(time.UnixDate)
 	EncMessage.MSmessage = m
 	jsonmsg, jsonerr := json.Marshal(EncMessage)
-	log.Println("FormatMessage Content", EncMessage.MSmessage)
 	if jsonerr != nil {
 		log.Println("FormatMessage ", jsonerr)
 	}
@@ -131,44 +130,46 @@ func Send(m string) bool {
 // thread for receiving messages
 func Receive() {
 	docerts()
-	nc, err := nats.Connect(nhpref.Server, nats.UserInfo(nhauth.User, nhauth.UserPassword), nats.Secure(&TLS))
-	if err != nil {
-		log.Println("Receive ", nhlang.GetLangs("ms-err2"))
-	}
-	js, err := nc.JetStream()
-	if err != nil {
-		log.Println("Receive JetStream ", err)
-	}
-	js.AddStream(&nats.StreamConfig{
-		Name: nhpref.Queue + nhpref.NodeUUID,
 
-		Subjects: []string{strings.ToLower(nhpref.Queue) + ".>"},
-	})
-	var duration time.Duration = 604800000000
-	_, err1 := js.AddConsumer(nhpref.Queue, &nats.ConsumerConfig{
-		Durable:           nhpref.NodeUUID,
-		AckPolicy:         nats.AckExplicitPolicy,
-		InactiveThreshold: duration,
-		DeliverPolicy:     nats.DeliverAllPolicy,
-		ReplayPolicy:      nats.ReplayInstantPolicy,
-	})
-	if err1 != nil {
-		log.Println("Receive AddConsumer ", nhlang.GetLangs("ms-err3")+err1.Error())
-	}
-	sub, errsub := js.PullSubscribe("", "", nats.BindStream(nhpref.Queue))
-	if errsub != nil {
-		log.Println("Receive Pull Subscribe ", nhlang.GetLangs("ms-err4")+errsub.Error())
-	}
 	nhpref.ReceivingMessages = true
 	for {
 		select {
 		case <-QuitReceive:
 			return
 		default:
-
 			NatsMessages = nil
+			nc, err := nats.Connect(nhpref.Server, nats.UserInfo(nhauth.User, nhauth.UserPassword), nats.Secure(&TLS))
+			if err != nil {
+				log.Println("Receive ", nhlang.GetLangs("ms-err2"))
+			}
+			js, err := nc.JetStream()
+			if err != nil {
+				log.Println("Receive JetStream ", err)
+			}
+			js.AddStream(&nats.StreamConfig{
+				Name: nhpref.Queue + nhpref.NodeUUID,
 
-			msgs, _ := sub.Fetch(100)
+				Subjects: []string{strings.ToLower(nhpref.Queue) + ".>"},
+			})
+			var duration time.Duration = 604800000000
+			_, err1 := js.AddConsumer(nhpref.Queue, &nats.ConsumerConfig{
+				Durable:           nhpref.NodeUUID,
+				AckPolicy:         nats.AckExplicitPolicy,
+				InactiveThreshold: duration,
+				DeliverPolicy:     nats.DeliverAllPolicy,
+				ReplayPolicy:      nats.ReplayInstantPolicy,
+			})
+			if err1 != nil {
+				log.Println("Receive AddConsumer ", nhlang.GetLangs("ms-err3")+err1.Error())
+			}
+			sub, errsub := js.PullSubscribe("", "", nats.BindStream(nhpref.Queue))
+			if errsub != nil {
+				log.Println("Receive Pull Subscribe ", nhlang.GetLangs("ms-err4")+errsub.Error())
+			}
+			msgs, err := sub.Fetch(100)
+			if err != nil {
+				log.Println("Receive fetch  ", err)
+			}
 			nhpref.ClearMessageDetail = true
 			if len(msgs) > 0 {
 				for i := 0; i < len(msgs); i++ {
