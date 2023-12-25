@@ -37,9 +37,38 @@ type MessageStore struct {
 var NatsMessages []MessageStore
 var MyAckMap = make(map[string]bool)
 var QuitReceive = make(chan bool)
+var TLS tls.Config
+
+func docerts() {
+	var done = false
+	if !done {
+		RootCAs, _ := x509.SystemCertPool()
+		if RootCAs == nil {
+			RootCAs = x509.NewCertPool()
+		}
+		ok := RootCAs.AppendCertsFromPEM([]byte(nhauth.Caroot))
+		if !ok {
+			log.Println("nhnats.go init rootCAs")
+		}
+		Clientcert, err := tls.X509KeyPair([]byte(nhauth.Clientcert), []byte(nhauth.Clientkey))
+		if err != nil {
+			log.Println("nhnats.go init Clientcert " + err.Error())
+		}
+		TLSConfig := &tls.Config{
+			RootCAs:            RootCAs,
+			Certificates:       []tls.Certificate{Clientcert},
+			ServerName:         "nats.newhorizons3000.org",
+			MinVersion:         tls.VersionTLS12,
+			InsecureSkipVerify: true,
+		}
+		TLS = *TLSConfig.Clone()
+		done = true
+	}
+}
 
 // send message to nats
 func Send(m string) bool {
+	docerts()
 	EncMessage := MessageStore{}
 	name, err := os.Hostname()
 	if err != nil {
@@ -82,113 +111,69 @@ func Send(m string) bool {
 		log.Println("FormatMessage ", jsonerr)
 	}
 	ejson, _ := nhcrypt.Encrypt(string(jsonmsg), nhpref.Queuepassword)
-	clientcert, err := tls.X509KeyPair([]byte(nhauth.Clientcert), []byte(nhauth.Clientkey))
+	NC, err := nats.Connect(nhpref.Server, nats.UserInfo(nhauth.User, nhauth.UserPassword), nats.Secure(&TLS))
 	if err != nil {
-		log.Println("nhnats.go clientcert " + err.Error())
+		fmt.Println("Send " + nhlang.GetLangs("ls-err7") + err.Error())
 	}
-	rootCAs, _ := x509.SystemCertPool()
-	if rootCAs == nil {
-		rootCAs = x509.NewCertPool()
+	JS, err := NC.JetStream()
+	if err != nil {
+		fmt.Println("Send " + nhlang.GetLangs("ls-err7") + err.Error() + <-JS.StreamNames())
 	}
-	ok := rootCAs.AppendCertsFromPEM([]byte(nhauth.Caroot))
-	if !ok {
-		log.Println("nhnats.go rootCAs")
+	_, errp := JS.Publish(strings.ToLower(nhpref.Queue)+"."+nhpref.NodeUUID, []byte(ejson))
+	if errp != nil {
+		return true
 	}
-	tlsConfig := &tls.Config{
-		RootCAs:            rootCAs,
-		Certificates:       []tls.Certificate{clientcert},
-		ServerName:         "nats.newhorizons3000.org",
-		MinVersion:         tls.VersionTLS12,
-		InsecureSkipVerify: true,
-	}
+	NC.Drain()
 
-	var errflag = false
-	nc, err := nats.Connect(nhpref.Server, nats.UserInfo(nhauth.User, nhauth.UserPassword), nats.Secure(tlsConfig))
-	if err != nil {
-		fmt.Println("Send " + nhlang.GetLangs("ls-err7") + err.Error())
-		errflag = true
-	}
-	js, err := nc.JetStream()
-	if err != nil {
-		fmt.Println("Send " + nhlang.GetLangs("ls-err7") + err.Error())
-		errflag = true
-	}
-	if errflag == false {
-		_, errp := js.Publish(strings.ToLower(nhpref.Queue)+"."+nhpref.NodeUUID, []byte(ejson))
-		if errp != nil {
-			errflag = true
-		}
-	}
-	nc.Close()
-	return errflag
+	return false
 }
 
 // thread for receiving messages
 func Receive() {
+	docerts()
+	nc, err := nats.Connect(nhpref.Server, nats.UserInfo(nhauth.User, nhauth.UserPassword), nats.Secure(&TLS))
+	if err != nil {
+		log.Println("Receive ", nhlang.GetLangs("ms-err2"))
+	}
+	js, err := nc.JetStream()
+	if err != nil {
+		log.Println("Receive JetStream ", err)
+	}
+	js.AddStream(&nats.StreamConfig{
+		Name: nhpref.Queue + nhpref.NodeUUID,
+
+		Subjects: []string{strings.ToLower(nhpref.Queue) + ".>"},
+	})
+	var duration time.Duration = 604800000000
+	_, err1 := js.AddConsumer(nhpref.Queue, &nats.ConsumerConfig{
+		Durable:           nhpref.NodeUUID,
+		AckPolicy:         nats.AckExplicitPolicy,
+		InactiveThreshold: duration,
+		DeliverPolicy:     nats.DeliverAllPolicy,
+		ReplayPolicy:      nats.ReplayInstantPolicy,
+	})
+	if err1 != nil {
+		log.Println("Receive AddConsumer ", nhlang.GetLangs("ms-err3")+err1.Error())
+	}
+	sub, errsub := js.PullSubscribe("", "", nats.BindStream(nhpref.Queue))
+	if errsub != nil {
+		log.Println("Receive Pull Subscribe ", nhlang.GetLangs("ms-err4")+errsub.Error())
+	}
 	nhpref.ReceivingMessages = true
 	for {
 		select {
 		case <-QuitReceive:
 			return
 		default:
-			//clientcert, err := tls.LoadX509KeyPair(nhpref.DataStore("cert.pem").Path(), nhpref.DataStore("key.pem").Path())
-			clientcert, err := tls.X509KeyPair([]byte(nhauth.Clientcert), []byte(nhauth.Clientkey))
-			if err != nil {
-				log.Println("nhnats.go clientcert " + err.Error())
-			}
-			rootCAs, _ := x509.SystemCertPool()
-			if rootCAs == nil {
-				rootCAs = x509.NewCertPool()
-			}
-			ok := rootCAs.AppendCertsFromPEM([]byte(nhauth.Caroot))
-			if !ok {
-				log.Println("nhnats.go rootCAs")
-			}
-			NatsMessages = nil
-			tlsConfig := &tls.Config{
-				RootCAs:            rootCAs,
-				Certificates:       []tls.Certificate{clientcert},
-				ServerName:         "nats.newhorizons3000.org",
-				MinVersion:         tls.VersionTLS12,
-				InsecureSkipVerify: true,
-			}
-			nc, err := nats.Connect(nhpref.Server, nats.UserInfo(nhauth.User, nhauth.UserPassword), nats.Secure(tlsConfig))
-			if err != nil {
-				log.Println(nhlang.GetLangs("ms-err2"))
-			}
-			js, err := nc.JetStream()
-			if err != nil {
-				log.Println("add stream ", err)
-			}
-			js.AddStream(&nats.StreamConfig{
-				Name: nhpref.Queue + nhpref.NodeUUID,
 
-				Subjects: []string{strings.ToLower(nhpref.Queue) + ".>"},
-			})
-			var duration time.Duration = 604800000000
-			_, err1 := js.AddConsumer(nhpref.Queue, &nats.ConsumerConfig{
-				Durable:           nhpref.NodeUUID,
-				AckPolicy:         nats.AckExplicitPolicy,
-				InactiveThreshold: duration,
-				DeliverPolicy:     nats.DeliverAllPolicy,
-				ReplayPolicy:      nats.ReplayInstantPolicy,
-			})
-			if err1 != nil {
-				log.Println(nhlang.GetLangs("ms-err3") + err1.Error())
-			}
-			sub, errsub := js.PullSubscribe("", "", nats.BindStream(nhpref.Queue))
-			if errsub != nil {
-				log.Println(nhlang.GetLangs("ms-err4") + errsub.Error())
-			}
+			NatsMessages = nil
+
 			msgs, _ := sub.Fetch(100)
 			nhpref.ClearMessageDetail = true
 			if len(msgs) > 0 {
 				for i := 0; i < len(msgs); i++ {
-
 					handleMessage(msgs[i])
-
 					msgs[i].Nak()
-
 				}
 			}
 			if nhutil.GetMessageWin() != nil {
@@ -223,61 +208,39 @@ func handleMessage(m *nats.Msg) string {
 
 // security erase jetstream data
 func Erase() {
+	docerts()
 	log.Println(nhlang.GetLangs("ms-era"))
-	//msgmaxage, _ := time.ParseDuration("148h")
-	clientcert, err := tls.X509KeyPair([]byte(nhauth.Clientcert), []byte(nhauth.Clientkey))
+
+	nc, err := nats.Connect(nhpref.Server, nats.UserInfo(nhauth.User, nhauth.UserPassword), nats.Secure(&TLS))
 	if err != nil {
-		log.Println("nhnats.go clientcert " + err.Error())
-	}
-	rootCAs, _ := x509.SystemCertPool()
-	if rootCAs == nil {
-		rootCAs = x509.NewCertPool()
-	}
-	ok := rootCAs.AppendCertsFromPEM([]byte(nhauth.Caroot))
-	if !ok {
-		log.Println("nhnats.go rootCAs")
-	}
-	tlsConfig := &tls.Config{
-		RootCAs:            rootCAs,
-		Certificates:       []tls.Certificate{clientcert},
-		ServerName:         "nats.newhorizons3000.org",
-		MinVersion:         tls.VersionTLS12,
-		InsecureSkipVerify: true,
-	}
-	msgmaxage, _ := time.ParseDuration(nhpref.Msgmaxage)
-	nc, err := nats.Connect(nhpref.Server, nats.UserInfo(nhauth.User, nhauth.UserPassword), nats.Secure(tlsConfig))
-	if err != nil {
-		log.Println(nhlang.GetLangs("ms-erac"), err.Error())
+		log.Println("Erase Connect", nhlang.GetLangs("ms-erac"), err.Error())
 	}
 	js, err := nc.JetStream()
 	if err != nil {
-		log.Println(nhlang.GetLangs("ms-eraj"), err)
+		log.Println("Erase Jetstream Make ", nhlang.GetLangs("ms-eraj"), err)
 	}
+
 	NatsMessages = nil
-	err1 := js.DeleteStream(nhpref.Queue)
-	if err != nil {
-		log.Println(nhlang.GetLangs("ms-dels"), err1)
+	err1 := js.PurgeStream(nhpref.Queue)
+	if err1 != nil {
+		log.Println("Erase Jetstream Purge", nhlang.GetLangs("ms-dels"), err1)
 	}
-	js1, err1 := js.AddStream(&nats.StreamConfig{
+	err2 := js.DeleteStream(nhpref.Queue)
+	if err2 != nil {
+		log.Println("Erase Jetstream Delete", nhlang.GetLangs("ms-dels"), err1)
+	}
+	msgmaxage, _ := time.ParseDuration(nhpref.Msgmaxage)
+	js1, err3 := js.AddStream(&nats.StreamConfig{
 		Name:     nhpref.Queue,
 		Subjects: []string{strings.ToLower(nhpref.Queue) + ".>"},
 		Storage:  nats.FileStorage,
 		MaxAge:   msgmaxage,
 	})
-	if err1 != nil {
-		log.Println("nhnats addstream ", nhlang.GetLangs("ms-adds"), err1)
+	if err3 != nil {
+		log.Println("Erase Addstream ", nhlang.GetLangs("ms-adds"), err3)
 	}
 	fmt.Printf("js1: %v\n", js1)
 
-	ac, err1 := js.AddConsumer(nhpref.Queue, &nats.ConsumerConfig{
-		Durable:       nhpref.MyDurable,
-		AckPolicy:     nats.AckExplicitPolicy,
-		DeliverPolicy: nats.DeliverAllPolicy,
-		ReplayPolicy:  nats.ReplayInstantPolicy,
-	})
-	if err1 != nil {
-		log.Println(nhlang.GetLangs("ms-addc"), err1, " ", ac)
-	}
 	Send(nhlang.GetLangs("ms-sece"))
 	nc.Close()
 }
