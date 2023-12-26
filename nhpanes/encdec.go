@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+	"github.com/nh3000-org/nh3000/nhauth"
 	"github.com/nh3000-org/nh3000/nhcrypt"
 	"github.com/nh3000-org/nh3000/nhlang"
 	"github.com/nh3000-org/nh3000/nhpref"
@@ -15,7 +16,7 @@ func EncdecScreen(win fyne.Window) fyne.CanvasObject {
 	errors := widget.NewLabel("...")
 
 	password := widget.NewEntry()
-	password.SetText(nhpref.MySecret)
+	password.SetText(nhauth.MySecret)
 
 	myinputtext := widget.NewMultiLineEntry()
 	myinputtext.SetPlaceHolder(nhlang.GetLangs("es-mv"))

@@ -1,3 +1,5 @@
+// this screen is disabled in the interfaces by default
+// the Default security options nhauth.go will be used
 package nhpanes
 
 import (

@@ -63,24 +63,24 @@ func main() {
 	nhpref.Save()
 	// app windows
 	Panes = map[string]Pane{
-		"password":     {nhlang.GetLangs("ps-title"), "", nhpanes.PasswordScreen, true},
-		"settings":     {nhlang.GetLangs("ss-title"), "", nhpanes.SettingsScreen, true},
-		"certificates": {nhlang.GetLangs("cs-title"), "", nhpanes.CertificatesScreen, true},
-		"logon":        {nhlang.GetLangs("ls-title"), "", nhpanes.LogonScreen, true},
-		"messages":     {nhlang.GetLangs("ms-title"), "", nhpanes.MessagesScreen, true},
-		"encdec":       {nhlang.GetLangs("es-title"), "", nhpanes.EncdecScreen, true},
+		"password": {nhlang.GetLangs("ps-title"), "", nhpanes.PasswordScreen, true},
+		"settings": {nhlang.GetLangs("ss-title"), "", nhpanes.SettingsScreen, true},
+		//"certificates": {nhlang.GetLangs("cs-title"), "", nhpanes.CertificatesScreen, true},
+		"logon":    {nhlang.GetLangs("ls-title"), "", nhpanes.LogonScreen, true},
+		"messages": {nhlang.GetLangs("ms-title"), "", nhpanes.MessagesScreen, true},
+		"encdec":   {nhlang.GetLangs("es-title"), "", nhpanes.EncdecScreen, true},
 	}
 
 	// PanesIndex  defines how our panes should be laid out in the index tree
 	PanesIndex = map[string][]string{
-		"": {"password", "logon", "settings", "certificates", "messages", "encdec"},
+		//"": {"password", "logon", "settings", "certificates", "messages", "encdec"},
+		"": {"password", "logon", "settings", "messages", "encdec"},
 	}
 
 	MyLogo, _ := fyne.LoadResourceFromPath("logo.png")
 
 	w := nhutil.GetApp().NewWindow("NH3000")
 	nhskin.Selected = nhskin.Dark
-	//nhutil.GetApp().Settings().SetTheme(theme.DarkTheme())
 
 	nhutil.GetApp().Settings().SetTheme(nhskin.MyTheme{})
 

@@ -15,21 +15,8 @@ import (
 	"github.com/nh3000-org/nh3000/nhutil"
 )
 
-/*
-*  The following fields need to be modified for you production
-*  Environment to provide maximum security
-*
-*  These fields are meant to be distributed at compile time and
-*  editable in the gui.
-*
- */
-var MyBytes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05} // must be 16 bytes
-const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"                                   // must be 24 characters
-const MyDurable string = "snatsdurable"
-const PasswordDefault = "123456" // default password shipped with app
-
 // version
-const Version = "snats-beta.1"
+const Version = "snats-beta.3"
 
 //var MyApp fyne.App
 
@@ -80,28 +67,28 @@ func Load() {
 
 	PreferedLanguage = nhutil.GetApp().Preferences().StringWithFallback("PreferedLanguage", "eng")
 
-	xServer, _ := nhcrypt.Encrypt("nats://nats.newhorizons3000.org:4222", MySecret)
+	xServer, _ := nhcrypt.Encrypt(nhauth.DefaultServer, nhauth.MySecret)
 	Server = nhutil.GetApp().Preferences().StringWithFallback("Server", xServer)
-	xQueue, _ := nhcrypt.Encrypt("MESSAGES", MySecret)
+	xQueue, _ := nhcrypt.Encrypt("MESSAGES", nhauth.MySecret)
 	Queue = nhutil.GetApp().Preferences().StringWithFallback("Queue", xQueue)
-	xAlias, _ := nhcrypt.Encrypt("MyAlias", MySecret)
+	xAlias, _ := nhcrypt.Encrypt("MyAlias", nhauth.MySecret)
 	Alias = nhutil.GetApp().Preferences().StringWithFallback("Alias", xAlias)
-	xQueuepassword, _ := nhcrypt.Encrypt("123456789012345678901234", MySecret)
+	xQueuepassword, _ := nhcrypt.Encrypt(nhauth.QueuePassword, nhauth.MySecret)
 	Queuepassword = nhutil.GetApp().Preferences().StringWithFallback("Queuepasword", xQueuepassword)
 
 	var xCaroot = strings.ReplaceAll(nhauth.DefaultCaroot, "\n", "<>")
-	ycaroot, _ := nhcrypt.Encrypt(xCaroot, MySecret)
+	ycaroot, _ := nhcrypt.Encrypt(xCaroot, nhauth.MySecret)
 	nhauth.Caroot = nhutil.GetApp().Preferences().StringWithFallback("Caroot", ycaroot)
 
-	yclientcert, _ := nhcrypt.Encrypt(nhauth.DefaultClientcert, MySecret)
+	yclientcert, _ := nhcrypt.Encrypt(nhauth.DefaultClientcert, nhauth.MySecret)
 	nhauth.Clientcert = nhutil.GetApp().Preferences().StringWithFallback("Clientcert", yclientcert)
 
 	var xClientkey = strings.ReplaceAll(nhauth.DefaultClientkey, "\n", "<>")
-	yclientkey, _ := nhcrypt.Encrypt(xClientkey, MySecret)
+	yclientkey, _ := nhcrypt.Encrypt(xClientkey, nhauth.MySecret)
 	nhauth.Clientkey = nhutil.GetApp().Preferences().StringWithFallback("Clientkey", yclientkey)
 
 	var ymsgmaxage = []string{"12h", "24h", "161h", "8372h"}
-	xmsgmaxage, _ := nhcrypt.Encrypt(strings.Join(ymsgmaxage, ","), MySecret)
+	xmsgmaxage, _ := nhcrypt.Encrypt(strings.Join(ymsgmaxage, ","), nhauth.MySecret)
 	Msgmaxage = nhutil.GetApp().Preferences().StringWithFallback("Msgmaxage", xmsgmaxage)
 
 	PasswordMinimumSize = nhutil.GetApp().Preferences().StringWithFallback("PasswordMinimumSize", "12")
@@ -109,22 +96,22 @@ func Load() {
 	PasswordMustContainLetter = nhutil.GetApp().Preferences().StringWithFallback("PasswordMustContainLetter", "Yes")
 	PasswordMustContainSpecial = nhutil.GetApp().Preferences().StringWithFallback("PasswordMustContainSpecial", "Yes")
 
-	// prepare for operations
-	yServer, _ := nhcrypt.Decrypt(Server, MySecret)
+	// prepare for operationsnhauth.
+	yServer, _ := nhcrypt.Decrypt(Server, nhauth.MySecret)
 	Server = yServer
-	yMsgmaxage, _ := nhcrypt.Decrypt(Msgmaxage, MySecret)
+	yMsgmaxage, _ := nhcrypt.Decrypt(Msgmaxage, nhauth.MySecret)
 	Msgmaxage = yMsgmaxage
-	yQueue, _ := nhcrypt.Decrypt(Queue, MySecret)
+	yQueue, _ := nhcrypt.Decrypt(Queue, nhauth.MySecret)
 	Queue = yQueue
-	yAlias, _ := nhcrypt.Decrypt(Alias, MySecret)
+	yAlias, _ := nhcrypt.Decrypt(Alias, nhauth.MySecret)
 	Alias = yAlias
-	yQueuepassword, _ := nhcrypt.Decrypt(Queuepassword, MySecret)
+	yQueuepassword, _ := nhcrypt.Decrypt(Queuepassword, nhauth.MySecret)
 	Queuepassword = yQueuepassword
-	yCaroot, _ := nhcrypt.Decrypt(nhauth.Caroot, MySecret)
+	yCaroot, _ := nhcrypt.Decrypt(nhauth.Caroot, nhauth.MySecret)
 	nhauth.Caroot = strings.ReplaceAll(yCaroot, "<>", "\n")
-	yClientcert, _ := nhcrypt.Decrypt(nhauth.Clientcert, MySecret)
+	yClientcert, _ := nhcrypt.Decrypt(nhauth.Clientcert, nhauth.MySecret)
 	nhauth.Clientcert = strings.ReplaceAll(yClientcert, "<>", "\n")
-	yClientkey, _ := nhcrypt.Decrypt(nhauth.Clientkey, MySecret)
+	yClientkey, _ := nhcrypt.Decrypt(nhauth.Clientkey, nhauth.MySecret)
 	nhauth.Clientkey = strings.ReplaceAll(yClientkey, "<>", "\n")
 	//log.Println("caroot ", nhauth.Caroot)
 	//log.Println("cert ", nhauth.Clientcert)
@@ -132,22 +119,22 @@ func Load() {
 }
 
 func Save() {
-	xCaroot, _ := nhcrypt.Encrypt(nhauth.Caroot, MySecret)
+	xCaroot, _ := nhcrypt.Encrypt(nhauth.Caroot, nhauth.MySecret)
 	nhutil.GetApp().Preferences().SetString("Caroot", xCaroot)
-	xClientcert, _ := nhcrypt.Encrypt(nhauth.Clientcert, MySecret)
+	xClientcert, _ := nhcrypt.Encrypt(nhauth.Clientcert, nhauth.MySecret)
 	nhutil.GetApp().Preferences().SetString("Clientcert", xClientcert)
-	xClientkey, _ := nhcrypt.Encrypt(nhauth.Clientkey, MySecret)
+	xClientkey, _ := nhcrypt.Encrypt(nhauth.Clientkey, nhauth.MySecret)
 	nhutil.GetApp().Preferences().SetString("Clientkey", xClientkey)
-	xMsgmaxage, _ := nhcrypt.Encrypt(Msgmaxage, MySecret)
+	xMsgmaxage, _ := nhcrypt.Encrypt(Msgmaxage, nhauth.MySecret)
 	nhutil.GetApp().Preferences().SetString("Msgmaxage", xMsgmaxage)
-	xServer, _ := nhcrypt.Encrypt(Server, MySecret)
+	xServer, _ := nhcrypt.Encrypt(Server, nhauth.MySecret)
 	nhutil.GetApp().Preferences().SetString("Server", xServer)
-	xQueue, _ := nhcrypt.Encrypt(Queue, MySecret)
+	xQueue, _ := nhcrypt.Encrypt(Queue, nhauth.MySecret)
 	nhutil.GetApp().Preferences().SetString("Queue", xQueue)
-	xAlias, _ := nhcrypt.Encrypt(Alias, MySecret)
+	xAlias, _ := nhcrypt.Encrypt(Alias, nhauth.MySecret)
 	nhutil.GetApp().Preferences().SetString("Alias", xAlias)
 	nhutil.GetApp().Preferences().SetString("PreferedLanguage", PreferedLanguage)
-	xQueuepassword, _ := nhcrypt.Encrypt(Queuepassword, MySecret)
+	xQueuepassword, _ := nhcrypt.Encrypt(Queuepassword, nhauth.MySecret)
 	nhutil.GetApp().Preferences().SetString("Queuepassword", xQueuepassword)
 	nhutil.GetApp().Preferences().SetString("PasswordMinimumSize", PasswordMinimumSize)
 	nhutil.GetApp().Preferences().SetString("PasswordMustContainNumber", PasswordMustContainNumber)
