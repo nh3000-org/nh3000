@@ -79,6 +79,12 @@ var MyLangs = map[string]string{
 	"eng-ms-err6-3":   " Logs",
 	"spa-ms-err6-3":   " Registros",
 	"hin-ms-err6-3":   " लॉग्स",
+	"eng-ms-con":      "Connected",
+	"spa-ms-con":      "Conectada",
+	"hin-ms-con":      "जुड़े हुए",
+	"eng-ms-dis":      "Disconnected",
+	"spa-ms-dis":      "Desconectada",
+	"hin-ms-dis":      "डिस्कनेक्ट किया गया",
 }
 
 // return translation strings
@@ -150,9 +156,7 @@ func Send(m string, alias string) bool {
 			EncMessage.MShostname += "\n- " + addr.String()
 		}
 	}
-
 	EncMessage.MSalias = alias
-
 	EncMessage.MSnodeuuid = "\n" + GetLangs("ms-ni") + nhpref.NodeUUID
 	iduuid := uuid.New().String()
 	EncMessage.MSiduuid = "\n" + GetLangs("ms-msg") + iduuid
@@ -251,7 +255,10 @@ func handleMessage(m *nats.Msg) string {
 		ejson = GetLangs("ms-unk")
 	}
 	if nhpref.Filter {
-		if strings.Contains(ms.MSmessage, GetLangs("ls-con")) || strings.Contains(ms.MSmessage, nhlang.GetLangs("ls-dis")) {
+		if strings.Contains(ms.MSmessage, GetLangs("ms-con")) {
+			return ""
+		}
+		if strings.Contains(ms.MSmessage, GetLangs("ms-dis")) {
 			return ""
 		}
 	}

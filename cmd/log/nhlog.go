@@ -140,7 +140,6 @@ func Send(m string) []byte {
 			EncMessage.MShostname += "\n- " + addr.String()
 		}
 	}
-	fmt.Println("alias ", MyLogAlias)
 	EncMessage.MSalias = MyLogAlias
 	idcount++
 	EncMessage.MSnodeuuid = "\n" + GetLangs("fm-ni") + " - " + strconv.Itoa(idcount)
@@ -167,11 +166,12 @@ func main() {
 		MyLogLang = "spa"
 	}
 	logLang := flag.String("loglang", MyLogLang, GetLangs("fl-ll"))
-	logAlias := flag.String("logalias", GetLangs("mn-alias"), GetLangs("fl-la"))
-	MyLogAlias = *logAlias
+	logAlias := flag.String("logalias", "LOGALIAS", GetLangs("fl-la"))
+
 	logPattern := flag.String("logpattern", "[ERR]", GetLangs("fl-lp"))
 	ServerIP := flag.String("serverip", nhauth.DefaultServer, GetLangs("fl-si"))
 	flag.Parse()
+	MyLogAlias = *logAlias
 	fmt.Println("EX: tail -f log.file | log ", " -loglang ", *logLang, " -serverip ", *ServerIP, " -logpattern ", *logPattern, " -logalias ", *logAlias)
 
 	r := bufio.NewReader(os.Stdin)
@@ -190,7 +190,7 @@ func main() {
 
 		if int64(len(buf)) != 0 {
 			if strings.Contains(string(buf), *logPattern) {
-				nhnats.Send(string(buf),MyLogAlias)
+				nhnats.Send(string(buf), MyLogAlias)
 			}
 		}
 		if err != nil && err != io.EOF {
