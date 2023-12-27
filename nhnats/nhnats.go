@@ -118,7 +118,7 @@ func docerts() {
 }
 
 // send message to nats
-func Send(m string) bool {
+func Send(m string, alias string) bool {
 	docerts()
 	EncMessage := MessageStore{}
 	name, err := os.Hostname()
@@ -150,7 +150,9 @@ func Send(m string) bool {
 			EncMessage.MShostname += "\n- " + addr.String()
 		}
 	}
-	EncMessage.MSalias = nhpref.Alias
+
+	EncMessage.MSalias = alias
+
 	EncMessage.MSnodeuuid = "\n" + GetLangs("ms-ni") + nhpref.NodeUUID
 	iduuid := uuid.New().String()
 	EncMessage.MSiduuid = "\n" + GetLangs("ms-msg") + iduuid
@@ -293,6 +295,6 @@ func Erase() {
 	}
 	fmt.Printf("js1: %v\n", js1)
 
-	Send(GetLangs("ms-sece"))
+	Send(GetLangs("ms-sece"), nhpref.Alias)
 	nc.Close()
 }

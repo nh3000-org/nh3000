@@ -129,7 +129,7 @@ func main() {
 func logLifecycle(a fyne.App) {
 	a.Lifecycle().SetOnStopped(func() {
 		if nhpref.LoggedOn {
-			nhnats.Send(nhlang.GetLangs("ls-dis"))
+			nhnats.Send(nhlang.GetLangs("ls-dis"), nhpref.Alias)
 		}
 		if nhpref.ReceivingMessages {
 			nhnats.QuitReceive <- true

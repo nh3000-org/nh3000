@@ -102,7 +102,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			nhpref.Save()
 			nhpref.LoggedOn = true
 			errors.SetText("...")
-			nhnats.Send(nhlang.GetLangs("ls-con"))
+			nhnats.Send(nhlang.GetLangs("ls-con"), nhpref.Alias)
 			go nhnats.Receive()
 		}
 	})

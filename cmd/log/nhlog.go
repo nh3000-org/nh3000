@@ -140,6 +140,7 @@ func Send(m string) []byte {
 			EncMessage.MShostname += "\n- " + addr.String()
 		}
 	}
+	fmt.Println("alias ", MyLogAlias)
 	EncMessage.MSalias = MyLogAlias
 	idcount++
 	EncMessage.MSnodeuuid = "\n" + GetLangs("fm-ni") + " - " + strconv.Itoa(idcount)
@@ -189,8 +190,7 @@ func main() {
 
 		if int64(len(buf)) != 0 {
 			if strings.Contains(string(buf), *logPattern) {
-				nhnats.Send(string(buf))
-				log.Println("log.go Sending ", string(buf))
+				nhnats.Send(string(buf),MyLogAlias)
 			}
 		}
 		if err != nil && err != io.EOF {

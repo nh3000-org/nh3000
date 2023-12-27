@@ -70,7 +70,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	if nhpref.LoggedOn == true {
 
 		smbutton := widget.NewButton(nhlang.GetLangs("ms-sm"), func() {
-			nhnats.Send(message.Text)
+			nhnats.Send(message.Text, nhpref.Alias)
 			message.SetText("")
 		})
 		/* 		ackbutton := widget.NewButton(nhlang.GetLangs("ms-ack"), func() {
