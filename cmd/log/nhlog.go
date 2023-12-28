@@ -172,8 +172,9 @@ func main() {
 	ServerIP := flag.String("serverip", nhauth.DefaultServer, GetLangs("fl-si"))
 	flag.Parse()
 	MyLogAlias = *logAlias
+	fmt.Println("====================================================== ")
 	fmt.Println("EX: tail -f log.file | log ", " -loglang ", *logLang, " -serverip ", *ServerIP, " -logpattern ", *logPattern, " -logalias ", *logAlias)
-
+	fmt.Println("====================================================== ")
 	r := bufio.NewReader(os.Stdin)
 	buf := make([]byte, 0, 4*1024)
 	for {

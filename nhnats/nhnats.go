@@ -197,11 +197,16 @@ func Receive() {
 			NatsMessages = nil
 			nc, err := nats.Connect(nhpref.Server, nats.UserInfo(nhauth.User, nhauth.UserPassword), nats.Secure(&TLS))
 			if err != nil {
-				log.Println("Receive ", GetLangs("ms-err2"))
+				if nhutil.GetMessageWin() != nil {
+					nhutil.GetMessageWin().SetTitle(GetLangs("ms-carrier") + err.Error())
+				}
+
 			}
 			js, err := nc.JetStream()
 			if err != nil {
-				log.Println("Receive JetStream ", err)
+				if nhutil.GetMessageWin() != nil {
+					nhutil.GetMessageWin().SetTitle(GetLangs("ms-carrier") + err.Error())
+				}
 			}
 			js.AddStream(&nats.StreamConfig{
 				Name: nhpref.Queue + nhpref.NodeUUID,
@@ -217,15 +222,21 @@ func Receive() {
 				ReplayPolicy:      nats.ReplayInstantPolicy,
 			})
 			if err1 != nil {
-				log.Println("Receive AddConsumer ", GetLangs("ms-err3")+err1.Error())
+				if nhutil.GetMessageWin() != nil {
+					nhutil.GetMessageWin().SetTitle(GetLangs("ms-carrier") + err1.Error())
+				}
 			}
 			sub, errsub := js.PullSubscribe("", "", nats.BindStream(nhpref.Queue))
 			if errsub != nil {
-				log.Println("Receive Pull Subscribe ", GetLangs("ms-err4")+errsub.Error())
+				if nhutil.GetMessageWin() != nil {
+					nhutil.GetMessageWin().SetTitle(GetLangs("ms-carrier") + errsub.Error())
+				}
 			}
 			msgs, err := sub.Fetch(100)
 			if err != nil {
-				log.Println("Receive fetch  ", err)
+				if nhutil.GetMessageWin() != nil {
+					nhutil.GetMessageWin().SetTitle(GetLangs("ms-carrier") + err.Error())
+				}
 			}
 			nhpref.ClearMessageDetail = true
 			if len(msgs) > 0 {

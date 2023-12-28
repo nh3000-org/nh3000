@@ -10,10 +10,10 @@ import (
 	"io"
 
 	"os"
+
+	"github.com/nh3000-org/nh3000/nhauth"
 )
 
-var keyAes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}  // must be 16 bytes
-var keyHmac = []byte{36, 45, 53, 21, 87, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05} // must be 16 bytes
 const BUFFER_SIZE int = 4096
 const IV_SIZE int = 16
 
@@ -21,10 +21,7 @@ func EncryptFile(filePathIn, filePathOut string) error {
 	infile, err := os.Open(filePathIn)
 	defer infile.Close()
 
-	// The key should be 16 bytes (AES-128), 24 bytes (AES-192) or
-	// 32 bytes (AES-256)
-
-	block, err := aes.NewCipher(keyHmac)
+	block, err := aes.NewCipher(nhauth.KeyHmac)
 	if err != nil {
 		return err
 	}
@@ -72,10 +69,7 @@ func DecryptFile(filePathIn, filePathOut string) error {
 	}
 	defer infile.Close()
 
-	// The key should be 16 bytes (AES-128), 24 bytes (AES-192) or
-	// 32 bytes (AES-256)
-
-	block, err := aes.NewCipher(keyHmac)
+	block, err := aes.NewCipher(nhauth.KeyHmac)
 	if err != nil {
 		return err
 	}
@@ -134,7 +128,7 @@ func Encrypt(text string, secret string) (string, error) {
 		return "", err
 	}
 	plainText := []byte(text)
-	cfb := cipher.NewCFBEncrypter(block, keyAes)
+	cfb := cipher.NewCFBEncrypter(block, nhauth.KeyAes)
 	cipherText := make([]byte, len(plainText))
 	cfb.XORKeyStream(cipherText, plainText)
 	return encode(cipherText), nil
@@ -147,7 +141,7 @@ func Decrypt(text string, secret string) (string, error) {
 		return "", err
 	}
 	cipherText := decode(text)
-	cfb := cipher.NewCFBDecrypter(block, keyAes)
+	cfb := cipher.NewCFBDecrypter(block, nhauth.KeyAes)
 	plainText := make([]byte, len(cipherText))
 	cfb.XORKeyStream(plainText, cipherText)
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 export GOPATH=/home/oem/go/bin
-go build file.go
+go build nhfile.go
 rm file-linux.zip
-zip file-linux.zip file 
-rm file
+zip file-linux.zip nhfile 
+rm nhfile
