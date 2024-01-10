@@ -210,7 +210,6 @@ func Receive() {
 			}
 			js.AddStream(&nats.StreamConfig{
 				Name: nhpref.Queue + nhpref.NodeUUID,
-
 				Subjects: []string{strings.ToLower(nhpref.Queue) + ".>"},
 			})
 			var duration time.Duration = 604800000000
@@ -222,18 +221,21 @@ func Receive() {
 				ReplayPolicy:      nats.ReplayInstantPolicy,
 			})
 			if err1 != nil {
+				//log.Println(err1.Error())
 				if nhutil.GetMessageWin() != nil {
 					nhutil.GetMessageWin().SetTitle(GetLangs("ms-carrier") + err1.Error())
 				}
 			}
 			sub, errsub := js.PullSubscribe("", "", nats.BindStream(nhpref.Queue))
 			if errsub != nil {
+				//log.Println(errsub.Error())
 				if nhutil.GetMessageWin() != nil {
 					nhutil.GetMessageWin().SetTitle(GetLangs("ms-carrier") + errsub.Error())
 				}
 			}
 			msgs, err := sub.Fetch(100)
 			if err != nil {
+				//log.Println(err.Error())
 				if nhutil.GetMessageWin() != nil {
 					nhutil.GetMessageWin().SetTitle(GetLangs("ms-carrier") + err.Error())
 				}
