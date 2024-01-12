@@ -103,7 +103,7 @@ func main() {
 			if err != nil {
 				fmt.Println(err)
 			}
-		}
+		} 
 		if *fileAction == "DECRYPT" {
 			err := nhcrypt.DecryptFile(*fileInput, *fileOutput)
 			if err != nil {

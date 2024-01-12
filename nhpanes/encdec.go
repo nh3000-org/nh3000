@@ -52,10 +52,19 @@ func EncdecScreen(win fyne.Window) fyne.CanvasObject {
 				errors.SetText(nhlang.GetLangs("es-err4"))
 			} else {
 				myoutputtext.SetText(string(t))
-				win.Clipboard().SetContent(t)
+				//win.Clipboard().SetContent(t)
 				errors.SetText("...")
 			}
 		}
+	})
+	// copy to clipboard messages
+	cpyFrombutton := widget.NewButton(nhlang.GetLangs("ms-cpyf"), func() {
+		myinputtext.SetText(win.Clipboard().Content())
+	})
+
+	// copy to clipboard messages
+	cpyTobutton := widget.NewButton(nhlang.GetLangs("ms-cpy"), func() {
+		win.Clipboard().SetContent(Details.Text)
 	})
 
 	decbutton := widget.NewButton(nhlang.GetLangs("es-dm"), func() {
@@ -103,10 +112,10 @@ func EncdecScreen(win fyne.Window) fyne.CanvasObject {
 	)
 	inputbox := container.NewBorder(
 		widget.NewLabelWithStyle(nhlang.GetLangs("es-head1"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		cpyFrombutton,
+		nil,
+		nil,
 		myinputtext,
-		nil,
-		nil,
-		nil,
 	)
 	outputbox := container.NewBorder(
 		widget.NewLabelWithStyle(nhlang.GetLangs("es-head2"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
@@ -150,9 +159,15 @@ func EncdecScreen(win fyne.Window) fyne.CanvasObject {
 		nil,
 		nil,
 	)
-
-	return container.NewBorder(
+	c4box := container.NewBorder(
 		c3box,
+		cpyTobutton,
+		nil,
+		nil,
+		nil,
+	)
+	return container.NewBorder(
+		c4box,
 		errors,
 		nil,
 		nil,
