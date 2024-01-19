@@ -57,12 +57,12 @@ func EncdecScreen(win fyne.Window) fyne.CanvasObject {
 			}
 		}
 	})
-	// copy to clipboard messages
+	// copy from clipboard
 	cpyFrombutton := widget.NewButton(nhlang.GetLangs("ms-cpyf"), func() {
 		myinputtext.SetText(win.Clipboard().Content())
 	})
 
-	// copy to clipboard messages
+	// copy to clipboard
 	cpyTobutton := widget.NewButton(nhlang.GetLangs("ms-cpy"), func() {
 		win.Clipboard().SetContent(Details.Text)
 	})

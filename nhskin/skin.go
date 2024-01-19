@@ -62,6 +62,10 @@ var RetroDisabled = color.RGBA{116, 207, 103, 64}
 var RetroHyperlink = color.RGBA{116, 207, 103, 1}
 var RetroPrimary = color.RGBA{116, 207, 103, 255}
 
+func (m MyTheme) SetIcon(name fyne.ThemeIconName, variant fyne.ThemeVariant)  {
+
+}
+
 func (m MyTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
 
 	//log.Println("skin "+strconv.Itoa(Selected)+" name ", name)

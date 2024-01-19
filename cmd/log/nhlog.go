@@ -173,7 +173,7 @@ func main() {
 	flag.Parse()
 	MyLogAlias = *logAlias
 	fmt.Println("====================================================== ")
-	fmt.Println("EX: tail -f log.file | log ", " -loglang ", *logLang, " -serverip ", *ServerIP, " -logpattern ", *logPattern, " -logalias ", *logAlias)
+	fmt.Println("EX: tail -f log.file | nhlog ", " -loglang ", *logLang, " -serverip ", *ServerIP, " -logpattern ", *logPattern, " -logalias ", *logAlias)
 	fmt.Println("====================================================== ")
 	r := bufio.NewReader(os.Stdin)
 	buf := make([]byte, 0, 4*1024)

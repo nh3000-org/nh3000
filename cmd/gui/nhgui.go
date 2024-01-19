@@ -16,6 +16,7 @@
 package main
 
 import (
+	"log"
 	"os"
 	"strings"
 
@@ -77,9 +78,13 @@ func main() {
 		"": {"password", "logon", "settings", "messages", "encdec"},
 	}
 
-	MyLogo, _ := fyne.LoadResourceFromPath("logo.png")
+	MyLogo, iconerr := fyne.LoadResourceFromPath("logo.png")
+	if iconerr != nil {
+		log.Println("logo error ", iconerr.Error())
+	}
 
 	w := nhutil.GetApp().NewWindow("NH3000")
+	w.SetIcon(MyLogo)
 	nhskin.Selected = nhskin.Dark
 
 	nhutil.GetApp().Settings().SetTheme(nhskin.MyTheme{})
