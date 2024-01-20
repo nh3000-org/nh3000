@@ -22,6 +22,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	//"fyne.io/fyne/v2/driver/desktop"
 
 	//"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -89,7 +90,7 @@ func main() {
 	nhutil.GetApp().Settings().SetTheme(nhskin.MyTheme{})
 
 	nhutil.GetApp().SetIcon(MyLogo)
-	//makeTray(nhutil.GetApp())
+	//makeTray()
 	logLifecycle(nhutil.GetApp())
 	TopWindow = w
 	w.SetMaster()
@@ -143,17 +144,19 @@ func logLifecycle(a fyne.App) {
 }
 
 // create system tray
-//func makeTray(a fyne.App) {
-//	if desk, ok := a.(desktop.App); ok {
-//		h := fyne.NewMenuItem(nhlang.GetLangs("mn-mt"), func() {})
-//		menu := fyne.NewMenu(nhlang.GetLangs("mn-mt"), h)
-//		h.Action = func() {
-//			h.Label = nhlang.GetLangs("mn-mt")
-//			menu.Refresh()
-//		}
-//		desk.SetSystemTrayMenu(menu)
-//	}
-//}
+/* func makeTray() {
+	if desk, ok := nhutil.GetApp().(desktop.App); ok {
+		h := fyne.NewMenuItem(nhlang.GetLangs("mn-mt"), func() {})
+		menu := fyne.NewMenu(nhlang.GetLangs("mn-mt"), h)
+		h.Action = func() {
+			h.Label = nhlang.GetLangs("mn-mt")
+			menu.Refresh()
+		}
+		desk.SetSystemTrayMenu(menu)
+
+	}
+
+} */
 
 // is supported
 func unsupportedApplication(t Pane) bool {
