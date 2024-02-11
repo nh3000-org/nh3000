@@ -9,6 +9,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/google/uuid"
+	"github.com/nh3000-org/nh3000/nhauth"
 	"github.com/nh3000-org/nh3000/nhhash"
 	"github.com/nh3000-org/nh3000/nhlang"
 	"github.com/nh3000-org/nh3000/nhnats"
@@ -40,6 +41,22 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 	queuepassword.SetPlaceHolder(nhlang.GetLangs("ls-queuepass"))
 	queuepassword.Disable()
 
+	calabel := widget.NewLabel(nhlang.GetLangs("cs-ca"))
+	ca := widget.NewMultiLineEntry()
+	ca.Resize(fyne.NewSize(320, 240))
+	ca.SetText(nhauth.Caroot)
+	ca.Disable()
+
+	cclabel := widget.NewLabel(nhlang.GetLangs("cs-cc"))
+	cc := widget.NewMultiLineEntry()
+	cc.SetText(nhauth.Clientcert)
+	cc.Disable()
+
+	cklabel := widget.NewLabel(nhlang.GetLangs("cs-ck"))
+	ck := widget.NewMultiLineEntry()
+	ck.SetText(nhauth.Clientkey)
+	ck.Disable()
+
 	TPbutton := widget.NewButton(nhlang.GetLangs("ls-trypass"), func() {
 		errors.SetText("...")
 		var iserrors = false
@@ -70,6 +87,9 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			queue.Enable()
 			alias.Enable()
 			queuepassword.Enable()
+			ca.Enable()
+			cc.Enable()
+			ck.Enable()
 		}
 	})
 
@@ -127,9 +147,14 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 		alias.Disable()
 		queue.Disable()
 		queuepassword.Disable()
+		ca.Disable()
+		cc.Disable()
+		ck.Disable()
+
 	}
 
-	topbox := container.NewVBox(
+	vertbox := container.NewVBox(
+
 		widget.NewLabelWithStyle(nhlang.GetLangs("ls-clogon"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		password,
 		TPbutton,
@@ -137,6 +162,12 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 		server,
 		queue,
 		queuepassword,
+		calabel,
+		ca,
+		cclabel,
+		cc,
+		cklabel,
+		ck,
 		SSbutton,
 		SEbutton,
 		container.NewHBox(
@@ -146,12 +177,14 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 		widget.NewLabel(""),
 		errors,
 	)
-
-	return container.NewBorder(
-		topbox,
-		errors,
-		nil,
-		nil,
-		nil,
+	return container.NewScroll(
+		vertbox,
 	)
+	//return container.NewBorder(
+	//	topbox,
+	//	errors,
+	//	nil,
+	//	nil,
+	//	nil,
+	//)
 }

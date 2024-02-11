@@ -66,7 +66,7 @@ func main() {
 	Panes = map[string]Pane{
 		"password": {nhlang.GetLangs("ps-title"), "", nhpanes.PasswordScreen, true},
 		"settings": {nhlang.GetLangs("ss-title"), "", nhpanes.SettingsScreen, true},
-		//"certificates": {nhlang.GetLangs("cs-title"), "", nhpanes.CertificatesScreen, true},
+		"certificates": {nhlang.GetLangs("cs-title"), "", nhpanes.CertificatesScreen, true},
 		"logon":    {nhlang.GetLangs("ls-title"), "", nhpanes.LogonScreen, true},
 		"messages": {nhlang.GetLangs("ms-title"), "", nhpanes.MessagesScreen, true},
 		"encdec":   {nhlang.GetLangs("es-title"), "", nhpanes.EncdecScreen, true},
@@ -74,8 +74,8 @@ func main() {
 
 	// PanesIndex  defines how our panes should be laid out in the index tree
 	PanesIndex = map[string][]string{
-		//"": {"password", "logon", "settings", "certificates", "messages", "encdec"},
-		"": {"password", "logon", "settings", "messages", "encdec"},
+		"": {"password", "logon", "settings", "certificates", "messages", "encdec"},
+		//"": {"password", "logon", "settings", "messages", "encdec"},
 	}
 
 	MyLogo, iconerr := fyne.LoadResourceFromPath("logo.png")
