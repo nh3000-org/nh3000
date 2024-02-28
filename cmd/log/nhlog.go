@@ -29,7 +29,13 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+<<<<<<< HEAD
 	"github.com/nh3000-org/nh3000/config"
+=======
+	"github.com/nh3000-org/nh3000/nhcrypt"
+	"github.com/nh3000-org/nh3000/nhnats"
+	"github.com/nh3000-org/nh3000/nhpref"
+>>>>>>> a6f3353 (GUI Chage to tabs)
 )
 
 var idcount int
@@ -112,7 +118,12 @@ func GetLangs(mystring string) string {
 
 // send message to nats
 func Send(m string) []byte {
+<<<<<<< HEAD
 
+=======
+	p := nhpref.NewPrefs()
+	p.Load()
+>>>>>>> a6f3353 (GUI Chage to tabs)
 	EncMessage := MessageStore{}
 	name, err := os.Hostname()
 	if err != nil {
@@ -150,14 +161,23 @@ func Send(m string) []byte {
 	if jsonerr != nil {
 		log.Println(GetLangs("fm-fm"), jsonerr)
 	}
+<<<<<<< HEAD
 	ejson := config.Encrypt(string(jsonmsg), config.GetQueuePassword())
+=======
+	ejson, _ := nhcrypt.Encrypt(string(jsonmsg), p.QueuePassword)
+>>>>>>> a6f3353 (GUI Chage to tabs)
 
 	return []byte(ejson)
 }
 
 // main loop for receiving pipe
 func main() {
+<<<<<<< HEAD
 
+=======
+	p := nhpref.NewPrefs()
+	p.Load()
+>>>>>>> a6f3353 (GUI Chage to tabs)
 	MyLogLang = "eng"
 	if strings.HasPrefix(os.Getenv("LANG"), "en") {
 		MyLogLang = "eng"
@@ -169,7 +189,11 @@ func main() {
 	logAlias := flag.String("logalias", "LOGALIAS", GetLangs("fl-la"))
 
 	logPattern := flag.String("logpattern", "[ERR]", GetLangs("fl-lp"))
+<<<<<<< HEAD
 	ServerIP := flag.String("serverip", config.GetServer(), GetLangs("fl-si"))
+=======
+	ServerIP := flag.String("serverip", p.Server, GetLangs("fl-si"))
+>>>>>>> a6f3353 (GUI Chage to tabs)
 	flag.Parse()
 	MyLogAlias = *logAlias
 	fmt.Println("====================================================== ")
