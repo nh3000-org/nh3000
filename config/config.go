@@ -25,7 +25,14 @@ var clientkey string
 var msgmaxage string
 var filter bool
 var clearmessagedetail bool
+var messagelist fyne.Widget
 
+func SetMessageList(l fyne.Widget) {
+	messagelist = l
+}
+func GetMessageList() fyne.Widget {
+	return messagelist
+}
 func SetClearMessageDetail(a bool) {
 	clearmessagedetail = a
 }
