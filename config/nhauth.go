@@ -34,4 +34,3 @@ const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"                              
 const Password = "123456" // default password shipped with app
 
 var PasswordHash string
-
