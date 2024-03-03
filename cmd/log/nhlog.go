@@ -29,9 +29,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/nh3000-org/nh3000/nhauth"
-	"github.com/nh3000-org/nh3000/nhcrypt"
-	"github.com/nh3000-org/nh3000/nhnats"
+	"github.com/nh3000-org/nh3000/config"
 )
 
 var idcount int
@@ -114,6 +112,7 @@ func GetLangs(mystring string) string {
 
 // send message to nats
 func Send(m string) []byte {
+
 	EncMessage := MessageStore{}
 	name, err := os.Hostname()
 	if err != nil {
@@ -151,13 +150,14 @@ func Send(m string) []byte {
 	if jsonerr != nil {
 		log.Println(GetLangs("fm-fm"), jsonerr)
 	}
-	ejson, _ := nhcrypt.Encrypt(string(jsonmsg), nhauth.QueuePassword)
+	ejson := config.Encrypt(string(jsonmsg), config.GetQueuePassword())
 
 	return []byte(ejson)
 }
 
 // main loop for receiving pipe
 func main() {
+
 	MyLogLang = "eng"
 	if strings.HasPrefix(os.Getenv("LANG"), "en") {
 		MyLogLang = "eng"
@@ -169,7 +169,7 @@ func main() {
 	logAlias := flag.String("logalias", "LOGALIAS", GetLangs("fl-la"))
 
 	logPattern := flag.String("logpattern", "[ERR]", GetLangs("fl-lp"))
-	ServerIP := flag.String("serverip", nhauth.DefaultServer, GetLangs("fl-si"))
+	ServerIP := flag.String("serverip", config.GetServer(), GetLangs("fl-si"))
 	flag.Parse()
 	MyLogAlias = *logAlias
 	fmt.Println("====================================================== ")
@@ -191,7 +191,7 @@ func main() {
 
 		if int64(len(buf)) != 0 {
 			if strings.Contains(string(buf), *logPattern) {
-				nhnats.Send(string(buf), MyLogAlias)
+				config.Send(string(buf), MyLogAlias)
 			}
 		}
 		if err != nil && err != io.EOF {
