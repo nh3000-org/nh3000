@@ -4,8 +4,6 @@ import (
 	"log"
 	"os"
 
-
-
 	"fyne.io/fyne/v2/storage"
 	"golang.org/x/crypto/bcrypt"
 )
