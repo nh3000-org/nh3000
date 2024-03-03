@@ -16,20 +16,24 @@
 package main
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
 	"flag"
 	"fmt"
+	"io"
 
 	"os"
 
 	"strings"
 
-	"github.com/nh3000-org/nh3000/nhcrypt"
+	"github.com/nh3000-org/nh3000/config"
 )
 
 // var idcount int
 var MyFileLang = "eng"
 
-// eng esp cmn
+// eng esp cmnBAE
 var MyLangs = map[string]string{
 	"eng-fl-fl":   "Language to Use eng or esp or hin",
 	"spa-fl-fl":   "Idioma a utilizar eng o esp o hin",
@@ -99,16 +103,121 @@ func main() {
 	if errors == false {
 		fmt.Println(*fileAction + " " + *fileInput + " > " + *fileOutput)
 		if *fileAction == "ENCRYPT" {
-			err := nhcrypt.EncryptFile(*fileInput, *fileOutput)
+			err := EncryptFile(*fileInput, *fileOutput)
 			if err != nil {
 				fmt.Println(err)
 			}
-		} 
+		}
 		if *fileAction == "DECRYPT" {
-			err := nhcrypt.DecryptFile(*fileInput, *fileOutput)
+			err := DecryptFile(*fileInput, *fileOutput)
 			if err != nil {
 				fmt.Println(err)
 			}
 		}
 	}
+}
+func EncryptFile(filePathIn, filePathOut string) error {
+
+	infile, err := os.Open(filePathIn)
+	defer infile.Close()
+
+	block, err := aes.NewCipher(config.KeyHmac)
+	if err != nil {
+		return err
+	}
+
+	// Never use more than 2^32 random nonces with a given key
+	// because of the risk of repeat.
+	iv := make([]byte, block.BlockSize())
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+		return err
+	}
+
+	outfile, err := os.OpenFile(filePathOut, os.O_RDWR|os.O_CREATE, 0777)
+	if err != nil {
+		return err
+	}
+	defer outfile.Close()
+
+	// The buffer size must be multiple of 16 bytes
+	buf := make([]byte, 1024)
+	stream := cipher.NewCTR(block, iv)
+	for {
+		n, err := infile.Read(buf)
+		if n > 0 {
+			stream.XORKeyStream(buf, buf[:n])
+			// Write into file
+			outfile.Write(buf[:n])
+		}
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+	// Append the IV
+	outfile.Write(iv)
+	return nil
+}
+func DecryptFile(filePathIn, filePathOut string) error {
+
+	infile, err := os.Open(filePathIn)
+	if err != nil {
+		return err
+	}
+	defer infile.Close()
+
+	block, err := aes.NewCipher(config.KeyHmac)
+	if err != nil {
+		return err
+	}
+
+	// Never use more than 2^32 random nonces with a given key
+	// because of the risk of repeat.
+	fi, err := infile.Stat()
+	if err != nil {
+		return err
+	}
+
+	iv := make([]byte, block.BlockSize())
+	msgLen := fi.Size() - int64(len(iv))
+	_, err = infile.ReadAt(iv, msgLen)
+	if err != nil {
+		return err
+	}
+
+	outfile, err := os.OpenFile(filePathOut, os.O_RDWR|os.O_CREATE, 0777)
+	if err != nil {
+		return err
+	}
+	defer outfile.Close()
+
+	// The buffer size must be multiple of 16 bytes
+	buf := make([]byte, 1024)
+	stream := cipher.NewCTR(block, iv)
+	for {
+		n, err := infile.Read(buf)
+		if n > 0 {
+			// The last bytes are the IV, don't belong the original message
+			if n > int(msgLen) {
+				n = int(msgLen)
+			}
+			msgLen -= int64(n)
+			stream.XORKeyStream(buf, buf[:n])
+			// Write into file
+			outfile.Write(buf[:n])
+		}
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
