@@ -41,7 +41,6 @@ func EncryptFile(filePathIn, filePathOut string) error {
 		return err
 	}
 	defer outfile.Close()
-
 	// The buffer size must be multiple of 16 bytes
 	buf := make([]byte, 1024)
 	stream := cipher.NewCTR(block, iv)
