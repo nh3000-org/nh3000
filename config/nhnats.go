@@ -1,274 +1,324 @@
 package config
 
 import (
-	"image/color"
-	"log"
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/json"
+	"fmt"
 
-	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/theme"
+	"log"
+	"net"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/nats-io/nats.go"
 )
 
-type MyTheme struct{}
-
-var Dark = 0
-var Light = 1
-var Retro = 2
-
-var Selected = 0
-
-// var DarkButton = color.RGBA{162, 168, 250, 64}
-var DarkButton = color.RGBA{187, 188, 201, 32}
-var DarkHover = color.RGBA{187, 188, 201, 64}
-var DarkPressed = color.RGBA{187, 188, 201, 220}
-var DarkSelection = color.RGBA{187, 188, 201, 128}
-var DarkInputBackground = color.RGBA{187, 188, 201, 32}
-var DarkInputBorder = color.RGBA{187, 188, 201, 64}
-var DarkSeparator = color.RGBA{187, 188, 201, 64}
-var DarkShadow = color.RGBA{187, 188, 201, 64}
-var DarkScrollBar = color.RGBA{187, 188, 201, 64}
-var DarkFocus = color.RGBA{187, 188, 201, 64}
-var DarkPlaceholder = color.RGBA{187, 188, 201, 220}
-var DarkDisabled = color.RGBA{187, 188, 201, 64}
-var DarkHyperlink = color.RGBA{187, 188, 201, 255}
-var DarkPrimary = color.RGBA{187, 188, 201, 255}
-
-var LightButton = color.RGBA{129, 137, 252, 250}
-var LightHover = color.RGBA{129, 137, 252, 250}
-var LightPressed = color.RGBA{129, 137, 252, 220}
-var LightSelection = color.RGBA{129, 137, 252, 200}
-var LightInputBackground = color.RGBA{129, 137, 252, 32}
-var LightInputBorder = color.RGBA{129, 137, 252, 250}
-var LightSeparator = color.Black
-var LightShadow = color.RGBA{129, 137, 252, 64}
-var LightScrollBar = color.RGBA{129, 137, 252, 250}
-var LightFocus = color.RGBA{129, 137, 252, 64}
-var LightPlaceholder = color.RGBA{129, 137, 252, 220}
-var LightDisabled = color.RGBA{129, 137, 252, 64}
-var LightHyperlink = color.RGBA{129, 137, 252, 1}
-var LightPrimary = color.RGBA{129, 137, 252, 255}
-
-var RetroButton = color.RGBA{116, 207, 103, 250}
-var RetroHover = color.RGBA{116, 207, 103, 250}
-var RetroPressed = color.RGBA{116, 207, 103, 220}
-var RetroSelection = color.RGBA{116, 207, 103, 200}
-var RetroInputBackground = color.RGBA{116, 207, 103, 32}
-var RetroInputBorder = color.RGBA{116, 207, 103, 250}
-var RetroSeparator = color.Black
-var RetroShadow = color.RGBA{116, 207, 103, 64}
-var RetroScrollBar = color.RGBA{116, 207, 103, 250}
-var RetroFocus = color.RGBA{116, 207, 103, 64}
-var RetroPlaceholder = color.RGBA{116, 207, 103, 255}
-var RetroDisabled = color.RGBA{116, 207, 103, 64}
-var RetroHyperlink = color.RGBA{116, 207, 103, 1}
-var RetroPrimary = color.RGBA{116, 207, 103, 255}
-
-func (m MyTheme) SetIcon(name fyne.ThemeIconName, variant fyne.ThemeVariant) {
-
+type MessageStore struct {
+	MSiduuid   string
+	MSalias    string
+	MShostname string
+	MSipadrs   string
+	MSmessage  string
+	MSnodeuuid string
+	MSdate     string
 }
 
-func (m MyTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
+var NatsMessages []MessageStore
+var MyAckMap = make(map[string]bool)
+var QuitReceive = make(chan bool)
+var TLS tls.Config
+var MyLogLang = "eng"
 
-	//log.Println("skin "+strconv.Itoa(Selected)+" name ", name)
-	if Selected == Dark {
-		if name == "separator" {
-			return DarkSeparator
+// eng esp cmn hin
+var MyLangsNats = map[string]string{
+	"eng-fl-ll":       "NATS Language to Use eng or esp",
+	"eng-ms-err2":     "NATS No Connection ",
+	"spa-ms-err2":     "NATS sin Conexión ",
+	"hin-ms-err2":     "NATS कोई कनेक्शन नहीं ",
+	"eng-ms-carrier":  "Carrier",
+	"spa-ms-carrier":  "Transportador",
+	"वाहक-ms-carrier": "Carrier",
+	"eng-ms-nhn":      "No Host Name ",
+	"spa-ms-nhn":      "Sin Nombre de Host ",
+	"hin-ms-nhn":      "कोई होस्ट नाम नहीं ",
+	"eng-ms-hn":       "Host ",
+	"spa-ms-hn":       "Nombre de Host ",
+	"hin-ms-hn":       "मेज़बान ",
+	"eng-ms-mi":       "Mac IDS",
+	"spa-ms-mi":       "ID de Mac",
+	"hin-ms-mi":       "मैक आईडीएस",
+	"eng-ms-ad":       "Address",
+	"spa-ms-ad":       "Direccion",
+	"hin-ms-ad":       "पता",
+	"eng-ms-ni":       "Node Id - ",
+	"spa-ms-ni":       "ID de Nodo - ",
+	"hin-ms-ni":       "नोड आईडी - ",
+	"eng-ms-msg":      "Message Id - ",
+	"spa-ms-msg":      "ID de Mensaje - ",
+	"hin-ms-msg":      "संदेश आईडी - ",
+	"eng-ms-on":       "On - ",
+	"spa-ms-on":       "En - ",
+	"hin-ms-on":       "पर - ",
+	"eng-ms-err6-1":   "Recieved ",
+	"spa-ms-err6-1":   "Recibida ",
+	"hin-ms-err6-1":   "प्राप्त ",
+	"eng-ms-err6-2":   " Messages ",
+	"spa-ms-err6-2":   " Mensajes ",
+	"hin-ms-err6-2":   " संदेशों ",
+	"eng-ms-err6-3":   " Logs",
+	"spa-ms-err6-3":   " Registros",
+	"hin-ms-err6-3":   " लॉग्स",
+	"eng-ms-err7":     " NATS Server Missing",
+	"spa-ms-err7":     " Falta el servidor NATS",
+	"hin-ms-err7":     " NATS सर्वर गायब है",
+	"eng-ms-con":      "Connected",
+	"spa-ms-con":      "Conectada",
+	"hin-ms-con":      "जुड़े हुए",
+	"eng-ms-dis":      "Disconnected",
+	"spa-ms-dis":      "Desconectada",
+	"hin-ms-dis":      "डिस्कनेक्ट किया गया",
+}
+
+// return translation strings
+func GetLangsNats(mystring string) string {
+	value, err := MyLangs[MyLogLang+"-"+mystring]
+	if !err {
+		return "xxx"
+	}
+	return value
+}
+
+func docerts() {
+
+	var done = false
+	if !done {
+		RootCAs, _ := x509.SystemCertPool()
+		if RootCAs == nil {
+			RootCAs = x509.NewCertPool()
 		}
-		if name == "shadow" {
-			return DarkShadow
+		ok := RootCAs.AppendCertsFromPEM([]byte(GetCaroot()))
+		if !ok {
+			log.Println("nhnats.go init rootCAs")
 		}
-		if name == "scrollBar" {
-			return DarkScrollBar
+		Clientcert, err := tls.X509KeyPair([]byte(GetClientCert()), []byte(GetClientKey()))
+		if err != nil {
+			log.Println("nhnats.go init Clientcert " + err.Error())
 		}
-		if name == "focus" {
-			return DarkFocus
+		TLSConfig := &tls.Config{
+			RootCAs:            RootCAs,
+			Certificates:       []tls.Certificate{Clientcert},
+			ServerName:         "nats.newhorizons3000.org",
+			MinVersion:         tls.VersionTLS12,
+			InsecureSkipVerify: true,
 		}
-		if name == "placeholder" {
-			return DarkPlaceholder
-		}
-		if name == "disabled" {
-			return DarkDisabled
-		}
-		if name == "disabledButton" {
-			return DarkDisabled
-		}
-		if name == "hyperlink" {
-			return DarkHyperlink
-		}
-		if name == "primary" {
-			return DarkPrimary
-		}
-		if name == "hover" {
-			return DarkHover
-		}
-		if name == "pressed" {
-			return DarkPressed
-		}
-		if name == "selection" {
-			return DarkSelection
-		}
-		if name == "inputBackground" {
-			return DarkInputBackground
-		}
-		if name == "inputBorder" {
-			return DarkInputBorder
-		}
-		if name == "button" {
-			return DarkButton
-		}
-		if name == "foreground" {
-			return color.White
-		}
-		if name == "background" {
-			return color.Black
-		}
-		if name == "menuBackground" {
-			return color.Black
-		}
-		if name != "disabled" {
-			log.Println("default ", name)
-		}
+		TLS = *TLSConfig.Clone()
+		done = true
+	}
+}
+
+// send message to nats
+func Send(m string, alias string) bool {
+
+	docerts()
+	EncMessage := MessageStore{}
+	name, err := os.Hostname()
+	if err != nil {
+		EncMessage.MShostname = "\n" + GetLangs("ms-nhn")
+	} else {
+		EncMessage.MShostname = "\n" + GetLangs("ms-hn") + name
 	}
 
-	if Selected == Light {
-		if name == "separator" {
-			return LightSeparator
+	ifas, err := net.Interfaces()
+	if err != nil {
+		EncMessage.MShostname += "\n-  " + GetLangs("ms-carrier")
+	}
+	if err == nil {
+		var as []string
+		for _, ifa := range ifas {
+			a := ifa.HardwareAddr.String()
+			if a != "" {
+				as = append(as, a)
+			}
 		}
-		if name == "shadow" {
-			return LightShadow
+		EncMessage.MShostname += "\n" + GetLangs("ms-mi")
+		for i, s := range as {
+			EncMessage.MShostname += "\n- " + strconv.Itoa(i) + " : " + s
 		}
-		if name == "scrollBar" {
-			return LightScrollBar
-		}
-		if name == "focus" {
-			return LightFocus
-		}
-		if name == "placeholder" {
-			return LightPlaceholder
-		}
-		if name == "disabled" {
-			return LightDisabled
-		}
-		if name == "disabledButton" {
-			return LightDisabled
-		}
-		if name == "hyperlink" {
-			return LightHyperlink
-		}
-		if name == "primary" {
-			return LightPrimary
-		}
-		if name == "hover" {
-			return LightHover
-		}
-		if name == "pressed" {
-			return LightPressed
-		}
-		if name == "selection" {
-			return LightSelection
-		}
-		if name == "inputBackground" {
-			return LightInputBackground
-		}
-		if name == "inputBorder" {
-			return LightInputBorder
-		}
-		if name == "button" {
-			return LightButton
-		}
-		if name == "foreground" {
-			return color.Black
-		}
-		if name == "background" {
-			return color.White
-		}
-		if name == "menuBackground" {
-			return color.White
-		}
-		if name == theme.ColorNameBackground {
-			return color.Black
-		}
-		if name != "disabled" {
-
-			log.Println("default ", name)
+		addrs, _ := net.InterfaceAddrs()
+		EncMessage.MShostname += "\n" + GetLangs("ms-ad")
+		for _, addr := range addrs {
+			EncMessage.MShostname += "\n- " + addr.String()
 		}
 	}
+	EncMessage.MSalias = alias
+	EncMessage.MSnodeuuid = "\n" + GetLangs("ms-ni") + GetNodeUUID()
+	msiduuid := uuid.New().String()
+	EncMessage.MSiduuid = "\n" + GetLangs("ms-msg") + msiduuid
+	EncMessage.MSdate = "\n" + GetLangs("ms-on") + time.Now().Format(time.UnixDate)
+	EncMessage.MSmessage = m
+	jsonmsg, jsonerr := json.Marshal(EncMessage)
+	if jsonerr != nil {
+		log.Println("FormatMessage ", jsonerr)
+	}
+	//log.Println("jsonmsg ", string(jsonmsg))
+	ejson := Encrypt(string(jsonmsg), GetQueuePassword())
+	//log.Println("ejson ", string(ejson))
+	NC, err := nats.Connect(GetServer(), nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&TLS))
+	if err != nil {
+		fmt.Println("Send " + GetLangs("ms-err7") + err.Error())
+	}
+	JS, err := NC.JetStream()
+	if err != nil {
+		fmt.Println("Send " + GetLangs("ms-err7") + err.Error() + <-JS.StreamNames())
+	}
+	_, errp := JS.Publish(strings.ToLower(GetQueue())+".logger", []byte(ejson))
+	if errp != nil {
+		return true
+	}
+	NC.Drain()
 
-	if Selected == Retro {
-		if name == "separator" {
-			return RetroSeparator
-		}
-		if name == "shadow" {
-			return RetroShadow
-		}
-		if name == "scrollBar" {
-			return RetroScrollBar
-		}
-		if name == "focus" {
-			return RetroFocus
-		}
-		if name == "placeholder" {
-			return RetroPlaceholder
-		}
-		if name == "disabled" {
-			return RetroDisabled
-		}
-		if name == "disabledButton" {
-			return RetroDisabled
-		}
-		if name == "hyperlink" {
-			return RetroHyperlink
-		}
-		if name == "primary" {
-			return RetroPrimary
-		}
-		if name == "hover" {
-			return RetroHover
-		}
-		if name == "selection" {
-			return RetroSelection
-		}
-		if name == "pressed" {
-			return RetroPressed
-		}
-		if name == "inputBackground" {
-			return RetroInputBackground
-		}
-		if name == "inputBorder" {
-			return RetroInputBorder
-		}
-		if name == "button" {
-			return RetroButton
-		}
-		if name == "foreground" {
-			return color.Black
-		}
-		if name == "background" {
-			return color.White
-		}
-		if name == "menuBackground" {
-			return color.White
-		}
-		if name == theme.ColorNameBackground {
-			return color.Black
-		}
-		if name != "disabled" {
-			log.Println("default ", name)
+	return false
+}
+
+// thread for receiving messages
+func Receive() {
+
+	docerts()
+
+	SetReceivingMessages(true)
+	for {
+		select {
+		case <-QuitReceive:
+			return
+		default:
+			NatsMessages = nil
+			nc, err := nats.Connect(GetServer(), nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&TLS))
+			if err != nil {
+				if GetMessageWindow() != nil {
+					GetMessageWindow().SetTitle(GetLangs("ms-carrier") + err.Error())
+				}
+
+			}
+			js, err := nc.JetStream()
+			if err != nil {
+				if GetMessageWindow() != nil {
+					GetMessageWindow().SetTitle(GetLangs("ms-carrier") + err.Error())
+				}
+			}
+			js.AddStream(&nats.StreamConfig{
+				Name:     GetQueue() + GetNodeUUID(),
+				Subjects: []string{strings.ToLower(GetQueue()) + ".>"},
+			})
+			var duration time.Duration = 604800000000
+			_, err1 := js.AddConsumer(GetQueue(), &nats.ConsumerConfig{
+				Durable:           GetNodeUUID(),
+				AckPolicy:         nats.AckExplicitPolicy,
+				InactiveThreshold: duration,
+				DeliverPolicy:     nats.DeliverAllPolicy,
+				ReplayPolicy:      nats.ReplayInstantPolicy,
+			})
+			if err1 != nil {
+				//log.Println(err1.Error())
+				if GetMessageWindow() != nil {
+					GetMessageWindow().SetTitle(GetLangs("ms-carrier") + err1.Error())
+				}
+			}
+			sub, errsub := js.PullSubscribe("", "", nats.BindStream(GetQueue()))
+			if errsub != nil {
+				//log.Println(errsub.Error())
+				if GetMessageWindow() != nil {
+					GetMessageWindow().SetTitle(GetLangs("ms-carrier") + errsub.Error())
+				}
+			}
+			msgs, err := sub.Fetch(100)
+			if err != nil {
+				//log.Println(err.Error())
+				if GetMessageWindow() != nil {
+					GetMessageWindow().SetTitle(GetLangs("ms-carrier") + err.Error())
+				}
+			}
+			SetClearMessageDetail(true)
+			if len(msgs) > 0 {
+				for i := 0; i < len(msgs); i++ {
+					handleMessage(msgs[i])
+					msgs[i].Nak()
+				}
+			}
+			if GetMessageWindow() != nil {
+				GetMessageWindow().SetTitle(GetLangs("ms-err6-1") + strconv.Itoa(len(msgs)) + GetLangs("ms-err6-2"))
+				GetMessageList().Refresh()
+			}
+			nc.Close()
+			time.Sleep(30 * time.Second)
 		}
 	}
-
-	return theme.DefaultTheme().Color(name, variant)
-}
-func (m MyTheme) Font(style fyne.TextStyle) fyne.Resource {
-	return theme.DefaultTheme().Font(style)
 }
 
-func (m MyTheme) Size(name fyne.ThemeSizeName) float32 {
-	return theme.DefaultTheme().Size(name)
-}
-func (m MyTheme) Icon(name fyne.ThemeIconName) fyne.Resource {
-	//if name == theme.IconNameHome {
-	//	fyne.NewStaticResource("myHome", homeBytes)
-	//}
+// decrypt payload
+func handleMessage(m *nats.Msg) string {
 
-	return theme.DefaultTheme().Icon(name)
+	ms := MessageStore{}
+	//ejson := config.Decrypt(string(m.Data), config.GetQueuePassword())
+	//log.Println("m.data ", m.Data)
+	var ejson = string(Decrypt(string(m.Data), GetQueuePassword()))
+
+	err1 := json.Unmarshal([]byte(ejson), &ms)
+	if err1 != nil {
+		log.Println("NATS Receive ", ejson[0])
+	}
+	if GetFilter() {
+		if strings.Contains(ms.MSmessage, GetLangs("ms-con")) {
+			return ""
+		}
+		if strings.Contains(ms.MSmessage, GetLangs("ms-dis")) {
+			return ""
+		}
+	}
+	NatsMessages = append(NatsMessages, ms)
+
+	return ms.MSiduuid
+}
+
+// security erase jetstream data
+func Erase() {
+
+	docerts()
+	//log.Println(config.GetLangs("ms-era"))
+
+	nc, err := nats.Connect(GetServer(), nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&TLS))
+	if err != nil {
+		log.Println("Erase Connect", GetLangs("ms-erac"), err.Error())
+	}
+	js, err := nc.JetStream()
+	if err != nil {
+		log.Println("Erase Jetstream Make ", GetLangs("ms-eraj"), err)
+	}
+
+	NatsMessages = nil
+	err1 := js.PurgeStream(GetQueue())
+	if err1 != nil {
+		log.Println("Erase Jetstream Purge", GetLangs("ms-dels"), err1)
+	}
+	err2 := js.DeleteStream(GetQueue())
+	if err2 != nil {
+		log.Println("Erase Jetstream Delete", GetLangs("ms-dels"), err1)
+	}
+	msgmaxage, _ := time.ParseDuration(GetMsgMaxAge())
+	js1, err3 := js.AddStream(&nats.StreamConfig{
+		Name:     GetQueue(),
+		Subjects: []string{strings.ToLower(GetQueue()) + ".>"},
+		Storage:  nats.FileStorage,
+		MaxAge:   msgmaxage,
+	})
+	if err3 != nil {
+		log.Println("Erase Addstream ", GetLangs("ms-adds"), err3)
+	}
+	fmt.Printf("js1: %v\n", js1)
+
+	Send(GetLangs("ms-sece"), GetAlias())
+	nc.Close()
 }
