@@ -311,9 +311,9 @@ var MyLangs = map[string]string{
 	"eng-ms-con":      "Connected",
 	"spa-ms-con":      "Conectada",
 	"hin-ms-con":      "जुड़े हुए",
-	"eng-ms-dis": "Disconnected",
-	"spa-ms-dis": "Desconectada",
-	"hin-ms-dis": "डिस्कनेक्ट किया गया",
+	"eng-ms-dis":      "Disconnected",
+	"spa-ms-dis":      "Desconectada",
+	"hin-ms-dis":      "डिस्कनेक्ट किया गया",
 
 	"eng-es-title":   "Enc/Dec",
 	"spa-es-title":   "Codificar/Descodificar",
