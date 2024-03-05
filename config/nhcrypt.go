@@ -6,7 +6,6 @@ import (
 	"log"
 
 	"crypto/rand"
-
 	"encoding/base64"
 	"io"
 
