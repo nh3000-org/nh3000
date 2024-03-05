@@ -1,5 +1,4 @@
 package config
-
 // eng esp cmn
 var MyLangs = map[string]string{
 	"eng-mn-intro-1":     "Encrypted Communications Using NATS ",
