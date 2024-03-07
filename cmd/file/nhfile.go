@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
@@ -27,11 +27,7 @@ import (
 
 	"strings"
 
-<<<<<<< HEAD
 	"github.com/nh3000-org/nh3000/config"
-=======
-	"github.com/nh3000-org/nh3000/nhpref"
->>>>>>> a6f3353 (GUI Chage to tabs)
 )
 
 // var idcount int
@@ -121,20 +117,11 @@ func main() {
 	}
 }
 func EncryptFile(filePathIn, filePathOut string) error {
-<<<<<<< HEAD
 
 	infile, err := os.Open(filePathIn)
 	defer infile.Close()
 
 	block, err := aes.NewCipher(config.KeyHmac)
-=======
-	prefs := nhpref.NewPrefs()
-	prefs.Load()
-	infile, err := os.Open(filePathIn)
-	defer infile.Close()
-
-	block, err := aes.NewCipher(prefs.KeyHmac)
->>>>>>> a6f3353 (GUI Chage to tabs)
 	if err != nil {
 		return err
 	}
@@ -176,23 +163,13 @@ func EncryptFile(filePathIn, filePathOut string) error {
 	return nil
 }
 func DecryptFile(filePathIn, filePathOut string) error {
-<<<<<<< HEAD
-
-=======
-	prefs := nhpref.NewPrefs()
-	prefs.Load()
->>>>>>> a6f3353 (GUI Chage to tabs)
 	infile, err := os.Open(filePathIn)
 	if err != nil {
 		return err
 	}
 	defer infile.Close()
 
-<<<<<<< HEAD
 	block, err := aes.NewCipher(config.KeyHmac)
-=======
-	block, err := aes.NewCipher(prefs.KeyHmac)
->>>>>>> a6f3353 (GUI Chage to tabs)
 	if err != nil {
 		return err
 	}
