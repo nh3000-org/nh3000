@@ -1,7 +1,6 @@
 package panes
 
 import (
-	"log"
 	"strings"
 
 	"github.com/nh3000-org/nh3000/config"
@@ -68,7 +67,6 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	List.OnSelected = func(id widget.ListItemID) {
 		var mytext = config.NatsMessages[id].MSmessage + "\n.................." + config.NatsMessages[id].MShostname + config.NatsMessages[id].MSipadrs + config.NatsMessages[id].MSnodeuuid + config.NatsMessages[id].MSiduuid + config.NatsMessages[id].MSdate
 		Details.SetText(mytext)
-		log.Println("messages ", config.NatsMessages[id].MSiduuid)
 		ackMsgId = config.NatsMessages[id].MSiduuid
 
 	}

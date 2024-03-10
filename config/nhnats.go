@@ -258,7 +258,6 @@ func Receive() {
 					if !v {
 						delete(ackMap, k)
 					}
-
 				}
 			}
 			if GetMessageWindow() != nil {
@@ -277,8 +276,7 @@ func Receive() {
 func handleMessage(m *nats.Msg) bool {
 
 	ms := MessageStore{}
-	//ejson := config.Decrypt(string(m.Data), config.GetQueuePassword())
-	//log.Println("m.data ", m.Data)
+
 	var ejson = string(Decrypt(string(m.Data), GetQueuePassword()))
 
 	err1 := json.Unmarshal([]byte(ejson), &ms)
@@ -294,14 +292,14 @@ func handleMessage(m *nats.Msg) bool {
 		}
 	}
 	if !ackMap[ms.MSiduuid] {
+		ackMap[ms.MSiduuid] = false
 		NatsMessages = append(NatsMessages, ms)
 		return true
 	}
-	ackMap[ms.MSiduuid] = false
+	//ackMap[ms.MSiduuid] = false
 	return false
 }
 func SetAck(a string) {
-	log.Println("setack ", a)
 	ackMap[a] = true
 }
 
@@ -309,7 +307,6 @@ func SetAck(a string) {
 func Erase() {
 
 	docerts()
-	//log.Println(config.GetLangs("ms-era"))
 
 	nc, err := nats.Connect(GetServer(), nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&TLS))
 	if err != nil {
