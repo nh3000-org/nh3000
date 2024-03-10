@@ -1,6 +1,7 @@
 package panes
 
 import (
+	"log"
 	"strings"
 
 	"github.com/nh3000-org/nh3000/config"
@@ -10,21 +11,32 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-var Details = widget.NewLabel(config.GetLangs("ms-header1"))
+var Details = widget.NewLabel("")
+var ackMsgId = ""
 
 func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 
 	config.SetMessageWindow(win)
 	//var Acknode = ""
 	var Errors = widget.NewLabel("...")
-	var Details = widget.NewLabel(config.GetLangs("ms-header1"))
+	var DetailsTop = widget.NewLabel(config.GetLangs("ms-header1"))
+	//var DetailsBottom = widget.NewButton(config.GetLangs("ms-header1"))
+	DetailButton := widget.NewButton("Ack", func() {
+		if !config.GetLoggedOn() {
+			Errors.SetText(config.GetLangs("cs-lf"))
+			return
+		}
+		config.SetAck(ackMsgId)
+
+	})
+	var DetailsBorder = container.NewBorder(DetailsTop, DetailButton, nil, nil, Details)
 	message := widget.NewMultiLineEntry()
 	message.SetPlaceHolder(config.GetLangs("ms-mm"))
 	message.SetMinRowsVisible(2)
 
 	Filter := widget.NewCheck(config.GetLangs("ms-filter"), func(on bool) { config.SetFilter(on) })
 
-	DetailsVW := container.NewScroll(Details)
+	DetailsVW := container.NewScroll(DetailsBorder)
 
 	DetailsVW.SetMinSize(fyne.NewSize(300, 240))
 	DetailsVW.Refresh()
@@ -56,6 +68,8 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	List.OnSelected = func(id widget.ListItemID) {
 		var mytext = config.NatsMessages[id].MSmessage + "\n.................." + config.NatsMessages[id].MShostname + config.NatsMessages[id].MSipadrs + config.NatsMessages[id].MSnodeuuid + config.NatsMessages[id].MSiduuid + config.NatsMessages[id].MSdate
 		Details.SetText(mytext)
+		log.Println("messages ", config.NatsMessages[id].MSiduuid)
+		ackMsgId = config.NatsMessages[id].MSiduuid
 
 	}
 	List.OnUnselected = func(id widget.ListItemID) {

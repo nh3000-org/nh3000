@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"runtime"
 
 	"log"
 	"net"
@@ -28,7 +29,7 @@ type MessageStore struct {
 }
 
 var NatsMessages []MessageStore
-var MyAckMap = make(map[string]bool)
+var ackMap = make(map[string]bool)
 var QuitReceive = make(chan bool)
 var TLS tls.Config
 var MyLogLang = "eng"
@@ -216,7 +217,7 @@ func Receive() {
 			var duration time.Duration = 604800000000
 			_, err1 := js.AddConsumer(GetQueue(), &nats.ConsumerConfig{
 				Durable:           GetNodeUUID(),
-				AckPolicy:         nats.AckExplicitPolicy,
+				AckPolicy:         nats.AckNonePolicy,
 				InactiveThreshold: duration,
 				DeliverPolicy:     nats.DeliverAllPolicy,
 				ReplayPolicy:      nats.ReplayInstantPolicy,
@@ -238,18 +239,32 @@ func Receive() {
 			if err != nil {
 				//log.Println(err.Error())
 				if GetMessageWindow() != nil {
+
 					GetMessageWindow().SetTitle(GetLangs("ms-carrier") + err.Error())
 				}
 			}
 			SetClearMessageDetail(true)
+			var acked = 0
 			if len(msgs) > 0 {
 				for i := 0; i < len(msgs); i++ {
-					handleMessage(msgs[i])
-					msgs[i].Nak()
+					if !handleMessage(msgs[i]) {
+						acked++
+					}
+				}
+			}
+			if len(ackMap) > 0 {
+				var shadowackMap = ackMap
+				for k, v := range shadowackMap {
+					if !v {
+						delete(ackMap, k)
+					}
+
 				}
 			}
 			if GetMessageWindow() != nil {
-				GetMessageWindow().SetTitle(GetLangs("ms-err6-1") + strconv.Itoa(len(msgs)) + GetLangs("ms-err6-2"))
+				var m runtime.MemStats
+				runtime.ReadMemStats(&m)
+				GetMessageWindow().SetTitle(GetLangs("ms-err6-1") + strconv.Itoa(len(msgs)) + GetLangs("ms-err6-2") + " - " + strconv.Itoa(acked) + " Acked" + " " + strconv.FormatUint(m.Alloc/1024/1024, 10) + " Mib")
 				GetMessageList().Refresh()
 			}
 			nc.Close()
@@ -259,7 +274,7 @@ func Receive() {
 }
 
 // decrypt payload
-func handleMessage(m *nats.Msg) string {
+func handleMessage(m *nats.Msg) bool {
 
 	ms := MessageStore{}
 	//ejson := config.Decrypt(string(m.Data), config.GetQueuePassword())
@@ -272,15 +287,22 @@ func handleMessage(m *nats.Msg) string {
 	}
 	if GetFilter() {
 		if strings.Contains(ms.MSmessage, GetLangs("ms-con")) {
-			return ""
+			return false
 		}
 		if strings.Contains(ms.MSmessage, GetLangs("ms-dis")) {
-			return ""
+			return false
 		}
 	}
-	NatsMessages = append(NatsMessages, ms)
-
-	return ms.MSiduuid
+	if !ackMap[ms.MSiduuid] {
+		NatsMessages = append(NatsMessages, ms)
+		return true
+	}
+	ackMap[ms.MSiduuid] = false
+	return false
+}
+func SetAck(a string) {
+	log.Println("setack ", a)
+	ackMap[a] = true
 }
 
 // security erase jetstream data
