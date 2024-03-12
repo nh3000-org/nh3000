@@ -217,7 +217,7 @@ func Receive() {
 			var duration time.Duration = 604800000000
 			_, err1 := js.AddConsumer(GetQueue(), &nats.ConsumerConfig{
 				Durable:           GetNodeUUID(),
-				AckPolicy:         nats.AckNonePolicy,
+				AckPolicy:         nats.AckExplicitPolicy,
 				InactiveThreshold: duration,
 				DeliverPolicy:     nats.DeliverAllPolicy,
 				ReplayPolicy:      nats.ReplayInstantPolicy,
@@ -248,9 +248,12 @@ func Receive() {
 			if len(msgs) > 0 {
 				for i := 0; i < len(msgs); i++ {
 					if !handleMessage(msgs[i]) {
+
 						acked++
 					}
+					msgs[i].Ack()
 				}
+
 			}
 			if len(ackMap) > 0 {
 				var shadowackMap = ackMap
@@ -327,6 +330,7 @@ func Erase() {
 		log.Println("Erase Jetstream Delete", GetLangs("ms-dels"), err1)
 	}
 	msgmaxage, _ := time.ParseDuration(GetMsgMaxAge())
+
 	js1, err3 := js.AddStream(&nats.StreamConfig{
 		Name:     GetQueue(),
 		Subjects: []string{strings.ToLower(GetQueue()) + ".>"},

@@ -22,7 +22,7 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 	la.SetSelected(preferredlanguageShadow)
 
 	malabel := widget.NewLabel(config.GetLangs("ss-ma"))
-	ma := widget.NewRadioGroup([]string{"12h", "24h", "161h", "8372h"}, func(string) {})
+	ma := widget.NewRadioGroup([]string{"1h", "12h", "24h", "161h", "8372h"}, func(string) {})
 	ma.Horizontal = true
 	msgmaxageShadow = config.GetApp().Preferences().StringWithFallback("MsgMaxAge", config.Encrypt("12h", config.MySecret))
 	ma.SetSelected(config.Decrypt(msgmaxageShadow, config.MySecret))
