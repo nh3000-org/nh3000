@@ -1,6 +1,8 @@
 package panes
 
 import (
+	"log"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
@@ -18,9 +20,8 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 	lalabel := widget.NewLabel(config.GetLangs("ss-la"))
 	la := widget.NewRadioGroup([]string{"eng", "spa", "hin"}, func(string) {})
 	la.Horizontal = true
-	preferredlanguageShadow = config.GetApp().Preferences().StringWithFallback("PreferedLanguage", config.Encrypt("eng", config.MySecret))
+	preferredlanguageShadow = config.Decrypt(config.GetApp().Preferences().StringWithFallback("PreferedLanguage", config.Encrypt("eng", config.MySecret)), config.MySecret)
 	la.SetSelected(preferredlanguageShadow)
-
 	malabel := widget.NewLabel(config.GetLangs("ss-ma"))
 	ma := widget.NewRadioGroup([]string{"1h", "12h", "24h", "161h", "8372h"}, func(string) {})
 	ma.Horizontal = true
