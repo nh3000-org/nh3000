@@ -83,6 +83,9 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 		if !iserrors {
 			errors.SetText("...")
 
+			var preferedlanguageShadow = config.Decrypt(config.GetApp().Preferences().StringWithFallback("eng", config.Encrypt(config.GetPreferedLanguage(), config.MySecret)), config.MySecret)
+			config.SetPreferedLanguage(config.Decrypt(preferedlanguageShadow, config.MySecret))
+
 			var nodeuuidShadow = config.GetApp().Preferences().StringWithFallback("NodeUUID", config.Encrypt(uuid.New().String(), config.MySecret))
 			nodeuuid = config.Decrypt(nodeuuidShadow, config.MySecret)
 			config.SetNodeUUID(nodeuuid)
