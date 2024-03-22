@@ -255,14 +255,16 @@ func Receive() {
 				}
 
 			}
+			var shadowackMap = ackMap
 			if len(ackMap) > 0 {
-				var shadowackMap = ackMap
+
 				for k, v := range shadowackMap {
 					if !v {
 						delete(ackMap, k)
 					}
 				}
 			}
+			shadowackMap = nil
 			if GetMessageWindow() != nil {
 				var m runtime.MemStats
 				runtime.ReadMemStats(&m)
