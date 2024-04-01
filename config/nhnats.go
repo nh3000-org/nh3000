@@ -243,7 +243,7 @@ func Receive() {
 					GetMessageWindow().SetTitle(GetLangs("ms-carrier") + err.Error())
 				}
 			}
-			SetClearMessageDetail(true)
+			//SetClearMessageDetail(true)
 			var acked = 0
 			if len(msgs) > 0 {
 				for i := 0; i < len(msgs); i++ {
@@ -255,7 +255,7 @@ func Receive() {
 				}
 
 			}
-			//var shadowackMap = ackMap
+			GetMessageList().Refresh()
 			if len(ackMap) > 0 {
 				for k, v := range ackMap {
 					if !v {
@@ -268,7 +268,7 @@ func Receive() {
 				var m runtime.MemStats
 				runtime.ReadMemStats(&m)
 				GetMessageWindow().SetTitle(GetLangs("ms-err6-1") + strconv.Itoa(len(msgs)) + GetLangs("ms-err6-2") + " - " + strconv.Itoa(acked) + " Acked" + " " + strconv.FormatUint(m.Alloc/1024/1024, 10) + " Mib")
-				GetMessageList().Refresh()
+				//GetMessageList().Refresh()
 			}
 			nc.Close()
 			time.Sleep(30 * time.Second)
@@ -278,7 +278,6 @@ func Receive() {
 
 // decrypt payload
 func handleMessage(m *nats.Msg) bool {
-
 	ms := MessageStore{}
 
 	var ejson = string(Decrypt(string(m.Data), GetQueuePassword()))

@@ -11,7 +11,7 @@ import (
 )
 
 func EncdecScreen(win fyne.Window) fyne.CanvasObject {
-
+	var Details = widget.NewLabel("")
 	errors := widget.NewLabel("...")
 
 	password := widget.NewEntry()

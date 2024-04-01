@@ -1,6 +1,8 @@
 package panes
 
 import (
+	//"strings"
+
 	"strings"
 
 	"github.com/nh3000-org/nh3000/config"
@@ -10,16 +12,16 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-var Details = widget.NewLabel("")
 var ackMsgId = ""
+
+//var Details = widget.NewLabel("")
 
 func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 
 	config.SetMessageWindow(win)
-	//var Acknode = ""
+
 	var Errors = widget.NewLabel("...")
-	var DetailsTop = widget.NewLabel(config.GetLangs("ms-header1"))
-	//var DetailsBottom = widget.NewButton(config.GetLangs("ms-header1"))
+	var DetailsTop = widget.NewLabel(config.GetLangs("ms-header1") + ".")
 	DetailButton := widget.NewButton("Ack", func() {
 		if !config.GetLoggedOn() {
 			Errors.SetText(config.GetLangs("cs-lf"))
@@ -28,7 +30,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 		config.SetAck(ackMsgId)
 
 	})
-	var DetailsBorder = container.NewBorder(DetailsTop, DetailButton, nil, nil, Details)
+	var DetailsBorder = container.NewBorder(DetailsTop, DetailButton, nil, nil, nil)
 	message := widget.NewMultiLineEntry()
 	message.SetPlaceHolder(config.GetLangs("ms-mm"))
 	message.SetMinRowsVisible(2)
@@ -38,13 +40,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	DetailsVW := container.NewScroll(DetailsBorder)
 
 	DetailsVW.SetMinSize(fyne.NewSize(300, 240))
-	DetailsVW.Refresh()
-	if config.GetClearMessageDetail() {
-		Details.SetText("")
-		Details.Refresh()
-		DetailsVW.Refresh()
-		config.SetClearMessageDetail(false)
-	}
+	//DetailsVW.Refresh()
 
 	List := widget.NewList(
 		func() int {
@@ -55,25 +51,28 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 		},
 		func(id widget.ListItemID, item fyne.CanvasObject) {
 			var short = config.NatsMessages[id].MSmessage
-			if len(config.NatsMessages[id].MSmessage) > 20 {
+			if len(config.NatsMessages[id].MSmessage) > 120 {
 				var short1 = strings.ReplaceAll(config.NatsMessages[id].MSmessage, "\n", ".")
-				short = short1[0:12]
+				short = short1[0:120]
 			}
-			//Acknode = nhnats.NatsMessages[id].MSiduuid
+
+			//item.(*fyne.Container).Objects[0].(*widget.Label).Truncation
 			item.(*fyne.Container).Objects[0].(*widget.Label).SetText(config.NatsMessages[id].MSalias + " - " + short)
 		},
 	)
 	config.SetMessageList(List)
 	List.OnSelected = func(id widget.ListItemID) {
-		var mytext = config.NatsMessages[id].MSmessage + "\n.................." + config.NatsMessages[id].MShostname + config.NatsMessages[id].MSipadrs + config.NatsMessages[id].MSnodeuuid + config.NatsMessages[id].MSiduuid + config.NatsMessages[id].MSdate
-		Details.SetText(mytext)
+		//List.UpdateItem.(*fyne.Container).Objects[id].SetText(config.NatsMessages[id].MSmessage + "\n.................." + config.NatsMessages[id].MShostname + config.NatsMessages[id].MSipadrs + config.NatsMessages[id].MSnodeuuid + config.NatsMessages[id].MSiduuid + config.NatsMessages[id].MSdate)
+		//Details.SetText(mytext)
 		ackMsgId = config.NatsMessages[id].MSiduuid
-
 	}
 	List.OnUnselected = func(id widget.ListItemID) {
-		Details.SetText(config.GetLangs("ms-header1"))
+		//Details.SetText(config.GetLangs("ms-header1") + "..")
 	}
-
+	//if config.GetClearMessageDetail() {
+	//	//Details.SetText(config.GetLangs("ms-header1") + "..")
+	//	config.SetClearMessageDetail(false)
+	//}
 	List.Resize(fyne.NewSize(500, 5000))
 	List.Refresh()
 
@@ -98,7 +97,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 
 	// copy to clipboard messages
 	cpybutton := widget.NewButton(config.GetLangs("ms-cpy"), func() {
-		win.Clipboard().SetContent(Details.Text)
+		//win.Clipboard().SetContent(Details.Text)
 	})
 
 	bottombox := container.NewBorder(
@@ -113,7 +112,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 		bottombox,
 		nil,
 		nil,
-		container.NewHSplit(List, DetailsVW),
+		List,
 	)
 
 }

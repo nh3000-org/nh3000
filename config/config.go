@@ -55,8 +55,11 @@ var clientcert string
 var clientkey string
 var msgmaxage string
 var filter bool
-var clearmessagedetail bool
+
+// var clearmessagedetail bool
 var messagelist fyne.Widget
+
+//var messagelistdetails int
 
 func SetNatsServer(s string) {
 	server = s
@@ -70,12 +73,19 @@ func SetMessageList(l fyne.Widget) {
 func GetMessageList() fyne.Widget {
 	return messagelist
 }
-func SetClearMessageDetail(a bool) {
-	clearmessagedetail = a
-}
-func GetClearMessageDetail() bool {
-	return clearmessagedetail
-}
+
+//func SetMessageListDetails(l int) {
+//	messagelistdetails = l
+//}
+//func GetMessageListDetails() int {
+//	return messagelistdetails
+//}
+//func SetClearMessageDetail(a bool) {
+//clearmessagedetail = a
+//}
+//func GetClearMessageDetail() bool {
+//	return clearmessagedetail
+//}
 
 func SetFilter(a bool) {
 	filter = a
