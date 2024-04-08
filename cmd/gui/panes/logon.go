@@ -5,6 +5,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/theme"
 
 	"fyne.io/fyne/v2/widget"
 
@@ -60,7 +61,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 	ck.Disable()
 	var ckShadow = ""
 
-	TPbutton := widget.NewButton(config.GetLangs("ls-trypass"), func() {
+	TPbutton := widget.NewButtonWithIcon(config.GetLangs("ls-trypass"), theme.LoginIcon(), func() {
 		errors.SetText("...")
 		config.SetReceivingMessages(false)
 		var iserrors = false
@@ -127,7 +128,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 		}
 	})
 
-	SSbutton := widget.NewButton(config.GetLangs("ls-title"), func() {
+	SSbutton := widget.NewButtonWithIcon(config.GetLangs("ls-title"), theme.LoginIcon(), func() {
 		var haserrors = false
 		if aliasShadow != alias.Text {
 			haserrors = config.Edit("STRING", alias.Text)
@@ -202,7 +203,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 	})
 
 	// security erase
-	SEbutton := widget.NewButton(config.GetLangs("ls-erase"), func() {
+	SEbutton := widget.NewButtonWithIcon(config.GetLangs("ls-erase"), theme.ContentUndoIcon(), func() {
 		if config.GetLoggedOn() {
 			config.Erase()
 		}
@@ -226,21 +227,6 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 		ck.Disable()
 
 	}
-	themes := container.NewGridWithColumns(3,
-		widget.NewButton(config.GetLangs("mn-dark"), func() {
-			config.Selected = config.Dark
-			config.GetApp().Settings().SetTheme(config.MyTheme{})
-
-		}),
-		widget.NewButton(config.GetLangs("mn-light"), func() {
-			config.Selected = config.Light
-			config.GetApp().Settings().SetTheme(config.MyTheme{})
-		}),
-		widget.NewButton(config.GetLangs("mn-retro"), func() {
-			config.Selected = config.Retro
-			config.GetApp().Settings().SetTheme(config.MyTheme{})
-		}),
-	)
 
 	vertbox := container.NewVBox(
 
@@ -264,9 +250,10 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			widget.NewHyperlink("github.com", config.ParseURL("https://github.com/nh3000-org/snats")),
 		),
 		widget.NewLabel(""),
-		themes,
+		//		themes,
 		errors,
 	)
+
 	return container.NewScroll(
 		vertbox,
 	)

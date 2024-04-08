@@ -1,6 +1,8 @@
 package panes
 
 import (
+	"strconv"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
@@ -10,6 +12,7 @@ import (
 
 var preferredlanguageShadow string
 var msgmaxageShadow string
+var preferredthemeShadow string
 
 func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 
@@ -26,13 +29,37 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 	msgmaxageShadow = config.GetApp().Preferences().StringWithFallback("MsgMaxAge", config.Encrypt("12h", config.MySecret))
 	ma.SetSelected(config.Decrypt(msgmaxageShadow, config.MySecret))
 
-	ssbutton := widget.NewButton(config.GetLangs("ss-ss"), func() {
+	preferredthemeShadow = config.GetApp().Preferences().StringWithFallback("Theme", config.Encrypt("0", config.MySecret))
+	config.Selected, _ = strconv.Atoi(config.Decrypt(preferredthemeShadow, config.MySecret))
+	themes := container.NewGridWithColumns(3,
+		widget.NewButton(config.GetLangs("mn-dark"), func() {
+			config.Selected = config.Dark
+			config.GetApp().Settings().SetTheme(config.MyTheme{})
 
+		}),
+		widget.NewButton(config.GetLangs("mn-light"), func() {
+			config.Selected = config.Light
+			config.GetApp().Settings().SetTheme(config.MyTheme{})
+		}),
+		widget.NewButton(config.GetLangs("mn-retro"), func() {
+			config.Selected = config.Retro
+			config.GetApp().Settings().SetTheme(config.MyTheme{})
+		}),
+	)
+	ssbutton := widget.NewButton(config.GetLangs("ss-ss"), func() {
+		x, _ := strconv.Atoi(config.Decrypt(preferredthemeShadow, config.MySecret))
+		if x != config.Selected {
+			config.GetApp().Preferences().SetString("Theme", config.Encrypt(strconv.Itoa(config.Selected), config.MySecret))
+		}
 		if preferredlanguageShadow != la.Selected {
 			config.GetApp().Preferences().SetString("PreferedLanguage", config.Encrypt(la.Selected, config.MySecret))
 		}
 		if msgmaxageShadow != ma.Selected {
 			config.GetApp().Preferences().SetString("MsgMaxAge", config.Encrypt(ma.Selected, config.MySecret))
+		}
+
+		if preferredlanguageShadow != config.GetPreferedLanguage() {
+			config.GetApp().Preferences().SetString("PreferedLanguage", config.Encrypt(la.Selected, config.MySecret))
 		}
 		if config.GetLoggedOn() {
 			errors.SetText(config.GetLangs("ss-sserr"))
@@ -49,6 +76,7 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 		malabel,
 		ma,
 		ssbutton,
+		themes,
 	)
 	return container.NewBorder(
 		topbox,

@@ -1,7 +1,4 @@
-
 package config
-
-
 
 import (
 	"image/color"
@@ -127,6 +124,9 @@ func (m MyTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) colo
 		if name == "menuBackground" {
 			return color.Black
 		}
+		if name == "overlayBackground" {
+			return color.Black
+		}
 		if name != "disabled" {
 			log.Println("default ", name)
 		}
@@ -182,6 +182,9 @@ func (m MyTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) colo
 			return color.Black
 		}
 		if name == "background" {
+			return color.White
+		}
+		if name == "overlayBackground" {
 			return color.White
 		}
 		if name == "menuBackground" {
@@ -249,6 +252,9 @@ func (m MyTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) colo
 			return color.White
 		}
 		if name == "menuBackground" {
+			return color.White
+		}
+		if name == "overlayBackground" {
 			return color.White
 		}
 		if name == theme.ColorNameBackground {

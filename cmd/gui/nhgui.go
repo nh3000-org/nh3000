@@ -18,6 +18,7 @@ package main
 import (
 	"log"
 	"os"
+
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -39,13 +40,14 @@ type Pane struct {
 	SupportWeb   bool
 }
 
-var Panes = map[string]Pane{}
-var PanesIndex = map[string][]string{}
+//var Panes = map[string]Pane{}
+//var PanesIndex = map[string][]string{}
 
 func main() {
-
-	var a = (app.NewWithID("org.nh3000.nh3000"))
+	var a = app.NewWithID("org.nh3000.nh3000")
 	config.SetApp(a)
+	var w = a.NewWindow("NH3000")
+	config.SetWindow(w)
 	config.SetPreferedLanguage("eng")
 	if strings.HasPrefix(os.Getenv("LANG"), "en") {
 		config.SetPreferedLanguage("eng")
@@ -59,25 +61,12 @@ func main() {
 
 	}
 
-	Panes = map[string]Pane{
-		"logon":    {config.GetLangs("ls-title"), "", theme.LoginIcon(), panes.LogonScreen, true},
-		"messages": {config.GetLangs("ms-title"), "", theme.MailSendIcon(), panes.MessagesScreen, true},
-		"settings": {config.GetLangs("ss-title"), "", theme.SettingsIcon(), panes.SettingsScreen, true},
-		"password": {config.GetLangs("ps-title"), "", theme.DocumentIcon(), panes.PasswordScreen, true},
-		"encdec":   {config.GetLangs("es-title"), "", theme.CheckButtonIcon(), panes.EncdecScreen, true},
-	}
-
 	MyLogo, iconerr := fyne.LoadResourceFromPath("logo.png")
 	if iconerr != nil {
 		log.Println("logo error ", iconerr.Error())
 	}
-
-	var w = config.GetApp().NewWindow("NH3000")
-	config.GetApp().SetIcon(MyLogo)
 	config.Selected = config.Dark
-
 	config.GetApp().Settings().SetTheme(config.MyTheme{})
-
 	config.GetApp().SetIcon(MyLogo)
 
 	logLifecycle()
@@ -86,22 +75,33 @@ func main() {
 
 	intro := widget.NewLabel(config.GetLangs("mn-intro-1") + "\n" + "nats.io" + config.GetLangs("mn-intro-2"))
 	intro.Wrapping = fyne.TextWrapWord
+	var Panes = map[string]Pane{
+		"logon":    {config.GetLangs("ls-title"), "", theme.LoginIcon(), panes.LogonScreen, true},
+		"messages": {config.GetLangs("ms-title"), "", theme.MailSendIcon(), panes.MessagesScreen, true},
+		"settings": {config.GetLangs("ss-title"), "", theme.SettingsIcon(), panes.SettingsScreen, true},
+		"password": {config.GetLangs("ps-title"), "", theme.DocumentIcon(), panes.PasswordScreen, true},
+		"encdec":   {config.GetLangs("es-title"), "", theme.CheckButtonIcon(), panes.EncdecScreen, true},
+	}
+	log.Println("before tabs")
 
-	tabs := container.NewAppTabs(
-		container.NewTabItemWithIcon(Panes["logon"].Title, Panes["logon"].Icon, panes.LogonScreen(w)),
-		container.NewTabItemWithIcon(Panes["messages"].Title, Panes["messages"].Icon, panes.MessagesScreen(w)),
-		container.NewTabItemWithIcon(Panes["encdec"].Title, Panes["encdec"].Icon, panes.EncdecScreen(w)),
-		container.NewTabItemWithIcon(Panes["settings"].Title, Panes["settings"].Icon, panes.SettingsScreen(w)),
-		container.NewTabItemWithIcon(Panes["password"].Title, Panes["password"].Icon, panes.PasswordScreen(w)),
-	)
+	config.GetWindow().SetContent(container.NewAppTabs(
+		container.NewTabItemWithIcon(Panes["logon"].Title, Panes["logon"].Icon, panes.LogonScreen(config.GetWindow())),
+		container.NewTabItemWithIcon(Panes["messages"].Title, Panes["messages"].Icon, panes.MessagesScreen(config.GetWindow())),
+		container.NewTabItemWithIcon(Panes["encdec"].Title, Panes["encdec"].Icon, panes.EncdecScreen(config.GetWindow())),
+		container.NewTabItemWithIcon(Panes["settings"].Title, Panes["settings"].Icon, panes.SettingsScreen(config.GetWindow())),
+		container.NewTabItemWithIcon(Panes["password"].Title, Panes["password"].Icon, panes.PasswordScreen(config.GetWindow())),
+	))
 
-	w.SetContent(tabs)
-	w.Resize(fyne.NewSize(640, 480))
-	w.ShowAndRun()
+	log.Println("after tabs")
+	//config.GetWindow().SetContent(tabs)
+	log.Println("after set content")
+	config.GetWindow().Resize(fyne.NewSize(640, 480))
+	config.GetWindow().ShowAndRun()
 }
 
 // handle app close
 func logLifecycle() {
+
 	config.GetApp().Lifecycle().SetOnStopped(func() {
 		if config.GetLoggedOn() {
 			config.Send(config.GetLangs("ls-dis"), config.GetAlias())

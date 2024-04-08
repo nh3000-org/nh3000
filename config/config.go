@@ -42,6 +42,7 @@ var PasswordHash string
 
 var preferedlanguage string
 var win fyne.Window
+var mainwin fyne.Window
 var app fyne.App
 var loggedon bool
 var receivingmessages bool
@@ -73,19 +74,6 @@ func SetMessageList(l fyne.Widget) {
 func GetMessageList() fyne.Widget {
 	return messagelist
 }
-
-//func SetMessageListDetails(l int) {
-//	messagelistdetails = l
-//}
-//func GetMessageListDetails() int {
-//	return messagelistdetails
-//}
-//func SetClearMessageDetail(a bool) {
-//clearmessagedetail = a
-//}
-//func GetClearMessageDetail() bool {
-//	return clearmessagedetail
-//}
 
 func SetFilter(a bool) {
 	filter = a
@@ -184,7 +172,13 @@ func SetMessageWindow(w fyne.Window) {
 func GetMessageWindow() fyne.Window {
 	return win
 }
+func SetWindow(w fyne.Window) {
+	mainwin = w
+}
 
+func GetWindow() fyne.Window {
+	return mainwin
+}
 func SetApp(a fyne.App) {
 	app = a
 }
