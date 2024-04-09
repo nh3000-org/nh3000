@@ -82,7 +82,6 @@ func main() {
 		"password": {config.GetLangs("ps-title"), "", theme.DocumentIcon(), panes.PasswordScreen, true},
 		"encdec":   {config.GetLangs("es-title"), "", theme.CheckButtonIcon(), panes.EncdecScreen, true},
 	}
-	log.Println("before tabs")
 
 	config.GetWindow().SetContent(container.NewAppTabs(
 		container.NewTabItemWithIcon(Panes["logon"].Title, Panes["logon"].Icon, panes.LogonScreen(config.GetWindow())),
@@ -92,9 +91,6 @@ func main() {
 		container.NewTabItemWithIcon(Panes["password"].Title, Panes["password"].Icon, panes.PasswordScreen(config.GetWindow())),
 	))
 
-	log.Println("after tabs")
-	//config.GetWindow().SetContent(tabs)
-	log.Println("after set content")
 	config.GetWindow().Resize(fyne.NewSize(640, 480))
 	config.GetWindow().ShowAndRun()
 }
