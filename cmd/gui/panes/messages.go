@@ -5,9 +5,9 @@ import (
 
 	"github.com/nh3000-org/nh3000/config"
 
-	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -66,7 +66,8 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 		dlg := fyne.CurrentApp().NewWindow(config.NatsMessages[id].MSalias + config.NatsMessages[id].MSdate)
 		DetailsVW := container.NewScroll(DetailsBorder)
 		DetailsVW.SetMinSize(fyne.NewSize(300, 240))
-		dlg.SetContent(container.NewBorder(DetailsVW, cpybutton, nil, nil, AckButton))
+		DetailsBottom := container.NewBorder(cpybutton, AckButton, nil, nil, nil)
+		dlg.SetContent(container.NewBorder(DetailsVW, DetailsBottom, nil, nil, nil))
 		dlg.Show()
 
 		ackMsgId = config.NatsMessages[id].MSiduuid
