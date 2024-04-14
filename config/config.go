@@ -1,8 +1,10 @@
 package config
 
 import (
+	"errors"
 	"log"
 	"net/url"
+	"os"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -203,6 +205,13 @@ func Edit(action string, value string) bool {
 			return false
 		}
 
+	}
+	if action == "FILEEXISTS" {
+		_, err := os.Stat(value)
+		if errors.Is(err, os.ErrNotExist) {
+			return true
+		}
+		return false
 	}
 	if action == "QUEUEPASSWORD" {
 		if len(value) == 0 {

@@ -61,7 +61,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	)
 	config.SetMessageList(List)
 	List.OnSelected = func(id widget.ListItemID) {
-		config.GetApp().Settings().SetTheme(config.MyTheme{})
+		//config.GetApp().Settings().SetTheme(config.MyTheme{})
 		Details.SetText(config.NatsMessages[id].MSmessage + "\n.................." + config.NatsMessages[id].MShostname + config.NatsMessages[id].MSipadrs + config.NatsMessages[id].MSnodeuuid + config.NatsMessages[id].MSiduuid + config.NatsMessages[id].MSdate)
 		dlg := fyne.CurrentApp().NewWindow(config.NatsMessages[id].MSalias + config.NatsMessages[id].MSdate)
 		DetailsVW := container.NewScroll(DetailsBorder)
