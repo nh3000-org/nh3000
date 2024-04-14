@@ -232,8 +232,7 @@ func EncdecScreen(win fyne.Window) fyne.CanvasObject {
 		nil,
 		nil,
 	)
-	if fyne.CurrentDevice().IsMobile() {
-	}
+
 	c6box := container.NewBorder(
 		c5box,
 		buttonboxfile,
