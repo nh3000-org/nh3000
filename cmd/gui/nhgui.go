@@ -61,9 +61,9 @@ func main() {
 
 	}
 
-	MyLogo, iconerr := fyne.LoadResourceFromPath("logo.png")
+	MyLogo, iconerr := fyne.LoadResourceFromPath("Icon.png")
 	if iconerr != nil {
-		log.Println("logo error ", iconerr.Error())
+		log.Println("Icon.png error ", iconerr.Error())
 	}
 	config.Selected = config.Dark
 	config.GetApp().Settings().SetTheme(config.MyTheme{})

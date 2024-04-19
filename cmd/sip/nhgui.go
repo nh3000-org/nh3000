@@ -25,6 +25,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
+
 	"github.com/nh3000-org/nh3000/cmd/gui/panes"
 	"github.com/nh3000-org/nh3000/config"
 
@@ -61,9 +62,9 @@ func main() {
 
 	}
 
-	MyLogo, iconerr := fyne.LoadResourceFromPath("logo.png")
+	MyLogo, iconerr := fyne.LoadResourceFromPath("Icon.png")
 	if iconerr != nil {
-		log.Println("logo error ", iconerr.Error())
+		log.Println("Icon.png error ", iconerr.Error())
 	}
 	config.Selected = config.Dark
 	config.GetApp().Settings().SetTheme(config.MyTheme{})

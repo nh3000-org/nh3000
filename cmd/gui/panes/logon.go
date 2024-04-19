@@ -47,17 +47,19 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 
 	calabel := widget.NewLabel(config.GetLangs("cs-ca"))
 	ca := widget.NewMultiLineEntry()
-	ca.Resize(fyne.NewSize(320, 240))
+	ca.Resize(fyne.NewSize(320, 120))
 	ca.Disable()
 	var caShadow = ""
 
 	cclabel := widget.NewLabel(config.GetLangs("cs-cc"))
 	cc := widget.NewMultiLineEntry()
+	cc.Resize(fyne.NewSize(320, 120))
 	cc.Disable()
 	var ccShadow = ""
 
 	cklabel := widget.NewLabel(config.GetLangs("cs-ck"))
 	ck := widget.NewMultiLineEntry()
+	ck.Resize(fyne.NewSize(320, 120))
 	ck.Disable()
 	var ckShadow = ""
 

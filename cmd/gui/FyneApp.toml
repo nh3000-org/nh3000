@@ -1,7 +1,7 @@
 Website = "https://newhorizons3000.org"
 
 [Details]
-  Icon = "./logo.png"
+  Icon = "/home/oem/go/src/github.com/nh3000-org/nh3000/cmd/gui/Icon.png"
   Name = "NH3000"
   ID = "org.nh3000.nh3000"
   Version = "1.0.0"
