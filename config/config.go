@@ -59,6 +59,49 @@ var clientkey string
 var msgmaxage string
 var filter bool
 
+// sip fields
+var sipgeneralcallwaiting bool
+var sipgeneralhangup3way bool
+var sipgeneralincallosd bool
+var sipgeneralcallhistory int
+
+var sipsoundringtone string
+var sipsoundspeaker string
+var sipsoundmicrophone string
+var sipsoundvalidate bool
+var sipsoundossfragsize int
+var sipsoundalsaplayperiodsize int
+var sipsoundcaptureperiodsize int
+
+var sipringtoneplay bool
+var sipringtone string
+var sipringbacktoneplay bool
+var sipringbacktone string
+
+var sipaddressbooklookup bool
+var sipaddressoverideaddress bool
+var sipaddresslookupphoto bool
+
+var sipnetworksipport int
+var sipnetworkrtpport int
+var sipnetworkmaxudpsize int
+var sipnetworkmaxtcpsize int
+
+var siplogmaxsizemb int
+var siplogdebug bool
+var siplogstun bool
+var siplogmemory bool
+
+var sipuseralias string
+var sipusername string
+var sipdomain string
+var siporganization string
+var sipuserauthrealm string
+var sipuserauthname string
+var sipuserpassword string
+var sipuserakaop string
+var sipuserakaamp string
+
 // var clearmessagedetail bool
 var messagelist fyne.Widget
 
