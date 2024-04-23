@@ -12,7 +12,7 @@ import (
 )
 
 /*
-*  The following fields need to be modified for you production
+*  The following fields need to be modified for your production
 *  Environment to provide maximum security
 *
 *  These fields are meant to be distributed at compile time and
@@ -33,6 +33,9 @@ var NatsQueuePassword = "987654321098765432109876"
 var NatsQueueDurable = "snatsdurable"
 var NatsQueue = "MESSAGES"
 
+var NatsNodeUUID string
+var NatsAlias string
+
 // default encryption
 var KeyAes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}  // must be 16 bytes
 var KeyHmac = []byte{36, 45, 53, 21, 87, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05} // must be 16 bytes
@@ -48,15 +51,7 @@ var mainwin fyne.Window
 var app fyne.App
 var loggedon bool
 var receivingmessages bool
-var NatsNodeUUID string
-var NatsAlias string
 
-// var server string
-// var queue string
-// var queuepassword string
-var caroot string
-var clientcert string
-var clientkey string
 var msgmaxage string
 var filter bool
 
@@ -155,64 +150,6 @@ func SetPreferedLanguage(a string) {
 func GetPreferedLanguage() string {
 	return preferedlanguage
 }
-
-func SetClientKey(a string) {
-	clientkey = a
-}
-func GetClientKey() string {
-	return clientkey
-}
-func SetClientCert(a string) {
-	clientcert = a
-}
-func GetClientCert() string {
-	return clientcert
-}
-func SetCaroot(a string) {
-	caroot = a
-}
-func GetCaroot() string {
-	return caroot
-}
-
-//func SetQueuePassword(a string) {
-//	queuepassword = a
-//}
-
-//func GetQueuePassword() string {
-//	return queuepassword
-//}
-//func SetQueue(a string) {
-//	queue = a
-//}
-
-//func GetQueue() string {
-//	return queue
-//}
-
-//func SetServer(a string) {
-//	server = a
-//}
-
-//func GetServer() string {
-//	return server
-//}
-
-//func SetAlias(a string) {
-//	alias = a
-//}
-
-//func GetAlias() string {
-//	return alias
-//}
-
-//func SetNodeUUID(n string) {
-//	nodeuuid = n
-//}
-
-//func GetNodeUUID() string {
-//	return nodeuuid
-//}
 
 func SetMessageWindow(w fyne.Window) {
 	win = w

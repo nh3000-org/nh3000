@@ -91,7 +91,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 
 			var nodeuuidShadow = config.GetApp().Preferences().StringWithFallback("NodeUUID", config.Encrypt(uuid.New().String(), config.MySecret))
 			nodeuuid = config.Decrypt(nodeuuidShadow, config.MySecret)
-			config.SetNodeUUID(nodeuuid)
+			config.NatsNodeUUID = nodeuuid
 			if nodeuuidShadow != nodeuuid {
 				config.GetApp().Preferences().SetString("NodeUUID", config.Encrypt(nodeuuid, config.MySecret))
 			}
@@ -180,14 +180,14 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 		if !haserrors {
 			config.SetLoggedOn()
 
-			config.SetAlias(alias.Text)
+			config.NatsAlias = alias.Text
 
-			config.SetServer(server.Text)
-			config.SetQueue(queue.Text)
-			config.SetQueuePassword(queuepassword.Text)
-			config.SetCaroot(ca.Text)
-			config.SetClientCert(cc.Text)
-			config.SetClientKey(ck.Text)
+			config.NatsServer = server.Text
+			config.NatsQueue = queue.Text
+			config.NatsQueuePassword = queuepassword.Text
+			config.NatsCaroot = ca.Text
+			config.NatsClientcert = cc.Text
+			config.NatsClientkey = ck.Text
 			config.SetLoggedOn()
 			password.Disable()
 			server.Disable()
@@ -199,7 +199,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			cc.Disable()
 
 			errors.SetText("...")
-			config.Send(config.GetLangs("ls-con"), config.GetAlias())
+			config.Send(config.GetLangs("ls-con"), config.NatsAlias)
 			go config.Receive()
 		}
 	})

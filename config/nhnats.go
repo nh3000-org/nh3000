@@ -102,11 +102,11 @@ func docerts() {
 		if RootCAs == nil {
 			RootCAs = x509.NewCertPool()
 		}
-		ok := RootCAs.AppendCertsFromPEM([]byte(GetCaroot()))
+		ok := RootCAs.AppendCertsFromPEM([]byte(NatsCaroot))
 		if !ok {
 			log.Println("nhnats.go init rootCAs")
 		}
-		Clientcert, err := tls.X509KeyPair([]byte(GetClientCert()), []byte(GetClientKey()))
+		Clientcert, err := tls.X509KeyPair([]byte(NatsClientcert), []byte(NatsClientkey))
 		if err != nil {
 			log.Println("nhnats.go init Clientcert " + err.Error())
 		}
@@ -225,14 +225,14 @@ func Receive() {
 			if err1 != nil {
 				//log.Println(err1.Error())
 				if GetMessageWindow() != nil {
-					GetMessageWindow().SetTitle(GetLangs("ms-carrier") + err1.Error())
+					GetMessageWindow().SetTitle(GetLangsNats("ms-carrier") + err1.Error())
 				}
 			}
 			sub, errsub := js.PullSubscribe("", "", nats.BindStream(NatsQueue))
 			if errsub != nil {
 				//log.Println(errsub.Error())
 				if GetMessageWindow() != nil {
-					GetMessageWindow().SetTitle(GetLangs("ms-carrier") + errsub.Error())
+					GetMessageWindow().SetTitle(GetLangsNats("ms-carrier") + errsub.Error())
 				}
 			}
 			msgs, err := sub.Fetch(100)
@@ -240,7 +240,7 @@ func Receive() {
 				//log.Println(err.Error())
 				if GetMessageWindow() != nil {
 
-					GetMessageWindow().SetTitle(GetLangs("ms-carrier") + err.Error())
+					GetMessageWindow().SetTitle(GetLangsNats("ms-carrier") + err.Error())
 				}
 			}
 			//SetClearMessageDetail(true)
@@ -287,10 +287,10 @@ func handleMessage(m *nats.Msg) bool {
 		log.Println("NATS Receive ", ejson[0])
 	}
 	if GetFilter() {
-		if strings.Contains(ms.MSmessage, GetLangs("ms-con")) {
+		if strings.Contains(ms.MSmessage, GetLangsNats("ms-con")) {
 			return false
 		}
-		if strings.Contains(ms.MSmessage, GetLangs("ms-dis")) {
+		if strings.Contains(ms.MSmessage, GetLangsNats("ms-dis")) {
 			return false
 		}
 	}
@@ -313,11 +313,11 @@ func Erase() {
 
 	nc, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&TLS))
 	if err != nil {
-		log.Println("Erase Connect", GetLangs("ms-erac"), err.Error())
+		log.Println("Erase Connect", GetLangsNats("ms-erac"), err.Error())
 	}
 	js, err := nc.JetStream()
 	if err != nil {
-		log.Println("Erase Jetstream Make ", GetLangs("ms-eraj"), err)
+		log.Println("Erase Jetstream Make ", GetLangsNats("ms-eraj"), err)
 	}
 
 	NatsMessages = nil
