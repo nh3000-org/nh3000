@@ -54,7 +54,7 @@ var FyneApp fyne.App
 var LoggedOn bool
 // var clearmessagedetail bool
 var FyneMessageList fyne.Widget
-var filter bool
+var FyneFilter bool
 
 // sip fields
 var sipgeneralcallwaiting bool
@@ -98,13 +98,6 @@ var sipuserauthname string
 var sipuserpassword string
 var sipuserakaop string
 var sipuserakaamp string
-
-func SetFilter(a bool) {
-	filter = a
-}
-func GetFilter() bool {
-	return filter
-}
 
 func DataStore(file string) fyne.URI {
 	DataLocation, dlerr := storage.Child(FyneApp.Storage().RootURI(), file)

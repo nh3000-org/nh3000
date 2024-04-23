@@ -286,7 +286,7 @@ func handleMessage(m *nats.Msg) bool {
 	if err1 != nil {
 		log.Println("NATS Receive ", ejson[0])
 	}
-	if GetFilter() {
+	if FyneFilter {
 		if strings.Contains(ms.MSmessage, GetLangsNats("ms-con")) {
 			return false
 		}
