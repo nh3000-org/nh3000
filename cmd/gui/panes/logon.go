@@ -65,7 +65,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 
 	TPbutton := widget.NewButtonWithIcon(config.GetLangs("ls-trypass"), theme.LoginIcon(), func() {
 		errors.SetText("...")
-		config.SetReceivingMessages(false)
+		config.NatsReceivingmessages = false
 		var iserrors = false
 		ph, _ := config.LoadHashWithDefault("config.hash", "123456")
 
@@ -107,7 +107,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			queuepasswordShadow = config.GetApp().Preferences().StringWithFallback("QueuePassword", config.Encrypt("987654321098765432109876", config.MySecret))
 			queuepassword.SetText(config.Decrypt(queuepasswordShadow, config.MySecret))
 
-			config.SetMsgMaxAge(config.Decrypt(config.GetApp().Preferences().StringWithFallback("MsgMaxAge", config.Encrypt("12h", config.MySecret)), config.MySecret))
+			config.NatsMsgmaxage = config.Decrypt(config.GetApp().Preferences().StringWithFallback("MsgMaxAge", config.Encrypt("12h", config.MySecret)), config.MySecret)
 
 			config.SetPreferedLanguage(config.Decrypt(config.GetApp().Preferences().StringWithFallback("PreferedLanguage", config.Encrypt("eng", config.MySecret)), config.MySecret))
 
