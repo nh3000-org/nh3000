@@ -48,10 +48,10 @@ const Password = "123456" // default password shipped with app
 var PasswordHash string
 
 var PreferedLanguage string
-var win fyne.Window
-var mainwin fyne.Window
+var FyneWin fyne.Window
+var FyneMainWin fyne.Window
 var FyneApp fyne.App
-var loggedon bool
+var LoggedOn bool
 
 var filter bool
 
@@ -132,29 +132,6 @@ func DataStore(file string) fyne.URI {
 	return DataLocation
 }
 
-func SetMessageWindow(w fyne.Window) {
-	win = w
-}
-
-func GetMessageWindow() fyne.Window {
-	return win
-}
-func SetWindow(w fyne.Window) {
-	mainwin = w
-}
-
-func GetWindow() fyne.Window {
-	return mainwin
-}
-
-
-func SetLoggedOn() {
-	loggedon = true
-}
-
-func GetLoggedOn() bool {
-	return loggedon
-}
 func Edit(action string, value string) bool {
 	if action == "cvtbool" {
 		if value == "True" {

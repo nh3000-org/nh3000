@@ -199,15 +199,15 @@ func Receive() {
 			NatsMessages = nil
 			nc, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&TLS))
 			if err != nil {
-				if GetMessageWindow() != nil {
-					GetMessageWindow().SetTitle(GetLangsNats("ms-carrier") + err.Error())
+				if FyneWin != nil {
+					FyneWin.SetTitle(GetLangsNats("ms-carrier") + err.Error())
 				}
 
 			}
 			js, err := nc.JetStream()
 			if err != nil {
-				if GetMessageWindow() != nil {
-					GetMessageWindow().SetTitle(GetLangsNats("ms-carrier") + err.Error())
+				if FyneWin != nil {
+					FyneWin.SetTitle(GetLangsNats("ms-carrier") + err.Error())
 				}
 			}
 			js.AddStream(&nats.StreamConfig{
@@ -224,23 +224,23 @@ func Receive() {
 			})
 			if err1 != nil {
 				//log.Println(err1.Error())
-				if GetMessageWindow() != nil {
-					GetMessageWindow().SetTitle(GetLangsNats("ms-carrier") + err1.Error())
+				if FyneWin != nil {
+					FyneWin.SetTitle(GetLangsNats("ms-carrier") + err1.Error())
 				}
 			}
 			sub, errsub := js.PullSubscribe("", "", nats.BindStream(NatsQueue))
 			if errsub != nil {
 				//log.Println(errsub.Error())
-				if GetMessageWindow() != nil {
-					GetMessageWindow().SetTitle(GetLangsNats("ms-carrier") + errsub.Error())
+				if FyneWin != nil {
+					FyneWin.SetTitle(GetLangsNats("ms-carrier") + errsub.Error())
 				}
 			}
 			msgs, err := sub.Fetch(100)
 			if err != nil {
 				//log.Println(err.Error())
-				if GetMessageWindow() != nil {
+				if FyneWin != nil {
 
-					GetMessageWindow().SetTitle(GetLangsNats("ms-carrier") + err.Error())
+					FyneWin.SetTitle(GetLangsNats("ms-carrier") + err.Error())
 				}
 			}
 			//SetClearMessageDetail(true)
@@ -264,10 +264,10 @@ func Receive() {
 				}
 			}
 			//shadowackMap = nil
-			if GetMessageWindow() != nil {
+			if FyneWin != nil {
 				var m runtime.MemStats
 				runtime.ReadMemStats(&m)
-				GetMessageWindow().SetTitle(GetLangsNats("ms-err6-1") + strconv.Itoa(len(msgs)) + GetLangsNats("ms-err6-2") + " - " + strconv.Itoa(acked) + " Acked" + " " + strconv.FormatUint(m.Alloc/1024/1024, 10) + " Mib")
+				FyneWin.SetTitle(GetLangsNats("ms-err6-1") + strconv.Itoa(len(msgs)) + GetLangsNats("ms-err6-2") + " - " + strconv.Itoa(acked) + " Acked" + " " + strconv.FormatUint(m.Alloc/1024/1024, 10) + " Mib")
 				//GetMessageList().Refresh()
 			}
 			nc.Close()

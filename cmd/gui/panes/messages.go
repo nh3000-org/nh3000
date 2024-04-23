@@ -17,7 +17,7 @@ var mymessageshort = ""
 
 func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 
-	config.SetMessageWindow(win)
+	config.FyneWin = win
 	message := widget.NewMultiLineEntry()
 	message.SetPlaceHolder(config.GetLangs("ms-mm"))
 	message.SetMinRowsVisible(2)

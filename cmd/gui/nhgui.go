@@ -47,7 +47,7 @@ func main() {
 	var a = app.NewWithID("org.nh3000.nh3000")
 	config.FyneApp = a
 	var w = a.NewWindow("NH3000")
-	config.SetWindow(w)
+	config.FyneMainWin = w
 	config.PreferedLanguage = "eng"
 	if strings.HasPrefix(os.Getenv("LANG"), "en") {
 		config.PreferedLanguage = "eng"
@@ -83,16 +83,16 @@ func main() {
 		"encdec":   {config.GetLangs("es-title"), "", theme.CheckButtonIcon(), panes.EncdecScreen, true},
 	}
 
-	config.GetWindow().SetContent(container.NewAppTabs(
-		container.NewTabItemWithIcon(Panes["logon"].Title, Panes["logon"].Icon, panes.LogonScreen(config.GetWindow())),
-		container.NewTabItemWithIcon(Panes["messages"].Title, Panes["messages"].Icon, panes.MessagesScreen(config.GetWindow())),
-		container.NewTabItemWithIcon(Panes["encdec"].Title, Panes["encdec"].Icon, panes.EncdecScreen(config.GetWindow())),
-		container.NewTabItemWithIcon(Panes["settings"].Title, Panes["settings"].Icon, panes.SettingsScreen(config.GetWindow())),
-		container.NewTabItemWithIcon(Panes["password"].Title, Panes["password"].Icon, panes.PasswordScreen(config.GetWindow())),
+	config.FyneMainWin.SetContent(container.NewAppTabs(
+		container.NewTabItemWithIcon(Panes["logon"].Title, Panes["logon"].Icon, panes.LogonScreen(config.FyneMainWin)),
+		container.NewTabItemWithIcon(Panes["messages"].Title, Panes["messages"].Icon, panes.MessagesScreen(config.FyneMainWin)),
+		container.NewTabItemWithIcon(Panes["encdec"].Title, Panes["encdec"].Icon, panes.EncdecScreen(config.FyneMainWin)),
+		container.NewTabItemWithIcon(Panes["settings"].Title, Panes["settings"].Icon, panes.SettingsScreen(config.FyneMainWin)),
+		container.NewTabItemWithIcon(Panes["password"].Title, Panes["password"].Icon, panes.PasswordScreen(config.FyneMainWin)),
 	))
 
-	config.GetWindow().Resize(fyne.NewSize(640, 480))
-	config.GetWindow().ShowAndRun()
+	config.FyneMainWin.Resize(fyne.NewSize(640, 480))
+	config.FyneMainWin.ShowAndRun()
 }
 
 // handle app close

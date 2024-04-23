@@ -178,7 +178,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 		}
 
 		if !haserrors {
-			config.SetLoggedOn()
+			config.LoggedOn = true
 
 			config.NatsAlias = alias.Text
 
@@ -188,7 +188,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			config.NatsCaroot = ca.Text
 			config.NatsClientcert = cc.Text
 			config.NatsClientkey = ck.Text
-			config.SetLoggedOn()
+			config.LoggedOn = true
 			password.Disable()
 			server.Disable()
 			alias.Disable()
@@ -206,11 +206,11 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 
 	// security erase
 	SEbutton := widget.NewButtonWithIcon(config.GetLangs("ls-erase"), theme.ContentUndoIcon(), func() {
-		if config.GetLoggedOn() {
+		if config.LoggedOn {
 			config.Erase()
 		}
 	})
-	if config.GetLoggedOn() {
+	if config.LoggedOn {
 		TPbutton.Disable()
 		TPbutton.Refresh()
 		SSbutton.Disable()
@@ -218,7 +218,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 		SEbutton.Enable()
 		SEbutton.Refresh()
 	}
-	if !config.GetLoggedOn() {
+	if !config.LoggedOn {
 		password.Enable()
 		server.Disable()
 		alias.Disable()
