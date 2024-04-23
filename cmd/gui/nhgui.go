@@ -45,19 +45,19 @@ type Pane struct {
 
 func main() {
 	var a = app.NewWithID("org.nh3000.nh3000")
-	config.SetApp(a)
+	config.FyneApp = a
 	var w = a.NewWindow("NH3000")
 	config.SetWindow(w)
-	config.SetPreferedLanguage("eng")
+	config.PreferedLanguage = "eng"
 	if strings.HasPrefix(os.Getenv("LANG"), "en") {
-		config.SetPreferedLanguage("eng")
+		config.PreferedLanguage = "eng"
 	}
 	if strings.HasPrefix(os.Getenv("LANG"), "sp") {
-		config.SetPreferedLanguage("spa")
+		config.PreferedLanguage = "spa"
 
 	}
 	if strings.HasPrefix(os.Getenv("LANG"), "hn") {
-		config.SetPreferedLanguage("hin")
+		config.PreferedLanguage = "hin"
 
 	}
 
@@ -66,8 +66,8 @@ func main() {
 		log.Println("Icon.png error ", iconerr.Error())
 	}
 	config.Selected = config.Dark
-	config.GetApp().Settings().SetTheme(config.MyTheme{})
-	config.GetApp().SetIcon(MyLogo)
+	config.FyneApp.Settings().SetTheme(config.MyTheme{})
+	config.FyneApp.SetIcon(MyLogo)
 
 	logLifecycle()
 	TopWindow = w
@@ -98,11 +98,11 @@ func main() {
 // handle app close
 func logLifecycle() {
 
-	config.GetApp().Lifecycle().SetOnStopped(func() {
+	config.FyneApp.Lifecycle().SetOnStopped(func() {
 		if config.GetLoggedOn() {
 			config.Send(config.GetLangs("ls-dis"), config.NatsAlias)
 		}
-		if config.GetReceivingMessages() {
+		if config.NatsReceivingMessages {
 			config.QuitReceive <- true
 		}
 	})

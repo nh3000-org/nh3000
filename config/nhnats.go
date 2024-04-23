@@ -190,7 +190,7 @@ func Receive() {
 
 	docerts()
 
-	NatsReceivingmessages = true
+	NatsReceivingMessages = true
 	for {
 		select {
 		case <-QuitReceive:
@@ -329,7 +329,7 @@ func Erase() {
 	if err2 != nil {
 		log.Println("Erase Jetstream Delete", GetLangsNats("ms-dels"), err1)
 	}
-	msgmaxage, _ := time.ParseDuration(NatsMsgmaxage)
+	msgmaxage, _ := time.ParseDuration(NatsMsgMaxAge)
 
 	js1, err3 := js.AddStream(&nats.StreamConfig{
 		Name:     NatsQueue,

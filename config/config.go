@@ -35,9 +35,9 @@ var NatsQueue = "MESSAGES"
 
 var NatsNodeUUID string
 var NatsAlias string
-var NatsReceivingmessages bool
+var NatsReceivingMessages bool
 
-var NatsMsgmaxage string
+var NatsMsgMaxAge string
 // default encryption
 var KeyAes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}  // must be 16 bytes
 var KeyHmac = []byte{36, 45, 53, 21, 87, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05} // must be 16 bytes
@@ -47,10 +47,10 @@ const Password = "123456" // default password shipped with app
 
 var PasswordHash string
 
-var preferedlanguage string
+var PreferedLanguage string
 var win fyne.Window
 var mainwin fyne.Window
-var app fyne.App
+var FyneApp fyne.App
 var loggedon bool
 
 var filter bool
@@ -125,18 +125,11 @@ func GetFilter() bool {
 }
 
 func DataStore(file string) fyne.URI {
-	DataLocation, dlerr := storage.Child(GetApp().Storage().RootURI(), file)
+	DataLocation, dlerr := storage.Child(FyneApp.Storage().RootURI(), file)
 	if dlerr != nil {
 		log.Println("DataStore error ", dlerr)
 	}
 	return DataLocation
-}
-
-func SetPreferedLanguage(a string) {
-	preferedlanguage = a
-}
-func GetPreferedLanguage() string {
-	return preferedlanguage
 }
 
 func SetMessageWindow(w fyne.Window) {
@@ -153,13 +146,7 @@ func SetWindow(w fyne.Window) {
 func GetWindow() fyne.Window {
 	return mainwin
 }
-func SetApp(a fyne.App) {
-	app = a
-}
 
-func GetApp() fyne.App {
-	return app
-}
 
 func SetLoggedOn() {
 	loggedon = true
