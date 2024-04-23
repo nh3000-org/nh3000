@@ -22,7 +22,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	message.SetPlaceHolder(config.GetLangs("ms-mm"))
 	message.SetMinRowsVisible(2)
 
-	Filter := widget.NewCheck(config.GetLangs("ms-filter"), func(on bool) { config.SetFilter(on) })
+	Filter := widget.NewCheck(config.GetLangs("ms-filter"), func(on bool) { config.FyneFilter = true })
 
 	var Errors = widget.NewLabel("...")
 	//var DetailsTop = widget.NewLabel(config.GetLangs("ms-header1") + ".")
