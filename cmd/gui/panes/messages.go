@@ -27,7 +27,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	var Errors = widget.NewLabel("...")
 	//var DetailsTop = widget.NewLabel(config.GetLangs("ms-header1") + ".")
 	AckButton := widget.NewButtonWithIcon("Ack", theme.MailSendIcon(), func() {
-		if !config.GetLoggedOn() {
+		if !config.LoggedOn {
 			Errors.SetText(config.GetLangs("cs-lf"))
 			return
 		}
@@ -81,7 +81,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	List.Refresh()
 
 	smbutton := widget.NewButtonWithIcon(config.GetLangs("ms-sm"), theme.MailSendIcon(), func() {
-		if !config.GetLoggedOn() {
+		if !config.LoggedOn {
 			Errors.SetText(config.GetLangs("cs-lf"))
 		}
 		config.Send(message.Text, config.NatsAlias)
