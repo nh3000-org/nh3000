@@ -59,7 +59,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 			item.(*fyne.Container).Objects[0].(*widget.Label).SetText(config.NatsMessages[id].MSalias + " - " + mymessage)
 		},
 	)
-	config.SetMessageList(List)
+	config.FyneMessageList = List
 	List.OnSelected = func(id widget.ListItemID) {
 		//config.GetApp().Settings().SetTheme(config.MyTheme{})
 		Details.SetText(config.NatsMessages[id].MSmessage + "\n.................." + config.NatsMessages[id].MShostname + config.NatsMessages[id].MSipadrs + config.NatsMessages[id].MSnodeuuid + config.NatsMessages[id].MSiduuid + config.NatsMessages[id].MSdate)

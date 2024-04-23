@@ -99,7 +99,7 @@ func main() {
 func logLifecycle() {
 
 	config.FyneApp.Lifecycle().SetOnStopped(func() {
-		if config.GetLoggedOn() {
+		if config.LoggedOn {
 			config.Send(config.GetLangs("ls-dis"), config.NatsAlias)
 		}
 		if config.NatsReceivingMessages {

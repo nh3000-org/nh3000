@@ -52,7 +52,8 @@ var FyneWin fyne.Window
 var FyneMainWin fyne.Window
 var FyneApp fyne.App
 var LoggedOn bool
-
+// var clearmessagedetail bool
+var FyneMessageList fyne.Widget
 var filter bool
 
 // sip fields
@@ -97,25 +98,6 @@ var sipuserauthname string
 var sipuserpassword string
 var sipuserakaop string
 var sipuserakaamp string
-
-// var clearmessagedetail bool
-var messagelist fyne.Widget
-
-//var messagelistdetails int
-
-//	func SetNatsServer(s string) {
-//		server = s
-//	}
-//
-//	func GetNatsServer() string {
-//		return server
-//	}
-func SetMessageList(l fyne.Widget) {
-	messagelist = l
-}
-func GetMessageList() fyne.Widget {
-	return messagelist
-}
 
 func SetFilter(a bool) {
 	filter = a

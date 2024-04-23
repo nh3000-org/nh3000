@@ -255,7 +255,7 @@ func Receive() {
 				}
 
 			}
-			GetMessageList().Refresh()
+			FyneMessageList.Refresh()
 			if len(ackMap) > 0 {
 				for k, v := range ackMap {
 					if !v {

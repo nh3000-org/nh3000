@@ -61,10 +61,10 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 		if preferredlanguageShadow != config.PreferedLanguage {
 			config.FyneApp.Preferences().SetString("PreferedLanguage", config.Encrypt(la.Selected, config.MySecret))
 		}
-		if config.GetLoggedOn() {
+		if config.LoggedOn {
 			errors.SetText(config.GetLangs("ss-sserr"))
 		}
-		if !config.GetLoggedOn() {
+		if !config.LoggedOn {
 			errors.SetText(config.GetLangs("ss-sserr1"))
 		}
 	})
