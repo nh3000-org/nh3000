@@ -16,6 +16,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
+	//"github.com/nh3000-org/nh3000/config"
 )
 
 type MessageStore struct {
@@ -123,19 +124,18 @@ func docerts() {
 
 // send message to nats
 func Send(m string, alias string) bool {
-
 	docerts()
 	EncMessage := MessageStore{}
 	name, err := os.Hostname()
 	if err != nil {
-		EncMessage.MShostname = "\n" + GetLangs("ms-nhn")
+		EncMessage.MShostname = "\n" + GetLangsNats("ms-nhn")
 	} else {
-		EncMessage.MShostname = "\n" + GetLangs("ms-hn") + name
+		EncMessage.MShostname = "\n" + GetLangsNats("ms-hn") + name
 	}
 
 	ifas, err := net.Interfaces()
 	if err != nil {
-		EncMessage.MShostname += "\n-  " + GetLangs("ms-carrier")
+		EncMessage.MShostname += "\n-  " + GetLangsNats("ms-carrier")
 	}
 	if err == nil {
 		var as []string
@@ -145,38 +145,38 @@ func Send(m string, alias string) bool {
 				as = append(as, a)
 			}
 		}
-		EncMessage.MShostname += "\n" + GetLangs("ms-mi")
+		EncMessage.MShostname += "\n" + GetLangsNats("ms-mi")
 		for i, s := range as {
 			EncMessage.MShostname += "\n- " + strconv.Itoa(i) + " : " + s
 		}
 		addrs, _ := net.InterfaceAddrs()
-		EncMessage.MShostname += "\n" + GetLangs("ms-ad")
+		EncMessage.MShostname += "\n" + GetLangsNats("ms-ad")
 		for _, addr := range addrs {
 			EncMessage.MShostname += "\n- " + addr.String()
 		}
 	}
 	EncMessage.MSalias = alias
-	EncMessage.MSnodeuuid = "\n" + GetLangs("ms-ni") + GetNodeUUID()
+	EncMessage.MSnodeuuid = "\n" + GetLangsNats("ms-ni") + NatsNodeUUID
 	msiduuid := uuid.New().String()
-	EncMessage.MSiduuid = "\n" + GetLangs("ms-msg") + msiduuid
-	EncMessage.MSdate = "\n" + GetLangs("ms-on") + time.Now().Format(time.UnixDate)
+	EncMessage.MSiduuid = "\n" + GetLangsNats("ms-msg") + msiduuid
+	EncMessage.MSdate = "\n" + GetLangsNats("ms-on") + time.Now().Format(time.UnixDate)
 	EncMessage.MSmessage = m
 	jsonmsg, jsonerr := json.Marshal(EncMessage)
 	if jsonerr != nil {
 		log.Println("FormatMessage ", jsonerr)
 	}
 	//log.Println("jsonmsg ", string(jsonmsg))
-	ejson := Encrypt(string(jsonmsg), GetQueuePassword())
+	ejson := Encrypt(string(jsonmsg), NatsQueuePassword)
 	//log.Println("ejson ", string(ejson))
-	NC, err := nats.Connect(GetServer(), nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&TLS))
+	NC, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&TLS))
 	if err != nil {
-		fmt.Println("Send " + GetLangs("ms-err7") + err.Error())
+		fmt.Println("Send " + GetLangsNats("ms-err7") + err.Error())
 	}
 	JS, err := NC.JetStream()
 	if err != nil {
-		fmt.Println("Send " + GetLangs("ms-err7") + err.Error() + <-JS.StreamNames())
+		fmt.Println("Send " + GetLangsNats("ms-err7") + err.Error() + <-JS.StreamNames())
 	}
-	_, errp := JS.Publish(strings.ToLower(GetQueue())+".logger", []byte(ejson))
+	_, errp := JS.Publish(strings.ToLower(NatsQueue)+".logger", []byte(ejson))
 	if errp != nil {
 		return true
 	}
@@ -197,26 +197,26 @@ func Receive() {
 			return
 		default:
 			NatsMessages = nil
-			nc, err := nats.Connect(GetServer(), nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&TLS))
+			nc, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&TLS))
 			if err != nil {
 				if GetMessageWindow() != nil {
-					GetMessageWindow().SetTitle(GetLangs("ms-carrier") + err.Error())
+					GetMessageWindow().SetTitle(GetLangsNats("ms-carrier") + err.Error())
 				}
 
 			}
 			js, err := nc.JetStream()
 			if err != nil {
 				if GetMessageWindow() != nil {
-					GetMessageWindow().SetTitle(GetLangs("ms-carrier") + err.Error())
+					GetMessageWindow().SetTitle(GetLangsNats("ms-carrier") + err.Error())
 				}
 			}
 			js.AddStream(&nats.StreamConfig{
-				Name:     GetQueue() + GetNodeUUID(),
-				Subjects: []string{strings.ToLower(GetQueue()) + ".>"},
+				Name:     NatsQueue + NatsNodeUUID,
+				Subjects: []string{strings.ToLower(NatsQueue) + ".>"},
 			})
 			var duration time.Duration = 604800000000
-			_, err1 := js.AddConsumer(GetQueue(), &nats.ConsumerConfig{
-				Durable:           GetNodeUUID(),
+			_, err1 := js.AddConsumer(NatsQueue, &nats.ConsumerConfig{
+				Durable:           NatsNodeUUID,
 				AckPolicy:         nats.AckExplicitPolicy,
 				InactiveThreshold: duration,
 				DeliverPolicy:     nats.DeliverAllPolicy,
@@ -228,7 +228,7 @@ func Receive() {
 					GetMessageWindow().SetTitle(GetLangs("ms-carrier") + err1.Error())
 				}
 			}
-			sub, errsub := js.PullSubscribe("", "", nats.BindStream(GetQueue()))
+			sub, errsub := js.PullSubscribe("", "", nats.BindStream(NatsQueue))
 			if errsub != nil {
 				//log.Println(errsub.Error())
 				if GetMessageWindow() != nil {
@@ -267,7 +267,7 @@ func Receive() {
 			if GetMessageWindow() != nil {
 				var m runtime.MemStats
 				runtime.ReadMemStats(&m)
-				GetMessageWindow().SetTitle(GetLangs("ms-err6-1") + strconv.Itoa(len(msgs)) + GetLangs("ms-err6-2") + " - " + strconv.Itoa(acked) + " Acked" + " " + strconv.FormatUint(m.Alloc/1024/1024, 10) + " Mib")
+				GetMessageWindow().SetTitle(GetLangsNats("ms-err6-1") + strconv.Itoa(len(msgs)) + GetLangsNats("ms-err6-2") + " - " + strconv.Itoa(acked) + " Acked" + " " + strconv.FormatUint(m.Alloc/1024/1024, 10) + " Mib")
 				//GetMessageList().Refresh()
 			}
 			nc.Close()
@@ -280,7 +280,7 @@ func Receive() {
 func handleMessage(m *nats.Msg) bool {
 	ms := MessageStore{}
 
-	var ejson = string(Decrypt(string(m.Data), GetQueuePassword()))
+	var ejson = string(Decrypt(string(m.Data), NatsQueuePassword))
 
 	err1 := json.Unmarshal([]byte(ejson), &ms)
 	if err1 != nil {
@@ -311,7 +311,7 @@ func Erase() {
 
 	docerts()
 
-	nc, err := nats.Connect(GetServer(), nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&TLS))
+	nc, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&TLS))
 	if err != nil {
 		log.Println("Erase Connect", GetLangs("ms-erac"), err.Error())
 	}
@@ -321,27 +321,27 @@ func Erase() {
 	}
 
 	NatsMessages = nil
-	err1 := js.PurgeStream(GetQueue())
+	err1 := js.PurgeStream(NatsQueue)
 	if err1 != nil {
-		log.Println("Erase Jetstream Purge", GetLangs("ms-dels"), err1)
+		log.Println("Erase Jetstream Purge", GetLangsNats("ms-dels"), err1)
 	}
-	err2 := js.DeleteStream(GetQueue())
+	err2 := js.DeleteStream(NatsQueue)
 	if err2 != nil {
-		log.Println("Erase Jetstream Delete", GetLangs("ms-dels"), err1)
+		log.Println("Erase Jetstream Delete", GetLangsNats("ms-dels"), err1)
 	}
 	msgmaxage, _ := time.ParseDuration(GetMsgMaxAge())
 
 	js1, err3 := js.AddStream(&nats.StreamConfig{
-		Name:     GetQueue(),
-		Subjects: []string{strings.ToLower(GetQueue()) + ".>"},
+		Name:     NatsQueue,
+		Subjects: []string{strings.ToLower(NatsQueue) + ".>"},
 		Storage:  nats.FileStorage,
 		MaxAge:   msgmaxage,
 	})
 	if err3 != nil {
-		log.Println("Erase Addstream ", GetLangs("ms-adds"), err3)
+		log.Println("Erase Addstream ", GetLangsNats("ms-adds"), err3)
 	}
 	fmt.Printf("js1: %v\n", js1)
 
-	Send(GetLangs("ms-sece"), GetAlias())
+	Send(GetLangsNats("ms-sece"), NatsAlias)
 	nc.Close()
 }

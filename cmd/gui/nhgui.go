@@ -100,7 +100,7 @@ func logLifecycle() {
 
 	config.GetApp().Lifecycle().SetOnStopped(func() {
 		if config.GetLoggedOn() {
-			config.Send(config.GetLangs("ls-dis"), config.GetAlias())
+			config.Send(config.GetLangs("ls-dis"), config.NatsAlias)
 		}
 		if config.GetReceivingMessages() {
 			config.QuitReceive <- true

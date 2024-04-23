@@ -84,7 +84,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 		if !config.GetLoggedOn() {
 			Errors.SetText(config.GetLangs("cs-lf"))
 		}
-		config.Send(message.Text, config.GetAlias())
+		config.Send(message.Text, config.NatsAlias)
 		message.SetText("")
 	})
 
