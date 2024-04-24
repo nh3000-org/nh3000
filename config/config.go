@@ -25,7 +25,7 @@ var NatsCaroot = "-----BEGIN CERTIFICATE-----\nMIID7zCCAtegAwIBAgIUaXAPxJvZRRdTq
 var NatsClientcert = "-----BEGIN CERTIFICATE-----\nMIIEMTCCAxmgAwIBAgIUB7+OFX1LQrWtYMl5XIOXsOaLac0wDQYJKoZIhvcNAQEL\nBQAwgYAxCzAJBgNVBAYTAlVTMRAwDgYDVQQIEwdGbG9yaWRhMRIwEAYDVQQHEwlD\ncmVzdHZpZXcxGjAYBgNVBAoTEU5ldyBIb3Jpem9ucyAzMDAwMQwwCgYDVQQLEwNX\nV1cxITAfBgNVBAMTGG5hdHMubmV3aG9yaXpvbnMzMDAwLm9yZzAgFw0yMzEyMTkw\nMzA4MDBaGA8yMDUzMTIxMTAzMDgwMFowcjELMAkGA1UEBhMCVVMxEDAOBgNVBAgT\nB0Zsb3JpZGExEjAQBgNVBAcTCUNyZXN0dmlldzEaMBgGA1UEChMRTmV3IEhvcml6\nb25zIDMwMDAxITAfBgNVBAsTGG5hdHMubmV3aG9yaXpvbnMzMDAwLm9yZzCCASIw\nDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMWARyniHy8r342e3aKSsLDPwVMC\n2mRwuILP2JkXp5FllaFKnu/Z+0mF+iQlSchcC6DOcMQk00Cp/I8cCP865zyxPhqN\n2F2/qVItCU4+PTwe6ZnrfpJgXWwyk1hjS3vVNTT+idI5+pJgFH9YL0lbJ7q1UyPB\n+KP0x/c5T3K2Ec6U4uXhbVt/ePxFmsl1sHw6FE//XrA4EzbqCMEPCTcOfInvFrCJ\ny4/pAqjCxegT/1YDMNEdzmG8vg2tc3jPV+3GIAV3YL5nDE5mprHPEEDJtNQi+E4o\nXXXMobNhrJh9KJ59VbxTF8m5yM3b8fvof97OYhK0KYggplnTH+bhnYU9V5ECAwEA\nAaOBrTCBqjAOBgNVHQ8BAf8EBAMCBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwDAYD\nVR0TAQH/BAIwADAdBgNVHQ4EFgQUpffi3LSreerO756B/VnZkyyEVBIwHwYDVR0j\nBBgwFoAUdKqvbngAQuUQ7IP9NhWRaQTkdYQwNQYDVR0RBC4wLIIYbmF0cy5uZXdo\nb3Jpem9uczMwMDAub3JnhwR/AAABhwTAqAAFhwTAqFjoMA0GCSqGSIb3DQEBCwUA\nA4IBAQALlRqqW2HH4flFIgR/nh51gc/Hxv5xivhkzWUHHXRdltECSXknI4yBPchQ\n6Zsy0HZ7XQRlhQSIYd4Bp6eyHbny5t3JA978dHzpGJFCUVQDMY4yHLaCQgFJ+ESn\nwyyDWTRGA3cpEikL0B0ekDfqjWUEMTzmT/gnoSl0vM69nZDLZm1xMx1+EH+bpfFB\nRaVM6gKSAuFJmNYEL2e7JSags+3IHyVHkdo8GDlY//71Z4lxsFxFCF6xF9GDdAr2\niCA4OfydjiBSOz0eLJVgqkk1KGXtMqZXAojX62NrIWnFTW1Vzd46ekOHhq93B3tA\nkjWmHY/KdCZUjQSWss+YXgG4mI8c\n-----END CERTIFICATE-----\n"
 var NatsClientkey = "-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEAxYBHKeIfLyvfjZ7dopKwsM/BUwLaZHC4gs/YmRenkWWVoUqe\n79n7SYX6JCVJyFwLoM5wxCTTQKn8jxwI/zrnPLE+Go3YXb+pUi0JTj49PB7pmet+\nkmBdbDKTWGNLe9U1NP6J0jn6kmAUf1gvSVsnurVTI8H4o/TH9zlPcrYRzpTi5eFt\nW394/EWayXWwfDoUT/9esDgTNuoIwQ8JNw58ie8WsInLj+kCqMLF6BP/VgMw0R3O\nYby+Da1zeM9X7cYgBXdgvmcMTmamsc8QQMm01CL4Tihddcyhs2GsmH0onn1VvFMX\nybnIzdvx++h/3s5iErQpiCCmWdMf5uGdhT1XkQIDAQABAoIBAB+Iu9QUJqaBetBB\n7WFnyo5wnY2DhxtCZDN+vDa1cCvm7F00bOwfAeBbY/UhfwZeq/yg+aBXwOMyQQEY\nmNcnsIQgSKo0u7c8Quy8BCBaD6zpwqKw1yTH/iKocJ5MPGEpSbWMbrUCTN/SN3Od\nwO8VfuJw0TWEYw7KpqLyo5zNNUqmczEO438CPGotbkFfzUqkumeUOsGWJFongyZY\na9EwpcTH2TkxuXum9SQVyLy+hSG/AEBp0cQPaRcoNh8sWYk43y5HrkIAqFo7dkMa\n9usAVMz9JCqIH2UNV04cDASFaiDMpYoD2hV2YHlL7/CQ7v5nb6OHT2A9aoSBOAfm\ns+dBzYECgYEA1l8+T9Xux73TCbFO2p7F094xSx4hhBZhaYpvzZoNN7iQdbdUVt2l\n1yHSoRgJUJMZlnKpMoNMLCxo34Lr3ww/TkIE/rrg10pqbqvojIDLCbi103EEB2v9\nWix8MSeOgFCa72T4lg9fDm5T493n4C5dade3LzZczUBF6dgmth3D+nMCgYEA69pa\nlob9n7eNXqDPk9kZUJV1jfLATC8eN4jupEiKfjnxEz9mUewvL/RF8kFhiS1ISC50\nKgM0v+isYBwwX00c7P02L6xCoGT35qOeoutEWVy/tYIHIHsD0jUBBsdnpQVNf58l\n9DDy2hZrpUwrsVHylVHpufBgKOfxgP2Jr3qD0OsCgYEAn4vzTGfkdzSIRMZ58awJ\ngE32Ufny5+PgTDSEUXk+LSJoIbR4SM5eB2dc5BiHljhk6twboUSnBJlo1DEUa8Up\nuIzaOtvLS3BPFl9LjIaulmWqrduHLB7rSJmjNNJD9KwJI/L6MHTwQkVKmmUllmvr\nikLKS5EiMICNiCUfaptsqJECgYEApYaSqzBEUdK1oeMErAPis16hqSTkdtNexqUQ\nrzXGFP6/Rb3qJra3C1XJvVLLjEW+hAIuPsoPPFyklbNS85+gHGc9n0mrXPxfy3ur\nuzWYu4rPdSizrcUIEoBmnwZVpEhLcrUUIwQzfIHdvJ3v0DvuH4PkoD2mjy7xnJDU\nD9bRKk8CgYAqK1lY5waFR0u3eFIPnrV4ATHXYuxcup2DCF+KJ6qwc4nNI6OB/ovU\nttiVZGr1rca42+XdWUQL5ufPFuKymeLbsuVzabbGKi+4RMvL+TIuorYtJRUPF+C7\nA9jlMeckpTZvl0yn5s3lC817N27B+U0M/jGow8sO0NtjBiImuTC5dg==\n-----END RSA PRIVATE KEY-----\n"
 
-// default user
+// defaults
 var NatsUser = "natsoperator"
 var NatsUserPassword = "hjscr44iod"
 
@@ -38,66 +38,109 @@ var NatsAlias string
 var NatsReceivingMessages bool
 
 var NatsMsgMaxAge string
+
 // default encryption
 var KeyAes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}  // must be 16 bytes
 var KeyHmac = []byte{36, 45, 53, 21, 87, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05} // must be 16 bytes
 const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"                                   // must be 24 characters
 // default gui password
 const Password = "123456" // default password shipped with app
-
 var PasswordHash string
-
 var PreferedLanguage string
 var FyneWin fyne.Window
 var FyneMainWin fyne.Window
 var FyneApp fyne.App
-var LoggedOn bool
-// var clearmessagedetail bool
 var FyneMessageList fyne.Widget
 var FyneFilter bool
 
+var LoggedOn bool
+
 // sip fields
-var sipgeneralcallwaiting bool
-var sipgeneralhangup3way bool
-var sipgeneralincallosd bool
-var sipgeneralcallhistory int
+var SipGeneralCallWaiting = true
+var SipGeneralHangup3Way = true
+var SipGeneralInCallOSD = true
+var SipGeneralCallHistory = 32 // 8 16 32 64 128
 
-var sipsoundringtone string
-var sipsoundspeaker string
-var sipsoundmicrophone string
-var sipsoundvalidate bool
-var sipsoundossfragsize int
-var sipsoundalsaplayperiodsize int
-var sipsoundcaptureperiodsize int
+var SipSoundCardRingtone = ""
+var SipSoundCardSpeaker = ""
+var SipSoundCardMicrophone = ""
+var SipSoundCardValidate = true
+var SipSoundCardOssFragsize = 128          // 16 32 64 128 256 512 1024
+var SipSoundCardAlsaPlayPeriodSize = 128   // 16 32 64 128 256 512 1024
+var SipSoundCardAlsaCapturePeriodSize = 32 // 16 32 64 128 256 512 1024
 
-var sipringtoneplay bool
-var sipringtone string
-var sipringbacktoneplay bool
-var sipringbacktone string
+var SipRingtonePlay = true
+var SipRingtoneTone = ""
+var SipRingtoneBackPlay = true
+var SipRingToneBackTone = ""
 
-var sipaddressbooklookup bool
-var sipaddressoverideaddress bool
-var sipaddresslookupphoto bool
+var SipAddressbookLookup = true
+var SipAddressbookOverideAddress = true
+var SipAddressbookLookupPhoto = true
 
-var sipnetworksipport int
-var sipnetworkrtpport int
-var sipnetworkmaxudpsize int
-var sipnetworkmaxtcpsize int
+var SipNetworkPort = 5060
+var SipNetworkRtpPort = 8000
+var SipNetworkMaxUdpSize = 65535
+var SipNetworkMaxTcpSize = 1000000
 
-var siplogmaxsizemb int
-var siplogdebug bool
-var siplogstun bool
-var siplogmemory bool
+var SipServerDNS = "192.168.0.15"
+var SipServerExpirySeconds = 3600
+var SipServerRegisterAtStartup = true
+var SipServerAddQvalueToRegistration = "1.000"
+var SipServerUseOutboundProxy = false
+var SipServerOutboundProxy = ""
+var SipServerSendInDialogRequestsProxy = false
 
-var sipuseralias string
-var sipusername string
-var sipdomain string
-var siporganization string
-var sipuserauthrealm string
-var sipuserauthname string
-var sipuserpassword string
-var sipuserakaop string
-var sipuserakaamp string
+var SipVoiceMailboxAddress = 9999
+var SipVoiceMailMWIType = "Solicited"
+var SipVoiceMailboxUserName = 9999
+var SipVoiceMailServer = "192.168.0.15"
+var SipVoiceMailServerUseProxy = false
+var SipVoiceMailSubscruptionDuration = "3600"
+
+var SipPresenseAvailableAtStartup = true
+
+var SipProtocolCallHoldRFC = "3264" // RFC 2543 3264
+var SipProtocolMaxForwardsHeaderMandatory = false
+var SipProtocolAllowMissingContactIn200 = true
+var SipProtocolPutRegExpiryInHeader = true
+var SipProtocolUseCompactHeaderNames = false
+var SipProtocolEncodeRouteAsList = true
+var SipProtocolUseDomainInHeader = false
+var SipProtocolAllowSDPChangeDuringSetup = false
+var SipProtocolRedirectionAllow = true
+var SipProtocolRedirectAsk = true
+var SipProtocolRedirectMax = 1
+var SipProtocolExtensionsPRACK = "SUPPORTED" // DISABLED SUPPORTED REQUIRED PREFERRED
+var SipProtocolExtensionsReplace = true
+var SipProtocolReferAcceptTransfer = true
+var SipProtocolReferAsk = true
+var SipProtocolReferHoldReferrerWhile = false
+var SipProtocolReferHoldReferrerBefore = false
+var SipProtocolReferAutoRefresh = false
+var SipProtocolReferAttendedAOR = false
+var SipProtocolReferAllowTransfer = false
+var SipProtocolPrivacyPPreferred = false
+var SipProtocolPrivacyPAsserted = false
+var SipTransportProtocol = "AUTO"          // TCP UDP
+var SipTransportUDOThreshold = "1300bytes" // 1300bytes 1600bytes
+var SipTransportNATTransversal = false
+var SipTransportNATTransversalUseStaticIP = ""
+var SipTransportNATTransversalUseStun = ""
+var SipTransportNATKeepAlive = false
+var SipTimerNoAnswer = 30
+var SipTimerNAtKeepAlive = 30
+var SipSecurityEnableRTPEncryption = false
+
+var SipUserAlias []string
+var SipUserName []string
+var SipUserDomain []string
+var SipUserOrganization []string
+var SipUserAuthRealm []string
+var SipUserAuthName []string
+var SipUserAuthPassword []string
+var SipUserAkAop []string
+var SipUserAkaAmp []string
 
 func DataStore(file string) fyne.URI {
 	DataLocation, dlerr := storage.Child(FyneApp.Storage().RootURI(), file)
