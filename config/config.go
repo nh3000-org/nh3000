@@ -65,9 +65,9 @@ var SipSoundCardRingtone = ""
 var SipSoundCardSpeaker = ""
 var SipSoundCardMicrophone = ""
 var SipSoundCardValidate = true
-var SipSoundCardOssFragsize = 128          // 16 32 64 128 256 512 1024
-var SipSoundCardAlsaPlayPeriodSize = 128   // 16 32 64 128 256 512 1024
-var SipSoundCardAlsaCapturePeriodSize = 32 // 16 32 64 128 256 512 1024
+var SipSoundCardOssFragsize = 1024           // 16 32 64 128 256 512 1024
+var SipSoundCardAlsaPlayPeriodSize = 1024    // 16 32 64 128 256 512 1024
+var SipSoundCardAlsaCapturePeriodSize = 1024 // 16 32 64 128 256 512 1024
 
 var SipRingtonePlay = true
 var SipRingtoneTone = ""
