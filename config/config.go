@@ -47,7 +47,7 @@ const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"                              
 const Password = "123456" // default password shipped with app
 var PasswordHash string
 var PreferedLanguage string
-var FyneWin fyne.Window
+var FyneMessageWin fyne.Window
 var FyneMainWin fyne.Window
 var FyneApp fyne.App
 var FyneMessageList fyne.Widget

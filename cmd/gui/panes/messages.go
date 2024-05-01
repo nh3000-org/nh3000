@@ -11,13 +11,12 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-var ackMsgId = ""
 var mymessage = ""
 var mymessageshort = ""
 
 func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 
-	config.FyneWin = win
+	config.FyneMessageWin = win
 	message := widget.NewMultiLineEntry()
 	message.SetPlaceHolder(config.GetLangs("ms-mm"))
 	message.SetMinRowsVisible(2)
@@ -25,15 +24,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	Filter := widget.NewCheck(config.GetLangs("ms-filter"), func(on bool) { config.FyneFilter = true })
 
 	var Errors = widget.NewLabel("...")
-	//var DetailsTop = widget.NewLabel(config.GetLangs("ms-header1") + ".")
-	AckButton := widget.NewButtonWithIcon("Ack", theme.MailSendIcon(), func() {
-		if !config.LoggedOn {
-			Errors.SetText(config.GetLangs("cs-lf"))
-			return
-		}
-		config.SetAck(ackMsgId)
 
-	})
 	Details := widget.NewLabel("")
 	var DetailsBorder = container.NewBorder(Details, nil, nil, nil, nil)
 
@@ -61,16 +52,13 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	)
 	config.FyneMessageList = List
 	List.OnSelected = func(id widget.ListItemID) {
-		//config.GetApp().Settings().SetTheme(config.MyTheme{})
 		Details.SetText(config.NatsMessages[id].MSmessage + "\n.................." + config.NatsMessages[id].MShostname + config.NatsMessages[id].MSipadrs + config.NatsMessages[id].MSnodeuuid + config.NatsMessages[id].MSiduuid + config.NatsMessages[id].MSdate)
 		dlg := fyne.CurrentApp().NewWindow(config.NatsMessages[id].MSalias + config.NatsMessages[id].MSdate)
 		DetailsVW := container.NewScroll(DetailsBorder)
 		DetailsVW.SetMinSize(fyne.NewSize(300, 240))
-		DetailsBottom := container.NewBorder(cpybutton, AckButton, nil, nil, nil)
+		DetailsBottom := container.NewBorder(cpybutton, nil, nil, nil, nil)
 		dlg.SetContent(container.NewBorder(DetailsVW, DetailsBottom, nil, nil, nil))
 		dlg.Show()
-
-		ackMsgId = config.NatsMessages[id].MSiduuid
 		List.Unselect(id)
 	}
 	List.OnUnselected = func(id widget.ListItemID) {
