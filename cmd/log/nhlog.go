@@ -47,7 +47,7 @@ type MessageStore struct {
 }
 
 // eng esp cmn hin
-var MyLangs = map[string]string{
+var MyLogLangs = map[string]string{
 	"eng-ls-alias":     "Alias",
 	"spa-ls-alias":     "Alias",
 	"hin-ls-alias":     "उपनाम",
@@ -102,8 +102,8 @@ var MyLangs = map[string]string{
 }
 
 // return translation strings
-func GetLangs(mystring string) string {
-	value, err := MyLangs[MyLogLang+"-"+mystring]
+func GetLogLangs(mystring string) string {
+	value, err := MyLogLangs[MyLogLang+"-"+mystring]
 	if err == false {
 		return "xxx"
 	}
@@ -115,9 +115,9 @@ func Send(m string) []byte {
 	EncMessage := MessageStore{}
 	name, err := os.Hostname()
 	if err != nil {
-		EncMessage.MShostname = "\n" + GetLangs("fm-nhn")
+		EncMessage.MShostname = "\n" + GetLogLangs("fm-nhn")
 	} else {
-		EncMessage.MShostname = "\n" + GetLangs("fm-hn") + " - " + name
+		EncMessage.MShostname = "\n" + GetLogLangs("fm-hn") + " - " + name
 	}
 	ifas, err := net.Interfaces()
 	if err == nil {
@@ -128,28 +128,28 @@ func Send(m string) []byte {
 				as = append(as, a)
 			}
 		}
-		EncMessage.MShostname += "\n" + GetLangs("fm-mi")
+		EncMessage.MShostname += "\n" + GetLogLangs("fm-mi")
 		for i, s := range as {
 			EncMessage.MShostname += "\n- " + strconv.Itoa(i) + " : " + s
 		}
 		addrs, _ := net.InterfaceAddrs()
-		EncMessage.MShostname += "\n" + GetLangs("fm-ad")
+		EncMessage.MShostname += "\n" + GetLogLangs("fm-ad")
 		for _, addr := range addrs {
 			EncMessage.MShostname += "\n- " + addr.String()
 		}
 	}
 	EncMessage.MSalias = MyLogAlias
 	idcount++
-	EncMessage.MSnodeuuid = "\n" + GetLangs("fm-ni") + " - " + strconv.Itoa(idcount)
+	EncMessage.MSnodeuuid = "\n" + GetLogLangs("fm-ni") + " - " + strconv.Itoa(idcount)
 	iduuid := uuid.New().String()
-	EncMessage.MSiduuid = "\n" + GetLangs("fm-msg") + " - " + iduuid[0:8]
-	EncMessage.MSdate = "\n" + GetLangs("fm-on") + " -" + time.Now().Format(time.UnixDate)
+	EncMessage.MSiduuid = "\n" + GetLogLangs("fm-msg") + " - " + iduuid[0:8]
+	EncMessage.MSdate = "\n" + GetLogLangs("fm-on") + " -" + time.Now().Format(time.UnixDate)
 	EncMessage.MSmessage = m
 	jsonmsg, jsonerr := json.Marshal(EncMessage)
 	if jsonerr != nil {
-		log.Println(GetLangs("fm-fm"), jsonerr)
+		log.Println(GetLogLangs("fm-fm"), jsonerr)
 	}
-	ejson := config.Encrypt(string(jsonmsg), config.GetQueuePassword())
+	ejson := config.Encrypt(string(jsonmsg), config.NatsQueuePassword)
 
 	return []byte(ejson)
 }
@@ -163,11 +163,11 @@ func main() {
 	if strings.HasPrefix(os.Getenv("LANG"), "sp") {
 		MyLogLang = "spa"
 	}
-	logLang := flag.String("loglang", MyLogLang, GetLangs("fl-ll"))
-	logAlias := flag.String("logalias", "LOGALIAS", GetLangs("fl-la"))
+	logLang := flag.String("loglang", MyLogLang, GetLogLangs("fl-ll"))
+	logAlias := flag.String("logalias", "LOGALIAS", GetLogLangs("fl-la"))
 
-	logPattern := flag.String("logpattern", "[ERR]", GetLangs("fl-lp"))
-	ServerIP := flag.String("serverip", config.GetServer(), GetLangs("fl-si"))
+	logPattern := flag.String("logpattern", "[ERR]", GetLogLangs("fl-lp"))
+	ServerIP := flag.String("serverip", config.NatsServer, GetLogLangs("fl-si"))
 	flag.Parse()
 	MyLogAlias = *logAlias
 	fmt.Println("====================================================== ")

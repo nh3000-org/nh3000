@@ -34,7 +34,7 @@ import (
 var MyFileLang = "eng"
 
 // eng esp cmnBAE
-var MyLangs = map[string]string{
+var MyFileLangs = map[string]string{
 	"eng-fl-fl":   "Language to Use eng or esp or hin",
 	"spa-fl-fl":   "Idioma a utilizar eng o esp o hin",
 	"hin-fl-fl":   "उपयोग करने के लिए भाषा eng या esp या hin",
@@ -60,8 +60,8 @@ var MyLangs = map[string]string{
 
 // return translation strings
 func GetLangs(mystring string) string {
-	value, err := MyLangs[MyFileLang+"-"+mystring]
-	if err == false {
+	value, err := MyFileLangs[MyFileLang+"-"+mystring]
+	if !err {
 		return "xxx"
 	}
 	return value
@@ -100,7 +100,7 @@ func main() {
 		errors = true
 		fmt.Println("-fileoutput" + " - " + GetLangs("fl-err2"))
 	}
-	if errors == false {
+	if !errors {
 		fmt.Println(*fileAction + " " + *fileInput + " > " + *fileOutput)
 		if *fileAction == "ENCRYPT" {
 			err := EncryptFile(*fileInput, *fileOutput)
@@ -119,6 +119,9 @@ func main() {
 func EncryptFile(filePathIn, filePathOut string) error {
 
 	infile, err := os.Open(filePathIn)
+	if err != nil {
+		return err
+	}
 	defer infile.Close()
 
 	block, err := aes.NewCipher(config.KeyHmac)
