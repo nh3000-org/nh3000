@@ -30,18 +30,11 @@ type MessageStore struct {
 }
 
 var NatsMessages = make(map[int]MessageStore)
+var NatsMessagesReceived []string
+var NatsMessageFound = false
 
-//const recMapNotFound = 0
-//const recMapUnused = 1
-//const recMapReceived = 2
-//const recMapAck = 3
-
-//var FyneFilterFound = false
-
-var acked = 0
 var fyneFilterFound = false
 
-// var recMap = make(map[string]int) // msuuid, received = 1 ack = 2 unused = 0
 var QuitReceive = make(chan bool)
 var TLS tls.Config
 var MyLogLang = "eng"
@@ -229,8 +222,8 @@ func Receive() {
 		case <-QuitReceive:
 			return
 		default:
-			//NatsMessages = nil
-			acked = 0
+			NatsMessagesReceived = nil
+			//acked = 0
 			nc, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&TLS))
 			if err != nil {
 				if FyneMessageWin != nil {
@@ -297,12 +290,27 @@ func Receive() {
 							fyneFilterFound = true
 						}
 					}
-					handleMessage(&ms)
+					if !fyneFilterFound {
+						handleMessage(&ms)
+						NatsMessagesReceived = append(NatsMessagesReceived, ms.MSiduuid)
+					}
 					msgs[i].Ack()
 				}
 
 			}
+			for i, v := range NatsMessages {
+				// see if in matsmessagesreceived
+				NatsMessageFound = false
+				for r := 0; r < len(NatsMessagesReceived); r++ {
+					if v.MSiduuid == NatsMessagesReceived[r] {
+						NatsMessageFound = true
+					}
+				}
+				if !NatsMessageFound {
+					delete(NatsMessages, i)
+				}
 
+			}
 			if FyneMessageWin != nil {
 				var m runtime.MemStats
 				runtime.ReadMemStats(&m)
