@@ -104,7 +104,7 @@ var MyLogLangs = map[string]string{
 // return translation strings
 func GetLogLangs(mystring string) string {
 	value, err := MyLogLangs[MyLogLang+"-"+mystring]
-	if err == false {
+	if !err {
 		return "xxx"
 	}
 	return value
