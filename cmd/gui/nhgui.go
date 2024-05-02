@@ -44,6 +44,7 @@ type Pane struct {
 //var PanesIndex = map[string][]string{}
 
 func main() {
+
 	var a = app.NewWithID("org.nh3000.nh3000")
 	config.FyneApp = a
 	var w = a.NewWindow("NH3000")

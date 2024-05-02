@@ -101,9 +101,7 @@ func getLangsNats(mystring string) string {
 // delete msg by uuid
 func DeleteNatsMsgByUUID(iduuid string) {
 	for i, v := range NatsMessages {
-
 		if iduuid == v.MSiduuid {
-			log.Println("delnatsmsg ", i, " ", v.MSiduuid)
 			delete(NatsMessages, i)
 		}
 	}
@@ -112,7 +110,6 @@ func DeleteNatsMsgByUUID(iduuid string) {
 // check msg by uuid
 func CheckNatsMsgByUUID(iduuid string) bool {
 	for _, v := range NatsMessages {
-
 		if iduuid == v.MSiduuid {
 			return true
 		}
@@ -223,6 +220,7 @@ func Receive() {
 		default:
 			natsMessagesReceived = nil
 			//acked = 0
+
 			nc, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&tlsConfig))
 			if err != nil {
 				if FyneMessageWin != nil {
@@ -297,7 +295,7 @@ func Receive() {
 				}
 
 			}
-			for i, v := range NatsMessages {
+			for _, v := range NatsMessages {
 				// see if in matsmessagesreceived
 				natsMessageFound = false
 				for r := 0; r < len(natsMessagesReceived); r++ {
@@ -306,7 +304,7 @@ func Receive() {
 					}
 				}
 				if !natsMessageFound {
-					delete(NatsMessages, i)
+					DeleteNatsMsgByUUID(v.MSiduuid)
 				}
 
 			}
@@ -315,6 +313,7 @@ func Receive() {
 				runtime.ReadMemStats(&m)
 				FyneMessageWin.SetTitle(getLangsNats("ms-err6-1") + strconv.Itoa(len(msgs)) + getLangsNats("ms-err6-2") + " " + strconv.FormatUint(m.Alloc/1024/1024, 10) + " Mib")
 			}
+			///log.Println("received ", len(natsMessagesReceived), " queue ", len(NatsMessages))
 			FyneMessageList.Refresh()
 			nc.Close()
 			time.Sleep(30 * time.Second)
