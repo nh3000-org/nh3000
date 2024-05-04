@@ -203,6 +203,7 @@ func Send(m string, alias string) bool {
 		return true
 	}
 	NC.Drain()
+	NC.Close()
 
 	return false
 }
@@ -213,52 +214,53 @@ func Receive() {
 	docerts()
 
 	NatsReceivingMessages = true
+	nc, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&tlsConfig))
+	if err != nil {
+		if FyneMessageWin != nil {
+			FyneMessageWin.SetTitle(getLangsNats("ms-carrier") + err.Error())
+		}
+
+	}
+	js, err := nc.JetStream()
+	if err != nil {
+		if FyneMessageWin != nil {
+			FyneMessageWin.SetTitle(getLangsNats("ms-carrier") + err.Error())
+		}
+	}
+	js.AddStream(&nats.StreamConfig{
+		Name:     NatsQueue + NatsNodeUUID,
+		Subjects: []string{strings.ToLower(NatsQueue) + ".>"},
+	})
+	var duration time.Duration = 604800000000
+	_, err1 := js.AddConsumer(NatsQueue, &nats.ConsumerConfig{
+		Durable:           NatsNodeUUID,
+		AckPolicy:         nats.AckExplicitPolicy,
+		InactiveThreshold: duration,
+		DeliverPolicy:     nats.DeliverAllPolicy,
+		ReplayPolicy:      nats.ReplayInstantPolicy,
+	})
+	if err1 != nil {
+		//log.Println(err1.Error())
+		if FyneMessageWin != nil {
+			FyneMessageWin.SetTitle(getLangsNats("ms-carrier") + err1.Error())
+		}
+	}
+	sub, errsub := js.PullSubscribe("", "", nats.BindStream(NatsQueue))
+	if errsub != nil {
+		//log.Println(errsub.Error())
+		if FyneMessageWin != nil {
+			FyneMessageWin.SetTitle(getLangsNats("ms-carrier") + errsub.Error())
+		}
+	}
+	//natsMessagesReceived = nil
 	for {
 		select {
 		case <-QuitReceive:
 			return
 		default:
-			natsMessagesReceived = nil
+
 			//acked = 0
 
-			nc, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&tlsConfig))
-			if err != nil {
-				if FyneMessageWin != nil {
-					FyneMessageWin.SetTitle(getLangsNats("ms-carrier") + err.Error())
-				}
-
-			}
-			js, err := nc.JetStream()
-			if err != nil {
-				if FyneMessageWin != nil {
-					FyneMessageWin.SetTitle(getLangsNats("ms-carrier") + err.Error())
-				}
-			}
-			js.AddStream(&nats.StreamConfig{
-				Name:     NatsQueue + NatsNodeUUID,
-				Subjects: []string{strings.ToLower(NatsQueue) + ".>"},
-			})
-			var duration time.Duration = 604800000000
-			_, err1 := js.AddConsumer(NatsQueue, &nats.ConsumerConfig{
-				Durable:           NatsNodeUUID,
-				AckPolicy:         nats.AckExplicitPolicy,
-				InactiveThreshold: duration,
-				DeliverPolicy:     nats.DeliverAllPolicy,
-				ReplayPolicy:      nats.ReplayInstantPolicy,
-			})
-			if err1 != nil {
-				//log.Println(err1.Error())
-				if FyneMessageWin != nil {
-					FyneMessageWin.SetTitle(getLangsNats("ms-carrier") + err1.Error())
-				}
-			}
-			sub, errsub := js.PullSubscribe("", "", nats.BindStream(NatsQueue))
-			if errsub != nil {
-				//log.Println(errsub.Error())
-				if FyneMessageWin != nil {
-					FyneMessageWin.SetTitle(getLangsNats("ms-carrier") + errsub.Error())
-				}
-			}
 			msgs, err := sub.Fetch(100)
 			if err != nil {
 				//log.Println(err.Error())
@@ -266,9 +268,10 @@ func Receive() {
 					FyneMessageWin.SetTitle(getLangsNats("ms-carrier") + err.Error())
 				}
 			}
-
+			//log.Println("receiving ", len(msgs))
 			if len(msgs) > 0 {
 				for i := 0; i < len(msgs); i++ {
+
 					ms := MessageStore{}
 					var ejson = string(Decrypt(string(msgs[i].Data), NatsQueuePassword))
 					err1 := json.Unmarshal([]byte(ejson), &ms)
@@ -295,7 +298,7 @@ func Receive() {
 				}
 
 			}
-			for _, v := range NatsMessages {
+			/* 			for _, v := range NatsMessages {
 				// see if in matsmessagesreceived
 				natsMessageFound = false
 				for r := 0; r < len(natsMessagesReceived); r++ {
@@ -307,16 +310,17 @@ func Receive() {
 					DeleteNatsMsgByUUID(v.MSiduuid)
 				}
 
-			}
+			} */
 			if FyneMessageWin != nil {
 				var m runtime.MemStats
 				runtime.ReadMemStats(&m)
-				FyneMessageWin.SetTitle(getLangsNats("ms-err6-1") + strconv.Itoa(len(msgs)) + getLangsNats("ms-err6-2") + " " + strconv.FormatUint(m.Alloc/1024/1024, 10) + " Mib")
+				FyneMessageWin.SetTitle(getLangsNats("ms-err6-1") + strconv.Itoa(len(NatsMessages)) + getLangsNats("ms-err6-2") + " " + strconv.FormatUint(m.Alloc/1024/1024, 10) + " Mib")
 			}
 			///log.Println("received ", len(natsMessagesReceived), " queue ", len(NatsMessages))
 			FyneMessageList.Refresh()
-			nc.Close()
-			time.Sleep(30 * time.Second)
+			//sub.Unsubscribe()
+			//nc.Close()
+			time.Sleep(5 * time.Second)
 		}
 	}
 }

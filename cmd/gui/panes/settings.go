@@ -2,6 +2,7 @@ package panes
 
 import (
 	"strconv"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -13,6 +14,7 @@ import (
 var preferredlanguageShadow string
 var msgmaxageShadow string
 var preferredthemeShadow string
+var filterShadow string
 
 func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 
@@ -29,6 +31,14 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 	msgmaxageShadow = config.FyneApp.Preferences().StringWithFallback("MsgMaxAge", config.Encrypt("12h", config.MySecret))
 	ma.SetSelected(config.Decrypt(msgmaxageShadow, config.MySecret))
 
+	fllabel := widget.NewLabel(config.GetLangs("ms-filter"))
+	filter := widget.NewRadioGroup([]string{"True", "False"}, func(string) {})
+	filterShadow = config.FyneApp.Preferences().StringWithFallback("MsgFilter", config.Encrypt("False", config.MySecret))
+	filter.SetSelected(config.Decrypt(filterShadow, config.MySecret))
+	config.FyneFilter = false
+	if strings.Contains(filter.Selected, "True") {
+		config.FyneFilter = true
+	}
 	preferredthemeShadow = config.FyneApp.Preferences().StringWithFallback("Theme", config.Encrypt("0", config.MySecret))
 	config.Selected, _ = strconv.Atoi(config.Decrypt(preferredthemeShadow, config.MySecret))
 	themes := container.NewGridWithColumns(3,
@@ -57,7 +67,9 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 		if msgmaxageShadow != ma.Selected {
 			config.FyneApp.Preferences().SetString("MsgMaxAge", config.Encrypt(ma.Selected, config.MySecret))
 		}
-
+		if filterShadow != ma.Selected {
+			config.FyneApp.Preferences().SetString("Filter", config.Encrypt(filter.Selected, config.MySecret))
+		}
 		if preferredlanguageShadow != config.PreferedLanguage {
 			config.FyneApp.Preferences().SetString("PreferedLanguage", config.Encrypt(la.Selected, config.MySecret))
 		}
@@ -75,6 +87,8 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 		la,
 		malabel,
 		ma,
+		fllabel,
+		filter,
 		ssbutton,
 		themes,
 	)

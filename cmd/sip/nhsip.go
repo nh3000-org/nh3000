@@ -46,19 +46,18 @@ type Pane struct {
 
 func main() {
 	var a = app.NewWithID("org.nh3000.nh3000.SIP")
-	config.SetApp(a)
+	config.FyneApp = a
 	var w = a.NewWindow("NH3000 SIP")
-	config.SetWindow(w)
-	config.SetPreferedLanguage("eng")
+	config.FyneMainWin = w
+	config.PreferedLanguage = "eng"
 	if strings.HasPrefix(os.Getenv("LANG"), "en") {
-		config.SetPreferedLanguage("eng")
+		config.PreferedLanguage = "eng"
 	}
 	if strings.HasPrefix(os.Getenv("LANG"), "sp") {
-		config.SetPreferedLanguage("spa")
-
+		config.PreferedLanguage = "spa"
 	}
 	if strings.HasPrefix(os.Getenv("LANG"), "hn") {
-		config.SetPreferedLanguage("hin")
+		config.PreferedLanguage = "hin"
 
 	}
 
@@ -67,8 +66,8 @@ func main() {
 		log.Println("Icon.png error ", iconerr.Error())
 	}
 	config.Selected = config.Dark
-	config.GetApp().Settings().SetTheme(config.MyTheme{})
-	config.GetApp().SetIcon(MyLogo)
+	config.FyneApp.Settings().SetTheme(config.MyTheme{})
+	config.FyneApp.SetIcon(MyLogo)
 
 	logLifecycle()
 	TopWindow = w
@@ -84,23 +83,23 @@ func main() {
 		"encdec":   {config.GetLangs("es-title"), "", theme.CheckButtonIcon(), panes.EncdecScreen, true},
 	}
 
-	config.GetWindow().SetContent(container.NewAppTabs(
-		container.NewTabItemWithIcon(Panes["logon"].Title, Panes["logon"].Icon, panes.LogonScreen(config.GetWindow())),
-		container.NewTabItemWithIcon(Panes["messages"].Title, Panes["messages"].Icon, panes.MessagesScreen(config.GetWindow())),
-		container.NewTabItemWithIcon(Panes["encdec"].Title, Panes["encdec"].Icon, panes.EncdecScreen(config.GetWindow())),
-		container.NewTabItemWithIcon(Panes["settings"].Title, Panes["settings"].Icon, panes.SettingsScreen(config.GetWindow())),
-		container.NewTabItemWithIcon(Panes["password"].Title, Panes["password"].Icon, panes.PasswordScreen(config.GetWindow())),
+	config.FyneMainWin.SetContent(container.NewAppTabs(
+		container.NewTabItemWithIcon(Panes["logon"].Title, Panes["logon"].Icon, panes.LogonScreen(config.FyneMainWin)),
+		container.NewTabItemWithIcon(Panes["messages"].Title, Panes["messages"].Icon, panes.MessagesScreen(config.FyneMainWin)),
+		container.NewTabItemWithIcon(Panes["encdec"].Title, Panes["encdec"].Icon, panes.EncdecScreen(config.FyneMainWin)),
+		container.NewTabItemWithIcon(Panes["settings"].Title, Panes["settings"].Icon, panes.SettingsScreen(config.FyneMainWin)),
+		container.NewTabItemWithIcon(Panes["password"].Title, Panes["password"].Icon, panes.PasswordScreen(config.FyneMainWin)),
 	))
 
-	config.GetWindow().Resize(fyne.NewSize(640, 480))
-	config.GetWindow().ShowAndRun()
+	config.FyneMainWin.Resize(fyne.NewSize(640, 480))
+	config.FyneMainWin.ShowAndRun()
 }
 
 // handle app close
 func logLifecycle() {
 
-	config.GetApp().Lifecycle().SetOnStopped(func() {
-		if config.GetLoggedOn() {
+	config.FyneApp.Lifecycle().SetOnStopped(func() {
+		if config.LoggedOn {
 			config.Send(config.GetLangs("ls-dis"), config.GetAlias())
 		}
 		if config.GetReceivingMessages() {

@@ -21,7 +21,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	message.SetPlaceHolder(config.GetLangs("ms-mm"))
 	message.SetMinRowsVisible(2)
 
-	Filter := widget.NewCheck(config.GetLangs("ms-filter"), func(on bool) { config.FyneFilter = true })
+
 
 	var Errors = widget.NewLabel("...")
 
@@ -77,11 +77,11 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	})
 
 	topbox := container.NewBorder(
-		nil,
-		Filter,
-		nil,
 		smbutton,
 		message,
+		nil,
+		nil,
+		nil,
 	)
 
 	bottombox := container.NewBorder(

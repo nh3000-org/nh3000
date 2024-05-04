@@ -65,7 +65,6 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 
 	TPbutton := widget.NewButtonWithIcon(config.GetLangs("ls-trypass"), theme.LoginIcon(), func() {
 		errors.SetText("...")
-		config.SetReceivingMessages(false)
 		var iserrors = false
 		ph, _ := config.LoadHashWithDefault("config.hash", "123456")
 
