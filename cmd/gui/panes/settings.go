@@ -70,9 +70,7 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 		if filterShadow != filter.Selected {
 			config.FyneApp.Preferences().SetString("MsgFilter", config.Encrypt(filter.Selected, config.MySecret))
 		}
-		//if preferredlanguageShadow != config.PreferedLanguage {
-		//	config.FyneApp.Preferences().SetString("PreferedLanguage", config.Encrypt(la.Selected, config.MySecret))
-		//}
+
 		if config.LoggedOn {
 			errors.SetText(config.GetLangs("ss-sserr"))
 		}

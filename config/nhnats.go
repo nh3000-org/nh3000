@@ -187,9 +187,7 @@ func Send(m string, alias string) bool {
 	if jsonerr != nil {
 		log.Println("FormatMessage ", jsonerr)
 	}
-
 	ejson := Encrypt(string(jsonmsg), NatsQueuePassword)
-
 	NC, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&tlsConfig))
 	if err != nil {
 		fmt.Println("Send " + getLangsNats("ms-err7") + err.Error())
@@ -204,22 +202,18 @@ func Send(m string, alias string) bool {
 	}
 	NC.Drain()
 	NC.Close()
-
 	return false
 }
 
 // thread for receiving messages
 func Receive() {
-
 	docerts()
-
 	NatsReceivingMessages = true
 	nc, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&tlsConfig))
 	if err != nil {
 		if FyneMessageWin != nil {
 			FyneMessageWin.SetTitle(getLangsNats("ms-carrier") + err.Error())
 		}
-
 	}
 	js, err := nc.JetStream()
 	if err != nil {
@@ -240,27 +234,21 @@ func Receive() {
 		ReplayPolicy:      nats.ReplayInstantPolicy,
 	})
 	if err1 != nil {
-		//log.Println(err1.Error())
 		if FyneMessageWin != nil {
 			FyneMessageWin.SetTitle(getLangsNats("ms-carrier") + err1.Error())
 		}
 	}
 	sub, errsub := js.PullSubscribe("", "", nats.BindStream(NatsQueue))
 	if errsub != nil {
-		//log.Println(errsub.Error())
 		if FyneMessageWin != nil {
 			FyneMessageWin.SetTitle(getLangsNats("ms-carrier") + errsub.Error())
 		}
 	}
-	//natsMessagesReceived = nil
 	for {
 		select {
 		case <-QuitReceive:
 			return
 		default:
-
-			//acked = 0
-
 			msgs, err := sub.Fetch(100)
 			if err != nil {
 				//log.Println(err.Error())
@@ -268,10 +256,8 @@ func Receive() {
 					FyneMessageWin.SetTitle(getLangsNats("ms-carrier") + err.Error())
 				}
 			}
-			//log.Println("receiving ", len(msgs))
 			if len(msgs) > 0 {
 				for i := 0; i < len(msgs); i++ {
-
 					ms := MessageStore{}
 					var ejson = string(Decrypt(string(msgs[i].Data), NatsQueuePassword))
 					err1 := json.Unmarshal([]byte(ejson), &ms)
@@ -298,28 +284,12 @@ func Receive() {
 				}
 
 			}
-			/* 			for _, v := range NatsMessages {
-				// see if in matsmessagesreceived
-				natsMessageFound = false
-				for r := 0; r < len(natsMessagesReceived); r++ {
-					if v.MSiduuid == natsMessagesReceived[r] {
-						natsMessageFound = true
-					}
-				}
-				if !natsMessageFound {
-					DeleteNatsMsgByUUID(v.MSiduuid)
-				}
-
-			} */
 			if FyneMessageWin != nil {
 				var m runtime.MemStats
 				runtime.ReadMemStats(&m)
 				FyneMessageWin.SetTitle(getLangsNats("ms-err6-1") + strconv.Itoa(len(NatsMessages)) + getLangsNats("ms-err6-2") + " " + strconv.FormatUint(m.Alloc/1024/1024, 10) + " Mib")
 			}
-			///log.Println("received ", len(natsMessagesReceived), " queue ", len(NatsMessages))
 			FyneMessageList.Refresh()
-			//sub.Unsubscribe()
-			//nc.Close()
 			time.Sleep(5 * time.Second)
 		}
 	}
