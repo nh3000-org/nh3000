@@ -21,8 +21,6 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	message.SetPlaceHolder(config.GetLangs("ms-mm"))
 	message.SetMinRowsVisible(2)
 
-
-
 	var Errors = widget.NewLabel("...")
 
 	Details := widget.NewLabel("")
@@ -68,7 +66,8 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	List.Resize(fyne.NewSize(500, 5000))
 	List.Refresh()
 
-	smbutton := widget.NewButtonWithIcon(config.GetLangs("ms-sm"), theme.MailSendIcon(), func() {
+	//smbutton := widget.NewButtonWithIcon(config.GetLangs("ms-sm"), theme.MailSendIcon(), func() {
+	smbutton := widget.NewButtonWithIcon("", theme.MailSendIcon(), func() {
 		if !config.LoggedOn {
 			Errors.SetText(config.GetLangs("cs-lf"))
 		}
@@ -76,14 +75,18 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 		message.SetText("")
 	})
 
-	topbox := container.NewBorder(
-		smbutton,
+	/* 	topbox := container.NewBorder(
+		nil,
+		nil,
 		message,
+		smbutton,
 		nil,
-		nil,
-		nil,
+	) */
+	topbox := container.NewHSplit(
+		message,
+		smbutton,
 	)
-
+	topbox.SetOffset(.95)
 	bottombox := container.NewBorder(
 		nil,
 		Errors,
