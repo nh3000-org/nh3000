@@ -30,7 +30,8 @@ type MessageStore struct {
 
 var NatsMessages = make(map[int]MessageStore)
 var natsMessagesReceived []string
-var natsMessageFound = false
+
+//var natsMessageFound = false
 
 var fyneFilterFound = false
 
@@ -81,12 +82,33 @@ var myLangsNats = map[string]string{
 	"eng-ms-err7":     " NATS Server Missing",
 	"spa-ms-err7":     " Falta el servidor NATS",
 	"hin-ms-err7":     " NATS सर्वर गायब है",
-	"eng-ms-con":      "Connected",
-	"spa-ms-con":      "Conectada",
-	"hin-ms-con":      "जुड़े हुए",
-	"eng-ms-dis":      "Disconnected",
-	"spa-ms-dis":      "Desconectada",
-	"hin-ms-dis":      "डिस्कनेक्ट किया गया",
+
+	"eng-ms-err8": " JSON Marshall",
+	"spa-ms-err8": " Mariscal JSON",
+	"hin-ms-err8": " JSON मार्शल",
+
+	"eng-ms-con": "Connected",
+	"spa-ms-con": "Conectada",
+	"hin-ms-con": "जुड़े हुए",
+	"eng-ms-dis": "Disconnected",
+	"spa-ms-dis": "Desconectada",
+	"hin-ms-dis": "डिस्कनेक्ट किया गया",
+
+	"eng-ms-snd": "Send ",
+	"spa-ms-snd": "Enviar ",
+	"hin-ms-snd": "भेजना ",
+
+	"eng-ms-mde": "Message Decode Error ",
+	"spa-ms-mde": "Error de Decodificación de Mensaje ",
+	"hin-ms-mde": "संदेश डिकोड त्रुटि ",
+
+	"eng-ms-root": "nhnats.go docerts() rootCAs Error ",
+	"spa-ms-root": "Error de CA Raíz de nhnats.go docerts() ",
+	"hin-ms-root": "nhnats.go docerts() rootCAs त्रुटि ",
+
+	"eng-ms-client": "nhnats.go docerts() client cert Error",
+	"spa-ms-client": "Error de Certificado de Cliente de nhnats.go docerts()",
+	"hin-ms-client": "nhnats.go docerts() क्लाइंट प्रमाणपत्र त्रुटि",
 }
 
 // return translation strings
@@ -126,16 +148,18 @@ func docerts() {
 		}
 		ok := RootCAs.AppendCertsFromPEM([]byte(NatsCaroot))
 		if !ok {
-			log.Println("nhnats.go init rootCAs")
+			log.Println(getLangsNats("ms-root"))
 		}
 		Clientcert, err := tls.X509KeyPair([]byte(NatsClientcert), []byte(NatsClientkey))
 		if err != nil {
-			log.Println("nhnats.go init Clientcert " + err.Error())
+			log.Println(getLangsNats("ms-client") + err.Error())
 		}
+		var normalServerName = strings.ReplaceAll(NatsServer, "nats://", "")
+		var normalServerName1 = strings.ReplaceAll(normalServerName, ":4222", "")
 		TLSConfig := &tls.Config{
 			RootCAs:            RootCAs,
 			Certificates:       []tls.Certificate{Clientcert},
-			ServerName:         "nats.newhorizons3000.org",
+			ServerName:         normalServerName1,
 			MinVersion:         tls.VersionTLS12,
 			InsecureSkipVerify: true,
 		}
@@ -185,20 +209,33 @@ func Send(m string, alias string) bool {
 	EncMessage.MSmessage = m
 	jsonmsg, jsonerr := json.Marshal(EncMessage)
 	if jsonerr != nil {
-		log.Println("FormatMessage ", jsonerr)
+		if FyneMessageWin != nil {
+			FyneMessageWin.SetTitle(getLangsNats("ms-err8") + jsonerr.Error())
+		}
+		log.Println(getLangsNats("ms-err8"), jsonerr.Error())
 	}
 	ejson := Encrypt(string(jsonmsg), NatsQueuePassword)
 	NC, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&tlsConfig))
 	if err != nil {
-		fmt.Println("Send " + getLangsNats("ms-err7") + err.Error())
+		if FyneMessageWin != nil {
+			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + err.Error())
+		}
+		log.Println(getLangsNats("ms-snd") + getLangsNats("ms-err7") + err.Error())
 	}
 	JS, err := NC.JetStream()
 	if err != nil {
-		fmt.Println("Send " + getLangsNats("ms-err7") + err.Error() + <-JS.StreamNames())
+		if FyneMessageWin != nil {
+			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + err.Error() + <-JS.StreamNames())
+		}
+		log.Println(getLangsNats("ms-snd") + getLangsNats("ms-err7") + err.Error() + <-JS.StreamNames())
 	}
 	_, errp := JS.Publish(strings.ToLower(NatsQueue)+".logger", []byte(ejson))
 	if errp != nil {
-		return true
+		if FyneMessageWin != nil {
+			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + errp.Error())
+		}
+		log.Println(getLangsNats("ms-snd"), errp)
+		//return true
 	}
 	NC.Drain()
 	NC.Close()
@@ -264,7 +301,7 @@ func Receive() {
 					if err1 != nil {
 						// send decrypt
 						if FyneMessageWin != nil {
-							FyneMessageWin.SetTitle("Message Decode Error")
+							FyneMessageWin.SetTitle(getLangsNats("ms-mde"))
 						}
 					}
 					fyneFilterFound = false
