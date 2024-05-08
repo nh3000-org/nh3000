@@ -252,35 +252,19 @@ func Send(m string, alias string) bool {
 
 // thread for receiving messages
 func Receive() {
-	docerts()
-
+	var duration time.Duration = 604800000000
 	for {
 		select {
 		case <-QuitReceive:
 			return
 		default:
 			NatsReceivingMessages = true
-
-			/* 			nc, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&tlsConfig))
-			   			if err != nil {
-			   				if FyneMessageWin != nil {
-			   					FyneMessageWin.SetTitle(getLangsNats("ms-carrier") + err.Error())
-			   				}
-			   				log.Println("nats" + err.Error())
-			   			}
-			   			js, err := nc.JetStream()
-			   			if err != nil {
-			   				if FyneMessageWin != nil {
-			   					FyneMessageWin.SetTitle(getLangsNats("ms-carrier") + err.Error())
-			   				}
-			   				log.Println("jet stream" + err.Error())
-			   			} */
 			nc, js := Connect()
 			js.AddStream(&nats.StreamConfig{
 				Name:     NatsQueue + NatsNodeUUID,
 				Subjects: []string{strings.ToLower(NatsQueue) + ".>"},
 			})
-			var duration time.Duration = 604800000000
+
 			_, err1 := js.AddConsumer(NatsQueue, &nats.ConsumerConfig{
 				Durable:           NatsNodeUUID,
 				AckPolicy:         nats.AckExplicitPolicy,
