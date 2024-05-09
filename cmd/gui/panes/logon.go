@@ -199,6 +199,19 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			cc.Disable()
 
 			errors.SetText("...")
+			aliasShadow = ""
+			queueShadow = ""
+			serverShadow = ""
+			caShadow = ""
+			ccShadow = ""
+			ckShadow = ""
+			password.SetText("")
+			server.SetText("")
+			queue.SetText("")
+			queuepassword.SetText("")
+			ca.SetText("")
+			ck.SetText("")
+			cc.SetText("")
 			config.Send(config.GetLangs("ls-con"), config.NatsAlias)
 			go config.Receive()
 		}
