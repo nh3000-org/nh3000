@@ -247,6 +247,7 @@ func Send(m string, alias string) bool {
 	}
 	nc.Drain()
 	nc.Close()
+	runtime.GC()
 	return false
 }
 
@@ -331,6 +332,7 @@ func Receive() {
 			FyneMessageList.Refresh()
 			nc.Drain()
 			nc.Close()
+			runtime.GC()
 			time.Sleep(5 * time.Second)
 
 		}
