@@ -36,8 +36,9 @@ var natsMessagesReceived []string
 var fyneFilterFound = false
 
 var QuitReceive = make(chan bool)
-var tlsConfig tls.Config
-var tlsDone = false
+
+// var tlsConfig tls.Config
+// var tlsDone = false
 var myNatsLang = "eng"
 
 // eng esp cmn hin
@@ -139,38 +140,40 @@ func CheckNatsMsgByUUID(iduuid string) bool {
 	return false
 }
 
-func docerts() {
+// var TLSConfig = &tls.Config{}
+func docerts() *tls.Config {
 
-	if !tlsDone {
-		RootCAs, _ := x509.SystemCertPool()
-		if RootCAs == nil {
-			RootCAs = x509.NewCertPool()
-		}
-		ok := RootCAs.AppendCertsFromPEM([]byte(NatsCaroot))
-		if !ok {
-			log.Println(getLangsNats("ms-root"))
-		}
-		Clientcert, err := tls.X509KeyPair([]byte(NatsClientcert), []byte(NatsClientkey))
-		if err != nil {
-			log.Println(getLangsNats("ms-client") + err.Error())
-		}
-		var normalServerName = strings.ReplaceAll(NatsServer, "nats://", "")
-		var normalServerName1 = strings.ReplaceAll(normalServerName, ":4222", "")
-		TLSConfig := &tls.Config{
-			RootCAs:            RootCAs,
-			Certificates:       []tls.Certificate{Clientcert},
-			ServerName:         normalServerName1,
-			MinVersion:         tls.VersionTLS12,
-			InsecureSkipVerify: true,
-		}
-		tlsConfig = *TLSConfig.Clone()
-		tlsDone = true
+	//if !tlsDone {
+	RootCAs, _ := x509.SystemCertPool()
+	if RootCAs == nil {
+		RootCAs = x509.NewCertPool()
 	}
+	ok := RootCAs.AppendCertsFromPEM([]byte(NatsCaroot))
+	if !ok {
+		log.Println(getLangsNats("ms-root"))
+	}
+	Clientcert, err := tls.X509KeyPair([]byte(NatsClientcert), []byte(NatsClientkey))
+	if err != nil {
+		log.Println(getLangsNats("ms-client") + err.Error())
+	}
+	var normalServerName = strings.ReplaceAll(NatsServer, "nats://", "")
+	var normalServerName1 = strings.ReplaceAll(normalServerName, ":4222", "")
+	TLSConfig := &tls.Config{
+		RootCAs:            RootCAs,
+		Certificates:       []tls.Certificate{Clientcert},
+		ServerName:         normalServerName1,
+		MinVersion:         tls.VersionTLS12,
+		InsecureSkipVerify: true,
+	}
+	//tlsConfig = *TLSConfig.Clone()
+	//tlsDone = true
+	//}
+	return TLSConfig
 }
 
 func Connect() (*nats.Conn, nats.JetStreamContext) {
-	docerts()
-	nc, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&tlsConfig))
+	//docerts()
+	nc, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(docerts()))
 	if err != nil {
 		if FyneMessageWin != nil {
 			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + err.Error())
@@ -351,9 +354,7 @@ func handleMessage(m *MessageStore) {
 // security erase jetstream data
 func Erase() {
 
-	docerts()
-
-	nc, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(&tlsConfig))
+	nc, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(docerts()))
 	if err != nil {
 		log.Println("Erase Connect", getLangsNats("ms-erac"), err.Error())
 	}
