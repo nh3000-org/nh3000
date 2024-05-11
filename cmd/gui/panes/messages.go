@@ -59,14 +59,6 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 		dlg.Show()
 		List.Unselect(id)
 	}
-	//List.OnUnselected = func(id widget.ListItemID) {
-	//
-	//}
-
-	//List.Resize(fyne.NewSize(500, 5000))
-	//List.Refresh()
-
-	//smbutton := widget.NewButtonWithIcon(config.GetLangs("ms-sm"), theme.MailSendIcon(), func() {
 	smbutton := widget.NewButtonWithIcon("", theme.MailSendIcon(), func() {
 		if !config.LoggedOn {
 			Errors.SetText(config.GetLangs("cs-lf"))
@@ -74,14 +66,6 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 		config.Send(message.Text, config.NatsAlias)
 		message.SetText("")
 	})
-
-	/* 	topbox := container.NewBorder(
-		nil,
-		nil,
-		message,
-		smbutton,
-		nil,
-	) */
 	topbox := container.NewHSplit(
 		message,
 		smbutton,
