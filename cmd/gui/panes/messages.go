@@ -59,12 +59,12 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 		dlg.Show()
 		List.Unselect(id)
 	}
-	List.OnUnselected = func(id widget.ListItemID) {
-		//Details.SetText(config.GetLangs("ms-header1") + "..")
-	}
+	//List.OnUnselected = func(id widget.ListItemID) {
+	//
+	//}
 
-	List.Resize(fyne.NewSize(500, 5000))
-	List.Refresh()
+	//List.Resize(fyne.NewSize(500, 5000))
+	//List.Refresh()
 
 	//smbutton := widget.NewButtonWithIcon(config.GetLangs("ms-sm"), theme.MailSendIcon(), func() {
 	smbutton := widget.NewButtonWithIcon("", theme.MailSendIcon(), func() {
