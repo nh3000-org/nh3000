@@ -112,6 +112,10 @@ var myLangsNats = map[string]string{
 	"eng-ms-client": "nhnats.go docerts() client cert Error",
 	"spa-ms-client": "Error de Certificado de Cliente de nhnats.go docerts()",
 	"hin-ms-client": "nhnats.go docerts() क्लाइंट प्रमाणपत्र त्रुटि",
+
+	"eng-ms-sece": "Security Erase ",
+	"spa-ms-sece": "Borrado de Seguridad ",
+	"hin-ms-sece": "सुरक्षा मिटाएँ ",
 }
 
 // return translation strings
@@ -171,7 +175,7 @@ func docerts() *tls.Config {
 	return TLSConfig
 }
 
-func Connect() (*nats.Conn, nats.JetStreamContext) {
+func DEPRECATEDConnect() (*nats.Conn, nats.JetStreamContext) {
 
 	NC, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(docerts()), nats.PingInterval(pinginterval))
 	if err != nil {
@@ -257,7 +261,7 @@ func Send(m string, alias string) bool {
 	}
 
 	ctx := context.TODO()
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 
 	natsconn, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(docerts()), nats.PingInterval(pinginterval))
 	if err != nil {
@@ -438,7 +442,7 @@ func depReceive() {
 			return
 		default:
 			NatsReceivingMessages = true
-			NC, JS := Connect()
+			NC, JS := DEPRECATEDConnect()
 			sub, errsub := JS.PullSubscribe("", "", nats.BindStream(NatsQueue))
 			if errsub != nil {
 				if FyneMessageWin != nil {

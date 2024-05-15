@@ -323,9 +323,7 @@ var MyLangs = map[string]string{
 	"eng-ms-addc":     "Add Consumer ",
 	"spa-ms-addc":     "Agregar Consumidora ",
 	"hin-ms-addc":     "उपभोक्ता जोड़ें ",
-	"eng-ms-sece":     "Security Erase ",
-	"spa-ms-sece":     "Borrado de Seguridad ",
-	"hin-ms-sece":     "सुरक्षा मिटाएँ ",
+
 	"eng-ms-con":      "Connected",
 	"spa-ms-con":      "Conectada",
 	"hin-ms-con":      "जुड़े हुए",
