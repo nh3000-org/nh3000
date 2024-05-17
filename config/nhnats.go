@@ -345,11 +345,12 @@ func Receive() {
 			//}
 
 			FyneMessageList.Refresh()
+			cancel()
 			it.Stop()
 			NC.Drain()
 			NC.Close()
-			cancel()
-			time.Sleep(10 * time.Second)
+
+			//time.Sleep(10 * time.Second)
 
 		}
 	}
