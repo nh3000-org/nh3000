@@ -264,9 +264,9 @@ func Receive() {
 		case <-QuitReceive:
 			return
 		default:
-
+			log.Printf("1")
 			ctx := context.TODO()
-			ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+			ctx, cancel := context.WithTimeout(ctx, 30*time.Hour)
 
 			NC, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(certpool), nats.PingInterval(pinginterval))
 			if err != nil {
@@ -297,8 +297,9 @@ func Receive() {
 			if err != nil {
 				log.Fatal(err)
 			}
-
+			log.Printf("2")
 			it, err := cons.Messages(jetstream.PullMaxMessages(100))
+
 			if err != nil {
 				if FyneMessageWin != nil {
 					FyneMessageWin.SetTitle(getLangsNats("ms-carrier") + err.Error())
@@ -311,8 +312,9 @@ func Receive() {
 			if err != nil {
 				log.Println("receiving ", err.Error())
 			}
+			log.Printf("3")
 			ms := MessageStore{}
-
+			msg.Nak()
 			err1 := json.Unmarshal([]byte(string(Decrypt(string(msg.Data()), NatsQueuePassword))), &ms)
 			if err1 != nil {
 				// send decrypt
@@ -335,7 +337,6 @@ func Receive() {
 					NatsMessages[len(NatsMessages)] = ms
 				}
 			}
-			//msg.Nak()
 
 			if FyneMessageWin != nil {
 				runtime.GC()
@@ -345,12 +346,25 @@ func Receive() {
 			//}
 
 			FyneMessageList.Refresh()
+			cn := s.ConsumerNames(ctx)
+			cname := cn.Name()
+			log.Println("consumer names", cname)
+			errdc := s.DeleteConsumer(ctx, <-cn.Name())
+
+			if errdc != nil {
+				log.Println("delete consumer ", errdc)
+			}
+			errds := JS.DeleteStream(ctx, NatsQueue)
+			if errds != nil {
+				log.Println("delete stream ", errds)
+			}
 			cancel()
+			ctx.Done()
 			it.Stop()
 			NC.Drain()
 			NC.Close()
 
-			//time.Sleep(10 * time.Second)
+			time.Sleep(10 * time.Second)
 
 		}
 	}
