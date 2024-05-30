@@ -264,7 +264,6 @@ func Receive() {
 		case <-QuitReceive:
 			return
 		default:
-			log.Printf("1")
 			ctx := context.TODO()
 			ctx, cancel := context.WithTimeout(ctx, 30*time.Hour)
 
@@ -297,7 +296,6 @@ func Receive() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			log.Printf("2")
 			it, err := cons.Messages(jetstream.PullMaxMessages(100))
 
 			if err != nil {
@@ -312,7 +310,6 @@ func Receive() {
 			if err != nil {
 				log.Println("receiving ", err.Error())
 			}
-			log.Printf("3")
 			ms := MessageStore{}
 			msg.Nak()
 			err1 := json.Unmarshal([]byte(string(Decrypt(string(msg.Data()), NatsQueuePassword))), &ms)
@@ -347,10 +344,7 @@ func Receive() {
 
 			FyneMessageList.Refresh()
 			cn := s.ConsumerNames(ctx)
-			cname := cn.Name()
-			log.Println("consumer names", cname)
 			errdc := s.DeleteConsumer(ctx, <-cn.Name())
-
 			if errdc != nil {
 				log.Println("delete consumer ", errdc)
 			}
