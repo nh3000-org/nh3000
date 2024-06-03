@@ -223,35 +223,35 @@ func Send(m string, alias string) bool {
 		log.Println(getLangsNats("ms-err8"), jsonerr.Error())
 	}
 
-	ctx := context.TODO()
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	sendctx := context.Background()
+	sendctx, sendcancel := context.WithTimeout(sendctx, 30*time.Second)
 
-	natsconn, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(docerts()), nats.PingInterval(pinginterval))
+	sendnatsconn, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(docerts()))
 	if err != nil {
 		if FyneMessageWin != nil {
 			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + err.Error())
 		}
 		log.Println(getLangsNats("ms-snd") + getLangsNats("ms-err7") + err.Error())
 	}
-	jetstream, err := jetstream.New(natsconn)
+	sendjetstream, err := jetstream.New(sendnatsconn)
 	if err != nil {
 		if FyneMessageWin != nil {
 			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + err.Error())
 		}
 		log.Println(getLangsNats("ms-snd") + getLangsNats("ms-err7") + err.Error())
 	}
-	_, errp := jetstream.Publish(ctx, strings.ToLower(NatsQueue)+"."+strings.ToLower(NatsQueue), []byte(Encrypt(string(jsonmsg), NatsQueuePassword)))
+	_, errp := sendjetstream.Publish(sendctx, strings.ToLower(NatsQueue)+"."+strings.ToLower(NatsQueue), []byte(Encrypt(string(jsonmsg), NatsQueuePassword)))
 
 	//_, errp := JS.Publish(strings.ToLower(NatsQueue)+".logger", []byte(Encrypt(string(jsonmsg), NatsQueuePassword)))
 	if errp != nil {
 		if FyneMessageWin != nil {
 			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + errp.Error())
 		}
-		log.Println(getLangsNats("ms-snd"), errp)
+		log.Println("publish ", getLangsNats("ms-snd"), errp)
 	}
-	natsconn.Drain()
-	natsconn.Close()
-	cancel()
+	sendnatsconn.Drain()
+	sendnatsconn.Close()
+	sendcancel()
 	runtime.GC()
 	return false
 }
@@ -259,6 +259,7 @@ func Send(m string, alias string) bool {
 // thread for receiving messages
 func Receive() {
 	var certpool = docerts()
+	msgmaxage, _ := time.ParseDuration(NatsMsgMaxAge)
 	for {
 		select {
 		case <-QuitReceive:
@@ -283,20 +284,26 @@ func Receive() {
 			}
 
 			s, err := JS.CreateOrUpdateStream(ctx, jetstream.StreamConfig{
-				Name:     NatsQueue,
-				Subjects: []string{strings.ToLower(NatsQueue) + ".*"},
+				Name:      NatsQueue,
+				Subjects:  []string{strings.ToLower(NatsQueue) + ".*"},
+				Storage:   jetstream.FileStorage,
+				Retention: jetstream.LimitsPolicy,
+				Discard:   jetstream.DiscardOld,
+				MaxAge:    msgmaxage,
 			})
 			if err != nil {
 				log.Fatal(err)
 			}
 			cons, err := s.CreateOrUpdateConsumer(ctx, jetstream.ConsumerConfig{
-				Durable:   NatsQueueDurable,
-				AckPolicy: jetstream.AckExplicitPolicy,
+				Durable:       NatsQueueDurable,
+				DeliverPolicy: jetstream.DeliverAllPolicy,
+
+				//AckPolicy: jetstream.AckNonePolicy,
 			})
 			if err != nil {
-				log.Fatal(err)
+				log.Fatal("consumer ", err)
 			}
-			it, err := cons.Messages(jetstream.PullMaxMessages(100))
+			it, err := cons.Messages()
 
 			if err != nil {
 				if FyneMessageWin != nil {
@@ -371,31 +378,34 @@ func Erase() {
 	if err != nil {
 		log.Println("Erase Connect", getLangsNats("ms-erac"), err.Error())
 	}
-	js, err := nc.JetStream()
+	js, err := jetstream.New(nc)
 	if err != nil {
 		log.Println("Erase Jetstream Make ", getLangsNats("ms-eraj"), err)
 	}
-
+	msgmaxage, errmma := time.ParseDuration(NatsMsgMaxAge)
+	log.Println("mma ", msgmaxage, errmma)
+	cfg := jetstream.StreamConfig{
+		Name:      NatsQueue,
+		Subjects:  []string{strings.ToLower(NatsQueue) + ".>"},
+		Storage:   jetstream.FileStorage,
+		Retention: jetstream.LimitsPolicy,
+		Discard:   jetstream.DiscardOld,
+		MaxAge:    msgmaxage,
+	}
+	log.Println("max age ", NatsMsgMaxAge)
+	log.Println("cfg ", cfg)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	NatsMessages = nil
-	err1 := js.PurgeStream(NatsQueue)
-	if err1 != nil {
-		log.Println("Erase Jetstream Purge", getLangsNats("ms-dels"), err1)
-	}
-	err2 := js.DeleteStream(NatsQueue)
-	if err2 != nil {
-		log.Println("Erase Jetstream Delete", getLangsNats("ms-dels"), err1)
-	}
-	msgmaxage, _ := time.ParseDuration(NatsMsgMaxAge)
 
-	js1, err3 := js.AddStream(&nats.StreamConfig{
-		Name:     NatsQueue,
-		Subjects: []string{strings.ToLower(NatsQueue) + ".>"},
-		Storage:  nats.FileStorage,
-		MaxAge:   msgmaxage,
-		NoAck:    true,
-	})
+	err2 := js.DeleteStream(ctx, NatsQueue)
+	if err2 != nil {
+		log.Println("Erase Jetstream Delete", getLangsNats("ms-dels"), err2)
+	}
+
+	js1, err3 := js.CreateStream(ctx, cfg)
 	if err3 != nil {
-		log.Println("Erase Addstream ", getLangsNats("ms-adds"), err3)
+		log.Println("Create Stream ", getLangsNats("ms-adds"), err3)
 	}
 	fmt.Printf("js1: %v\n", js1)
 

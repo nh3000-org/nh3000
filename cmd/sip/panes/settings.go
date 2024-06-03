@@ -26,7 +26,7 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 	malabel := widget.NewLabel(config.GetLangs("ss-ma"))
 	ma := widget.NewRadioGroup([]string{"1h", "12h", "24h", "161h", "8372h"}, func(string) {})
 	ma.Horizontal = true
-	msgmaxageShadow = config.FyneApp.Preferences().StringWithFallback("MsgMaxAge", config.Encrypt("12h", config.MySecret))
+	msgmaxageShadow = config.FyneApp.Preferences().StringWithFallback("NatsMsgMaxAge", config.Encrypt("12h", config.MySecret))
 	ma.SetSelected(config.Decrypt(msgmaxageShadow, config.MySecret))
 
 	preferredthemeShadow = config.FyneApp.Preferences().StringWithFallback("Theme", config.Encrypt("0", config.MySecret))
@@ -55,16 +55,16 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 			config.FyneApp.Preferences().SetString("PreferedLanguage", config.Encrypt(la.Selected, config.MySecret))
 		}
 		if msgmaxageShadow != ma.Selected {
-			config.FyneApp.Preferences().SetString("MsgMaxAge", config.Encrypt(ma.Selected, config.MySecret))
+			config.FyneApp.Preferences().SetString("NatsMsgMaxAge", config.Encrypt(ma.Selected, config.MySecret))
 		}
 
 		if preferredlanguageShadow != config.PreferedLanguage {
 			config.FyneApp.Preferences().SetString("PreferedLanguage", config.Encrypt(la.Selected, config.MySecret))
 		}
-		if config.GetLoggedOn() {
+		if config.LoggedOn {
 			errors.SetText(config.GetLangs("ss-sserr"))
 		}
-		if !config.GetLoggedOn() {
+		if !config.LoggedOn {
 			errors.SetText(config.GetLangs("ss-sserr1"))
 		}
 	})

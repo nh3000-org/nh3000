@@ -1,6 +1,7 @@
 package panes
 
 import (
+	"log"
 	"strconv"
 	"strings"
 
@@ -28,18 +29,18 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 	malabel := widget.NewLabel(config.GetLangs("ss-ma"))
 	ma := widget.NewRadioGroup([]string{"1h", "12h", "24h", "161h", "8372h"}, func(string) {})
 	ma.Horizontal = true
-	msgmaxageShadow = config.FyneApp.Preferences().StringWithFallback("MsgMaxAge", config.Encrypt("12h", config.MySecret))
+	msgmaxageShadow = config.FyneApp.Preferences().StringWithFallback("NatsMsgMaxAge", config.Encrypt("12h", config.MySecret))
 	ma.SetSelected(config.Decrypt(msgmaxageShadow, config.MySecret))
 
 	fllabel := widget.NewLabel(config.GetLangs("ms-filter"))
 	filter := widget.NewRadioGroup([]string{"True", "False"}, func(string) {})
-	filterShadow = config.FyneApp.Preferences().StringWithFallback("MsgFilter", config.Encrypt("False", config.MySecret))
+	filterShadow = config.FyneApp.Preferences().StringWithFallback("NatsMsgFilter", config.Encrypt("False", config.MySecret))
 	filter.SetSelected(config.Decrypt(filterShadow, config.MySecret))
 	config.FyneFilter = false
 	if strings.Contains(filter.Selected, "True") {
 		config.FyneFilter = true
 	}
-	preferredthemeShadow = config.FyneApp.Preferences().StringWithFallback("Theme", config.Encrypt("0", config.MySecret))
+	preferredthemeShadow = config.FyneApp.Preferences().StringWithFallback("FyneTheme", config.Encrypt("0", config.MySecret))
 	config.Selected, _ = strconv.Atoi(config.Decrypt(preferredthemeShadow, config.MySecret))
 	themes := container.NewGridWithColumns(3,
 		widget.NewButton(config.GetLangs("mn-dark"), func() {
@@ -59,16 +60,17 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 	ssbutton := widget.NewButton(config.GetLangs("ss-ss"), func() {
 		x, _ := strconv.Atoi(config.Decrypt(preferredthemeShadow, config.MySecret))
 		if x != config.Selected {
-			config.FyneApp.Preferences().SetString("Theme", config.Encrypt(strconv.Itoa(config.Selected), config.MySecret))
+			config.FyneApp.Preferences().SetString("FyneTheme", config.Encrypt(strconv.Itoa(config.Selected), config.MySecret))
 		}
 		if preferredlanguageShadow != la.Selected {
 			config.FyneApp.Preferences().SetString("PreferedLanguage", config.Encrypt(la.Selected, config.MySecret))
 		}
 		if msgmaxageShadow != ma.Selected {
-			config.FyneApp.Preferences().SetString("MsgMaxAge", config.Encrypt(ma.Selected, config.MySecret))
+			config.FyneApp.Preferences().SetString("NatsMsgMaxAge", config.Encrypt(ma.Selected, config.MySecret))
 		}
+		log.Println("settings ", ma.Selected)
 		if filterShadow != filter.Selected {
-			config.FyneApp.Preferences().SetString("MsgFilter", config.Encrypt(filter.Selected, config.MySecret))
+			config.FyneApp.Preferences().SetString("FyneFilter", config.Encrypt(filter.Selected, config.MySecret))
 		}
 
 		if config.LoggedOn {
