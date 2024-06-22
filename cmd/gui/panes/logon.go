@@ -214,7 +214,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			ck.SetText("")
 			cc.SetText("")
 			config.Send(config.GetLangs("ls-con"), config.NatsAlias)
-			go config.Receive()
+			go config.ReceiveJS()
 		}
 	})
 

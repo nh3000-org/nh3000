@@ -1,6 +1,7 @@
 package panes
 
 import (
+	"log"
 	"strings"
 
 	"github.com/nh3000-org/nh3000/config"
@@ -63,6 +64,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 		if !config.LoggedOn {
 			Errors.SetText(config.GetLangs("cs-lf"))
 		}
+		log.Println("sending ", message.Text)
 		config.Send(message.Text, config.NatsAlias)
 		message.SetText("")
 	})
