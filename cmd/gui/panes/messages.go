@@ -41,6 +41,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 			return container.NewHBox(widget.NewLabel("Template Object"))
 		},
 		func(id widget.ListItemID, item fyne.CanvasObject) {
+			
 			mymessage = config.NatsMessages[id].MSmessage
 			if len(config.NatsMessages[id].MSmessage) > 100 {
 				mymessageshort = strings.ReplaceAll(config.NatsMessages[id].MSmessage, "\n", ".")
@@ -51,6 +52,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	)
 	config.FyneMessageList = List
 	List.OnSelected = func(id widget.ListItemID) {
+		
 		Details.SetText(config.NatsMessages[id].MSmessage + "\n.................." + config.NatsMessages[id].MShostname + config.NatsMessages[id].MSipadrs + config.NatsMessages[id].MSnodeuuid + config.NatsMessages[id].MSiduuid + config.NatsMessages[id].MSdate)
 		dlg := fyne.CurrentApp().NewWindow(config.NatsMessages[id].MSalias + config.NatsMessages[id].MSdate)
 		DetailsVW := container.NewScroll(DetailsBorder)

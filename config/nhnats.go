@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
+	"fmt"
 
 	//	"fmt"
 	"runtime"
@@ -33,13 +34,15 @@ type MessageStore struct {
 	MSdate     string
 }
 
-var mts string
+var ms = MessageStore{}
+
 var shortServerName string
 var shortServerName1 string
 var memoryStats runtime.MemStats
 var NatsMessages = make(map[int]MessageStore)
+var NatsMessagesIndex = make(map[string]bool)
 
-var pinginterval time.Duration = (30 * time.Minute)
+//var pinginterval time.Duration = (30 * time.Minute)
 
 var fyneFilterFound = false
 
@@ -142,16 +145,16 @@ func DEPRECATEDDeleteNatsMsgByUUID(iduuid string) {
 	}
 }
 
-// check msg by uuid
+/* // check msg by uuid
 func CheckNatsMsgByUUID(iduuid string) bool {
 	for _, v := range NatsMessages {
-		log.Println("id ", iduuid, "v.id ", v.MSiduuid)
+		//log.Println("id ", iduuid, "v.id ", v.MSiduuid)
 		if iduuid == v.MSiduuid {
 			return true
 		}
 	}
 	return false
-}
+} */
 
 func docerts() *tls.Config {
 
@@ -183,7 +186,7 @@ func docerts() *tls.Config {
 
 // send message to nats
 func Send(m string, alias string) bool {
-	log.Println("in send ", m)
+
 	EncMessage := MessageStore{}
 	name, err := os.Hostname()
 	if err != nil {
@@ -218,6 +221,7 @@ func Send(m string, alias string) bool {
 	EncMessage.MSnodeuuid = "\n" + getLangsNats("ms-ni") + NatsNodeUUID
 	msiduuid := uuid.New().String()
 	EncMessage.MSiduuid = "\n" + getLangsNats("ms-msg") + msiduuid
+	//log.Println("in send ", m, " ", msiduuid)
 	EncMessage.MSdate = "\n" + getLangsNats("ms-on") + time.Now().Format(time.UnixDate)
 	EncMessage.MSmessage = m
 	jsonmsg, jsonerr := json.Marshal(EncMessage)
@@ -229,56 +233,47 @@ func Send(m string, alias string) bool {
 		log.Println(getLangsNats("ms-err8"), jsonerr.Error())
 	}
 	var s = Encrypt(string(jsonmsg), NatsQueuePassword)
-	log.Println("sending 2 ", s)
-	setMessageToSend(s)
+	//log.Println("sending 2 ", s)
+	Sendjs(s)
 	runtime.GC()
 	return false
 }
-func setMessageToSend(nm string) {
-	//	log.Println("settosend ", string(nm))
-	MessageToSend = nm
-}
-func getMessageToSend() string {
-	//	log.Println("gettosend ", string(MessageToSend))
-	return MessageToSend
-}
 
-// thread for receiving messages
-func ReceiveJS() {
+func Sendjs(m string) {
 	var certpool = docerts()
-	natsopts := nats.Options{
+	sendnatsopts := nats.Options{
 		Name:           NatsAlias,
 		Url:            NatsServer,
 		Verbose:        true,
 		TLSConfig:      certpool,
 		AllowReconnect: true,
-		MaxReconnect:   100,
-		Timeout:        30 * time.Second,
+		MaxReconnect:   1,
+		Timeout:        2048 * time.Hour,
 		User:           NatsUser,
 		Password:       NatsUserPassword,
 	}
-	natsconnect, connecterr := natsopts.Connect()
-	if connecterr != nil {
+	sendnatsconnect, sendconnecterr := sendnatsopts.Connect()
+	if sendconnecterr != nil {
 		if FyneMessageWin != nil {
-			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + connecterr.Error())
+			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + sendconnecterr.Error())
 		}
-		log.Println("Connect" + getLangsNats("ms-snd") + getLangsNats("ms-err7") + connecterr.Error())
+		log.Println("Connect" + getLangsNats("ms-snd") + getLangsNats("ms-err7") + sendconnecterr.Error())
 	}
-	js, jetstreamerr := jetstream.New(natsconnect)
-	if jetstreamerr != nil {
+	sendjs, sendjetstreamerr := jetstream.New(sendnatsconnect)
+	if sendjetstreamerr != nil {
 		if FyneMessageWin != nil {
-			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + jetstreamerr.Error())
+			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + sendjetstreamerr.Error())
 		}
-		log.Println("jetstreamerror " + jetstreamerr.Error())
+		log.Println("jetstreamerror " + sendjetstreamerr.Error())
 	}
 	maxage, _ := time.ParseDuration(NatsMsgMaxAge)
-	ctx := context.Background()
+	ctx, ctxcancel := context.WithCancel(context.Background())
 	//pubctx := context.Background()
 	//nats stream add ORDERS --subjects "ORDERS.*" --ack --max-msgs=-1 --max-bytes=-1 --max-age=1y --storage file --retention limits --max-msg-size=-1 --discard=old
 	//nats consumer add ORDERS NEW --filter ORDERS.received --ack explicit --pull --deliver all --max-deliver=-1 --sample 100
 	//nats consumer add ORDERS DISPATCH --filter ORDERS.processed --ack explicit --pull --deliver all --max-deliver=-1 --sample 100
 	//nats consumer add ORDERS MONITOR --filter '' --ack none --target monitor.ORDERS --deliver last --replay instant
-	stream, streamerr := js.CreateOrUpdateStream(ctx, jetstream.StreamConfig{
+	_, streamerr := sendjs.CreateOrUpdateStream(ctx, jetstream.StreamConfig{
 		Description: "ClientStream",
 		Name:        NatsQueue,
 		Subjects:    []string{strings.ToLower(NatsQueue + ".*")},
@@ -295,115 +290,158 @@ func ReceiveJS() {
 		log.Println("streamerror " + streamerr.Error())
 	}
 
-	/*
-		natssub, natssuberr := natsconnect.SubscribeSync(strings.ToLower(NatsQueue) + ".>")
-		if natssuberr != nil {
-			if FyneMessageWin != nil {
-				FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + natssuberr.Error())
-			}
-			log.Println(getLangsNats("ms-snd") + getLangsNats("ms-err7") + natssuberr.Error())
-		} */
-	//nats consumer add ORDERS MONITOR --filter '' --ack none --target monitor.ORDERS --deliver last --replay instant
-	concfg := jetstream.ConsumerConfig{
-		Name:          NatsQueueDurable,
-		Durable:       NatsQueueDurable,
-		DeliverPolicy: jetstream.DeliverAllPolicy,
-		//AckPolicy:     jetstream.AckNonePolicy,
-		FilterSubject: strings.ToLower(NatsQueue) + ".*",
-		ReplayPolicy:  jetstream.ReplayInstantPolicy,
+	if streamerr != nil {
+		log.Println("streamerror " + streamerr.Error())
 	}
-	setupcons, setuperr := stream.CreateOrUpdateConsumer(ctx, concfg)
-	//AckPolicy: jetstream.AckNonePolicy,
-	if setuperr != nil {
-		log.Println("setup error ", setuperr.Error())
+	//log.Println("in ", getMessageToSend())
+
+	//log.Println("Publish ")
+	//sndmsg := &nats.Msg{Subject: strings.ToLower(NatsQueue) + ".>", Data: []byte(getMessageToSend())}
+	_, puberr := sendjs.Publish(ctx, strings.ToLower(NatsQueue)+".client", []byte(m))
+	if puberr != nil {
+		if FyneMessageWin != nil {
+			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + puberr.Error())
+		}
+		log.Println("Publish Error " + puberr.Error())
+
+		//SendMessage = false
 	}
+	//log.Println("in error ", pubit.Err())
+	ctxcancel()
+}
 
-	/* 	consume, consumeerr := stream.CreateConsumer(ctx, jetstream.ConsumerConfig{
-	   		Durable: NatsQueueDurable,
-	   		//AckPolicy: jetstream.AckNonePolicy,
-	   	})
-	   	if consumeerr != nil {
-	   		log.Println("consumeerror " + consumeerr.Error())
-	   	} */
+// thread for receiving messages
+func ReceiveJS() {
+	var certpool = docerts()
 
-	//msgmaxage, _ := time.ParseDuration(NatsMsgMaxAge)
 	for {
 		select {
 		case <-QuitReceive:
 			return
 
 		default:
-			//log.Println("in ", getMessageToSend())
-			mts = getMessageToSend()
-			if mts != "" {
-				//log.Println("Publish ")
-				//sndmsg := &nats.Msg{Subject: strings.ToLower(NatsQueue) + ".>", Data: []byte(getMessageToSend())}
-				_, puberr := js.PublishAsync(strings.ToLower(NatsQueue)+".*", []byte(getMessageToSend()))
-				if puberr != nil {
-					if FyneMessageWin != nil {
-						FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + puberr.Error())
-					}
-					log.Println("Publish Error " + puberr.Error())
-
-					//SendMessage = false
-				}
-				//log.Println("in error ", pubit.Err())
-				setMessageToSend("")
+			natsopts := nats.Options{
+				Name:           NatsAlias,
+				Url:            NatsServer,
+				Verbose:        true,
+				TLSConfig:      certpool,
+				AllowReconnect: true,
+				MaxReconnect:   1,
+				Timeout:        2048 * time.Hour,
+				User:           NatsUser,
+				Password:       NatsUserPassword,
 			}
-
-			//NatsMessages = nil
-			_, fetcherr := setupcons.Consume(func(msg jetstream.Msg) {
-				msg.Ack()
-				var ms = MessageStore{}
-				err1 := json.Unmarshal([]byte(string(Decrypt(string(msg.Data()), NatsQueuePassword))), &ms)
-				//log.Println("natssuberr ", fetcherr, " msg ", ms)
-
-				//err1 := json.Unmarshal([]byte(string(Decrypt(string(msg.Data), NatsQueuePassword))), &ms)
-				if err1 != nil {
-					// send decrypt
-					if FyneMessageWin != nil {
-						FyneMessageWin.SetTitle(getLangsNats("ms-mde"))
-					}
-					log.Println("un marhal", err1)
+			natsconnect, connecterr := natsopts.Connect()
+			if connecterr != nil {
+				if FyneMessageWin != nil {
+					FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + connecterr.Error())
 				}
-				fyneFilterFound = false
-				if FyneFilter {
-					if strings.Contains(ms.MSmessage, getLangsNats("ms-con")) {
-						fyneFilterFound = true
-					}
-					if strings.Contains(ms.MSmessage, getLangsNats("ms-dis")) {
-						fyneFilterFound = true
-					}
+				log.Println("Connect" + getLangsNats("ms-snd") + getLangsNats("ms-err7") + connecterr.Error())
+			}
+			js, jetstreamerr := natsconnect.JetStream()
+			if jetstreamerr != nil {
+				if FyneMessageWin != nil {
+					FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + jetstreamerr.Error())
 				}
-				if !fyneFilterFound {
-					if !CheckNatsMsgByUUID(ms.MSiduuid) {
-						log.Println("adding ms ")
-						NatsMessages[len(NatsMessages)] = ms
-					}
+				log.Println("jetstreamerror " + jetstreamerr.Error())
+			}
+			maxage, _ := time.ParseDuration(NatsMsgMaxAge)
+			js.AddStream(&nats.StreamConfig{
+				Name:     NatsQueue,
+				Subjects: []string{strings.ToLower(NatsQueue) + ".*"},
+			})
+			_, err1 := js.AddConsumer(NatsQueue, &nats.ConsumerConfig{
+				Durable:           NatsNodeUUID,
+				AckPolicy:         nats.AckExplicitPolicy,
+				InactiveThreshold: maxage,
+				DeliverPolicy:     nats.DeliverAllPolicy,
+				ReplayPolicy:      nats.ReplayInstantPolicy,
+			})
+			if err1 != nil {
+				//log.Println(err1.Error())
+				if FyneMessageWin != nil {
+					FyneMessageWin.SetTitle(GetLangs("ms-carrier") + err1.Error())
 				}
-
+			}
+			sub, errsub := js.PullSubscribe("", "", nats.BindStream(NatsQueue))
+			if errsub != nil {
+				//log.Println(errsub.Error())
+				if FyneMessageWin != nil {
+					FyneMessageWin.SetTitle(GetLangs("ms-carrier") + errsub.Error())
+				}
+			}
+			msgs, err := sub.Fetch(100)
+			if err != nil {
+				//log.Println(err.Error())
 				if FyneMessageWin != nil {
 					runtime.GC()
 					runtime.ReadMemStats(&memoryStats)
-					FyneMessageWin.SetTitle(getLangsNats("ms-err6-1") + strconv.Itoa(len(NatsMessages)) + getLangsNats("ms-err6-2") + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+					FyneMessageWin.SetTitle(GetLangs("ms-carrier") + err.Error() + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
 				}
-				//}
+			}
+			if len(msgs) > 0 {
+				for i := 0; i < len(msgs); i++ {
+					msgs[i].Nak()
+					ms = MessageStore{}
+					err1 := json.Unmarshal([]byte(string(Decrypt(string(msgs[i].Data), NatsQueuePassword))), &ms)
+					//log.Println("natssuberr ", fetcherr, " msg ", ms)
 
+					//err1 := json.Unmarshal([]byte(string(Decrypt(string(msg.Data), NatsQueuePassword))), &ms)
+					if err1 != nil {
+						// send decrypt
+						if FyneMessageWin != nil {
+							FyneMessageWin.SetTitle(getLangsNats("ms-mde"))
+						}
+						log.Println("un marhal", err1)
+					}
+					fyneFilterFound = false
+					if FyneFilter {
+						if strings.Contains(ms.MSmessage, getLangsNats("ms-con")) {
+							fyneFilterFound = true
+						}
+						if strings.Contains(ms.MSmessage, getLangsNats("ms-dis")) {
+							fyneFilterFound = true
+						}
+					}
+					if !fyneFilterFound {
+						//if !CheckNatsMsgByUUID(ms.MSiduuid) {
+						//log.Println("check ", ms.MSiduuid, " ", NatsMessagesIndex[ms.MSiduuid])
+						if !NatsMessagesIndex[ms.MSiduuid] {
+							//log.Println("adding ms ", ms.MSiduuid)
+							NatsMessages[len(NatsMessages)] = ms
+							NatsMessagesIndex[ms.MSiduuid] = true
+							//FyneMessageList.Refresh()
+						}
+					}
+
+					if FyneMessageWin != nil {
+						runtime.GC()
+						runtime.ReadMemStats(&memoryStats)
+						FyneMessageWin.SetTitle(getLangsNats("ms-err6-1") + strconv.Itoa(len(NatsMessages)) + getLangsNats("ms-err6-2") + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+					}
+					//}
+
+					//FyneMessageList.Refresh()
+					//natssub.Drain()
+				}
 				FyneMessageList.Refresh()
-				//natssub.Drain()
-
-			})
+			}
 			/* 			if fetcherr != nil {
 				log.Println("natsfetcherr in ", fetcherr)
 			} */
-			if fetcherr != nil {
-				log.Println("natsfetcherr getting ", fetcherr.Error())
 
+			//sub.Drain()
+			dltconserr := js.DeleteConsumer(NatsQueue, NatsNodeUUID)
+			if dltconserr != nil {
+				log.Println("dltconserr ", dltconserr)
 			}
+			natsconnect.Close()
+			//log.Println("big ", bigerr)
 		}
+
 		//NatsMessages = nil
 
-		time.Sleep(10 * time.Second)
+		time.Sleep(20 * time.Second)
 
 	}
 
@@ -430,21 +468,42 @@ func ReceiveNats() {
 		}
 		log.Println("Connect" + getLangsNats("ms-snd") + getLangsNats("ms-err7") + connecterr.Error())
 	}
-	natssubdurable, natssuberrdurable := natsconnect.SubscribeSync(NatsQueueDurable)
-	if natssuberrdurable != nil {
+
+	js, err := natsconnect.JetStream()
+	if err != nil {
 		if FyneMessageWin != nil {
-			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + natssuberrdurable.Error())
+			FyneMessageWin.SetTitle(GetLangs("ms-carrier") + err.Error())
 		}
-		log.Println("Durable " + natssubdurable.Subject + natssuberrdurable.Error())
 	}
-	natssub, natssuberr := natsconnect.SubscribeSync(strings.ToLower(NatsQueue) + ".*")
-	if natssuberr != nil {
+	js.AddStream(&nats.StreamConfig{
+		Name:     NatsQueue + NatsNodeUUID,
+		Subjects: []string{strings.ToLower(NatsQueue) + ".>"},
+	})
+
+	msgmaxage, _ := time.ParseDuration(NatsMsgMaxAge)
+	_, err1 := js.AddConsumer(NatsQueue, &nats.ConsumerConfig{
+		Durable:           NatsNodeUUID,
+		AckPolicy:         nats.AckExplicitPolicy,
+		InactiveThreshold: msgmaxage,
+		DeliverPolicy:     nats.DeliverAllPolicy,
+		ReplayPolicy:      nats.ReplayInstantPolicy,
+	})
+
+	if err1 != nil {
+		//log.Println(err1.Error())
 		if FyneMessageWin != nil {
-			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + natssuberr.Error())
+			FyneMessageWin.SetTitle(GetLangs("ms-carrier") + err1.Error())
 		}
-		log.Println(getLangsNats("ms-snd") + getLangsNats("ms-err7") + natssuberr.Error())
 	}
-	//msgmaxage, _ := time.ParseDuration(NatsMsgMaxAge)
+
+	sub, errsub := js.PullSubscribe("", "", nats.BindStream(NatsQueue))
+	if errsub != nil {
+		//log.Println(errsub.Error())
+		if FyneMessageWin != nil {
+			FyneMessageWin.SetTitle(GetLangs("ms-carrier") + errsub.Error())
+		}
+	}
+
 	for {
 		select {
 		case <-QuitReceive:
@@ -452,61 +511,56 @@ func ReceiveNats() {
 
 		default:
 			//log.Println("in ", getMessageToSend())
-			if len(getMessageToSend()) != 0 {
-				//log.Println("Publish ")
-				sndmsg := &nats.Msg{Subject: strings.ToLower(NatsQueue) + ".>", Data: []byte(getMessageToSend())}
-				puberr := natsconnect.PublishMsg(sndmsg)
-				if puberr != nil {
-					if FyneMessageWin != nil {
-						FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + puberr.Error())
-					}
-					log.Println("Publish Error " + puberr.Error())
-
-					//SendMessage = false
-				}
-				setMessageToSend("")
-			}
-			msg, natnextmsg := natssub.NextMsg(1 * time.Second)
-			//log.Println("natssuberr in ", natssuberr, " msg ", natnextmsg)
-			if natnextmsg == nil {
-				var ms = MessageStore{}
-				err1 := json.Unmarshal([]byte(string(Decrypt(string(msg.Data), NatsQueuePassword))), &ms)
-				log.Println("natssuberr ", natssuberr, " msg ", ms)
-
-				msg.Nak()
-				//err1 := json.Unmarshal([]byte(string(Decrypt(string(msg.Data), NatsQueuePassword))), &ms)
-				if err1 != nil {
-					// send decrypt
-					if FyneMessageWin != nil {
-						FyneMessageWin.SetTitle(getLangsNats("ms-mde"))
-					}
-					log.Println("un marhal", err1)
-				}
-				fyneFilterFound = false
-				if FyneFilter {
-					if strings.Contains(ms.MSmessage, getLangsNats("ms-con")) {
-						fyneFilterFound = true
-					}
-					if strings.Contains(ms.MSmessage, getLangsNats("ms-dis")) {
-						fyneFilterFound = true
-					}
-				}
-				if !fyneFilterFound {
-					if !CheckNatsMsgByUUID(ms.MSiduuid) {
-						NatsMessages[len(NatsMessages)] = ms
-					}
-				}
-
+			msgs, err := sub.Fetch(100)
+			if err != nil {
+				//log.Println(err.Error())
 				if FyneMessageWin != nil {
-					runtime.GC()
-					runtime.ReadMemStats(&memoryStats)
-					FyneMessageWin.SetTitle(getLangsNats("ms-err6-1") + strconv.Itoa(len(NatsMessages)) + getLangsNats("ms-err6-2") + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+					FyneMessageWin.SetTitle(GetLangs("ms-carrier") + err.Error())
 				}
-				//}
-
-				FyneMessageList.Refresh()
-				//natssub.Drain()
 			}
+
+			if len(msgs) > 0 {
+				for i := 0; i < len(msgs); i++ {
+					var ms = MessageStore{}
+					err1 := json.Unmarshal([]byte(string(Decrypt(string(msgs[i].Data), NatsQueuePassword))), &ms)
+					//log.Println("natssuberr ", natssuberr, " msg ", ms)
+
+					//err1 := json.Unmarshal([]byte(string(Decrypt(string(msg.Data), NatsQueuePassword))), &ms)
+					if err1 != nil {
+						// send decrypt
+						if FyneMessageWin != nil {
+							FyneMessageWin.SetTitle(getLangsNats("ms-mde"))
+						}
+						log.Println("receive un marhal", err1)
+					}
+					fyneFilterFound = false
+					if FyneFilter {
+						if strings.Contains(ms.MSmessage, getLangsNats("ms-con")) {
+							fyneFilterFound = true
+						}
+						if strings.Contains(ms.MSmessage, getLangsNats("ms-dis")) {
+							fyneFilterFound = true
+						}
+					}
+					if !fyneFilterFound {
+						//if !CheckNatsMsgByUUID(ms.MSiduuid) {
+						NatsMessages[len(NatsMessages)] = ms
+						//}
+					}
+
+					if FyneMessageWin != nil {
+						runtime.GC()
+						runtime.ReadMemStats(&memoryStats)
+						FyneMessageWin.SetTitle(getLangsNats("ms-err6-1") + strconv.Itoa(len(NatsMessages)) + getLangsNats("ms-err6-2") + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+					}
+
+					msgs[i].Nak()
+					FyneMessageList.Refresh()
+				}
+			}
+
+			//natssub.Drain()
+
 		}
 		//NatsMessages = nil
 
@@ -519,5 +573,39 @@ func ReceiveNats() {
 
 // security erase jetstream data
 func Erase() {
+	//docerts()
+	//log.Println(config.GetLangs("ms-era"))
 
+	nc, err := nats.Connect(NatsServer, nats.UserInfo(NatsUser, NatsUserPassword), nats.Secure(docerts()))
+	if err != nil {
+		log.Println("Erase Connect", GetLangs("ms-erac"), err.Error())
+	}
+	js, err := nc.JetStream()
+	if err != nil {
+		log.Println("Erase Jetstream Make ", GetLangs("ms-eraj"), err)
+	}
+
+	NatsMessages = nil
+	err1 := js.PurgeStream(NatsQueue)
+	if err1 != nil {
+		log.Println("Erase Jetstream Purge", GetLangs("ms-dels"), err1)
+	}
+	err2 := js.DeleteStream(NatsQueue)
+	if err2 != nil {
+		log.Println("Erase Jetstream Delete", GetLangs("ms-dels"), err1)
+	}
+	msgmaxage, _ := time.ParseDuration(NatsMsgMaxAge)
+	js1, err3 := js.AddStream(&nats.StreamConfig{
+		Name:     NatsQueue,
+		Subjects: []string{strings.ToLower(NatsQueue) + ".>"},
+		Storage:  nats.FileStorage,
+		MaxAge:   msgmaxage,
+	})
+	if err3 != nil {
+		log.Println("Erase Addstream ", GetLangs("ms-adds"), err3)
+	}
+	fmt.Printf("js1: %v\n", js1)
+
+	Send(GetLangs("ms-sece"), NatsAlias)
+	nc.Close()
 }
