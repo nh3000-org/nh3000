@@ -128,7 +128,7 @@ func Encrypt(text string, secret string) string {
 
 	block, err := aes.NewCipher([]byte(secret))
 	if err != nil {
-		log.Println("encrypt 1", err)
+		log.Println("enNotable stories and conversation starterscrypt 1", err)
 		return ""
 	}
 	plainText := []byte(text)
