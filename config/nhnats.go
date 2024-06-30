@@ -247,7 +247,7 @@ func Sendjs(m string) {
 		Verbose:        true,
 		TLSConfig:      certpool,
 		AllowReconnect: true,
-		MaxReconnect:   1,
+		MaxReconnect:   1000,
 		Timeout:        2048 * time.Hour,
 		User:           NatsUser,
 		Password:       NatsUserPassword,
@@ -326,7 +326,7 @@ func ReceiveJS() {
 				Verbose:        true,
 				TLSConfig:      certpool,
 				AllowReconnect: true,
-				MaxReconnect:   1,
+				MaxReconnect:   1000,
 				Timeout:        2048 * time.Hour,
 				User:           NatsUser,
 				Password:       NatsUserPassword,
@@ -334,9 +334,9 @@ func ReceiveJS() {
 			natsconnect, connecterr := natsopts.Connect()
 			if connecterr != nil {
 				if FyneMessageWin != nil {
-					FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + connecterr.Error())
+					FyneMessageWin.SetTitle(getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + connecterr.Error())
 				}
-				log.Println("Connect" + getLangsNats("ms-snd") + getLangsNats("ms-err7") + connecterr.Error())
+				log.Println("Connect " + getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + connecterr.Error())
 			}
 			js, jetstreamerr := natsconnect.JetStream()
 			if jetstreamerr != nil {
@@ -360,7 +360,8 @@ func ReceiveJS() {
 			if err1 != nil {
 				//log.Println(err1.Error())
 				if FyneMessageWin != nil {
-					FyneMessageWin.SetTitle(GetLangs("ms-carrier") + err1.Error())
+					FyneMessageWin.SetTitle(GetLangs("ms-carrier") + " " + err1.Error())
+					log.Println("Consumer " + GetLangs("ms-carrier") + " " + err1.Error())
 				}
 			}
 			sub, errsub := js.PullSubscribe("", "", nats.BindStream(NatsQueue))
@@ -368,6 +369,7 @@ func ReceiveJS() {
 				//log.Println(errsub.Error())
 				if FyneMessageWin != nil {
 					FyneMessageWin.SetTitle(GetLangs("ms-carrier") + errsub.Error())
+					log.Println("Pull " + GetLangs("ms-carrier") + " " + err1.Error())
 				}
 			}
 			msgs, err := sub.Fetch(100)
