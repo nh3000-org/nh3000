@@ -125,6 +125,9 @@ var myLangsNats = map[string]string{
 	"eng-ms-sece": "Security Erase ",
 	"spa-ms-sece": "Borrado de Seguridad ",
 	"hin-ms-sece": "सुरक्षा मिटाएँ ",
+	"eng-ms-nnm":  "No New Messages On Server ",
+	"spa-ms-nnm":  "No hay Mensajes Nuevos en el Servidor ",
+	"hin-ms-nnm":  "सर्वर पर कोई नया संदेश नहीं ",
 }
 
 // return translation strings
@@ -360,16 +363,16 @@ func ReceiveJS() {
 			if err1 != nil {
 				//log.Println(err1.Error())
 				if FyneMessageWin != nil {
-					FyneMessageWin.SetTitle(GetLangs("ms-carrier") + " " + err1.Error())
-					log.Println("Consumer " + GetLangs("ms-carrier") + " " + err1.Error())
+					FyneMessageWin.SetTitle(getLangsNats("ms-carrier") + " " + err1.Error())
+					log.Println("Consumer " + getLangsNats("ms-carrier") + " " + err1.Error())
 				}
 			}
 			sub, errsub := js.PullSubscribe("", "", nats.BindStream(NatsQueue))
 			if errsub != nil {
 				//log.Println(errsub.Error())
 				if FyneMessageWin != nil {
-					FyneMessageWin.SetTitle(GetLangs("ms-carrier") + errsub.Error())
-					log.Println("Pull " + GetLangs("ms-carrier") + " " + err1.Error())
+					FyneMessageWin.SetTitle(getLangsNats("ms-carrier") + errsub.Error())
+					log.Println("Pull " + getLangsNats("ms-carrier") + " " + errsub.Error())
 				}
 			}
 			msgs, err := sub.Fetch(100)
@@ -378,7 +381,8 @@ func ReceiveJS() {
 				if FyneMessageWin != nil {
 					runtime.GC()
 					runtime.ReadMemStats(&memoryStats)
-					FyneMessageWin.SetTitle(GetLangs("ms-carrier") + err.Error() + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+					FyneMessageWin.SetTitle(getLangsNats("ms-nnm") + err.Error() + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+					//yulog.Println("Fetch " + GetLangs("ms-carrier") + " " + err.Error())
 				}
 			}
 			if len(msgs) > 0 {
