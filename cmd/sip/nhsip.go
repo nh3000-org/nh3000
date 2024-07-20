@@ -26,7 +26,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 
-	"github.com/nh3000-org/nh3000/cmd/gui/panes"
+	"github.com/nh3000-org/nh3000/cmd/sip/panes"
 	"github.com/nh3000-org/nh3000/config"
 
 	"fyne.io/fyne/v2/widget"
@@ -77,16 +77,16 @@ func main() {
 	intro.Wrapping = fyne.TextWrapWord
 	var Panes = map[string]Pane{
 		"logon":    {config.GetLangs("ls-title"), "", theme.LoginIcon(), panes.LogonScreen, true},
-		"messages": {config.GetLangs("ms-title"), "", theme.MailSendIcon(), panes.MessagesScreen, true},
+		"phone": {config.GetLangs("ms-title"), "", theme.MailSendIcon(), panes.PhoneScreen, true},
 		"settings": {config.GetLangs("ss-title"), "", theme.SettingsIcon(), panes.SettingsScreen, true},
 		"password": {config.GetLangs("ps-title"), "", theme.DocumentIcon(), panes.PasswordScreen, true},
-		"encdec":   {config.GetLangs("es-title"), "", theme.CheckButtonIcon(), panes.EncdecScreen, true},
+		//"encdec":   {config.GetLangs("es-title"), "", theme.CheckButtonIcon(), panes.EncdecScreen, true},
 	}
 
 	config.FyneMainWin.SetContent(container.NewAppTabs(
 		container.NewTabItemWithIcon(Panes["logon"].Title, Panes["logon"].Icon, panes.LogonScreen(config.FyneMainWin)),
-		container.NewTabItemWithIcon(Panes["messages"].Title, Panes["messages"].Icon, panes.MessagesScreen(config.FyneMainWin)),
-		container.NewTabItemWithIcon(Panes["encdec"].Title, Panes["encdec"].Icon, panes.EncdecScreen(config.FyneMainWin)),
+		container.NewTabItemWithIcon(Panes["phone"].Title, Panes["messages"].Icon, panes.PhoneScreen(config.FyneMainWin)),
+		//container.NewTabItemWithIcon(Panes["encdec"].Title, Panes["encdec"].Icon, panes.EncdecScreen(config.FyneMainWin)),
 		container.NewTabItemWithIcon(Panes["settings"].Title, Panes["settings"].Icon, panes.SettingsScreen(config.FyneMainWin)),
 		container.NewTabItemWithIcon(Panes["password"].Title, Panes["password"].Icon, panes.PasswordScreen(config.FyneMainWin)),
 	))
