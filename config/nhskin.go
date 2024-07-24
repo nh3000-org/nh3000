@@ -4,6 +4,8 @@ import (
 	"image/color"
 	"log"
 
+	//"strconv"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
 )
@@ -264,7 +266,7 @@ func (m MyTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) colo
 			log.Println("default ", name)
 		}
 	}
-
+	log.Println("default ", name)
 	return theme.DefaultTheme().Color(name, variant)
 }
 func (m MyTheme) Font(style fyne.TextStyle) fyne.Resource {

@@ -1,5 +1,12 @@
 package config
 
+// nh3000 fields
+var SIPLoggedOn = false
+
+var SIPCaroot = ""
+var SIPClientCert = ""
+var SIPClientKey = ""
+
 // sip fields
 var SipGeneralCallWaiting = true
 var SipGeneralHangup3Way = true

@@ -93,7 +93,7 @@ func PasswordScreen(_ fyne.Window) fyne.CanvasObject {
 		}
 
 	})
-	if !config.GetLoggedOn() {
+	if !config.SIPLoggedOn {
 		password.Disable()
 
 		passwordc1.Disable()

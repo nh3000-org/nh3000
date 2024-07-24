@@ -77,7 +77,7 @@ func main() {
 	intro.Wrapping = fyne.TextWrapWord
 	var Panes = map[string]Pane{
 		"logon":    {config.GetLangs("ls-title"), "", theme.LoginIcon(), panes.LogonScreen, true},
-		"phone": {config.GetLangs("ms-title"), "", theme.MailSendIcon(), panes.PhoneScreen, true},
+		"phone":    {config.GetLangs("ms-title"), "", theme.MailSendIcon(), panes.PhonesScreen, true},
 		"settings": {config.GetLangs("ss-title"), "", theme.SettingsIcon(), panes.SettingsScreen, true},
 		"password": {config.GetLangs("ps-title"), "", theme.DocumentIcon(), panes.PasswordScreen, true},
 		//"encdec":   {config.GetLangs("es-title"), "", theme.CheckButtonIcon(), panes.EncdecScreen, true},
@@ -85,7 +85,7 @@ func main() {
 
 	config.FyneMainWin.SetContent(container.NewAppTabs(
 		container.NewTabItemWithIcon(Panes["logon"].Title, Panes["logon"].Icon, panes.LogonScreen(config.FyneMainWin)),
-		container.NewTabItemWithIcon(Panes["phone"].Title, Panes["messages"].Icon, panes.PhoneScreen(config.FyneMainWin)),
+		container.NewTabItemWithIcon(Panes["phone"].Title, Panes["messages"].Icon, panes.PhonesScreen(config.FyneMainWin)),
 		//container.NewTabItemWithIcon(Panes["encdec"].Title, Panes["encdec"].Icon, panes.EncdecScreen(config.FyneMainWin)),
 		container.NewTabItemWithIcon(Panes["settings"].Title, Panes["settings"].Icon, panes.SettingsScreen(config.FyneMainWin)),
 		container.NewTabItemWithIcon(Panes["password"].Title, Panes["password"].Icon, panes.PasswordScreen(config.FyneMainWin)),
@@ -98,13 +98,13 @@ func main() {
 // handle app close
 func logLifecycle() {
 
-	config.FyneApp.Lifecycle().SetOnStopped(func() {
+	/* 	config.FyneApp.Lifecycle().SetOnStopped(func() {
 		if config.LoggedOn {
 			config.Send(config.GetLangs("ls-dis"), config.GetAlias())
 		}
 		if config.GetReceivingMessages() {
 			config.QuitReceive <- true
 		}
-	})
+	}) */
 
 }
