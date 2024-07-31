@@ -10,6 +10,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/nh3000-org/nh3000/config"
+
 )
 
 func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
@@ -17,10 +18,10 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 	errors := widget.NewLabel("...")
 
 	password := widget.NewPasswordEntry()
-	password.SetPlaceHolder(config.GetLangs("ls-password"))
+	password.SetPlaceHolder("Enter Password")
 
 	alias := widget.NewEntry()
-	alias.SetPlaceHolder(config.GetLangs("ls-alias"))
+	alias.SetPlaceHolder("Alias")
 	alias.Disable()
 	var aliasShadow = ""
 
@@ -29,25 +30,25 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 	server.Disable()
 	var serverShadow = ""
 
-	calabel := widget.NewLabel(config.GetLangs("cs-ca"))
+	calabel := widget.NewLabel("Certificate Authority CAROOT")
 	ca := widget.NewMultiLineEntry()
 	ca.Resize(fyne.NewSize(320, 120))
 	ca.Disable()
 	var caShadow = ""
 
-	cclabel := widget.NewLabel(config.GetLangs("cs-cc"))
+	cclabel := widget.NewLabel("Client Certificate")
 	cc := widget.NewMultiLineEntry()
 	cc.Resize(fyne.NewSize(320, 120))
 	cc.Disable()
 	var ccShadow = ""
 
-	cklabel := widget.NewLabel(config.GetLangs("cs-ck"))
+	cklabel := widget.NewLabel("Client Key")
 	ck := widget.NewMultiLineEntry()
 	ck.Resize(fyne.NewSize(320, 120))
 	ck.Disable()
 	var ckShadow = ""
 
-	TPbutton := widget.NewButtonWithIcon(config.GetLangs("ls-trypass"), theme.LoginIcon(), func() {
+	TPbutton := widget.NewButtonWithIcon("Try Password", theme.LoginIcon(), func() {
 		errors.SetText("...")
 		var iserrors = false
 		ph, _ := config.LoadHashWithDefault("config.hash", "123456")
@@ -57,14 +58,14 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 		config.PasswordHash = string(pwh)
 		if err != nil {
 			iserrors = true
-			errors.SetText(config.GetLangs("ls-err1"))
+			errors.SetText("Invalid Password")
 		}
 
 		// Comparing the password with the hash
 		errpw := bcrypt.CompareHashAndPassword([]byte(ph), []byte(password.Text))
 		if errpw != nil {
 			iserrors = true
-			errors.SetText(config.GetLangs("ls-err3"))
+			errors.SetText("Passwords Do Not Match")
 		}
 		if !iserrors {
 			errors.SetText("...")
@@ -96,7 +97,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 		}
 	})
 
-	SSbutton := widget.NewButtonWithIcon(config.GetLangs("ls-title"), theme.LoginIcon(), func() {
+	SSbutton := widget.NewButtonWithIcon("Logon", theme.LoginIcon(), func() {
 		var haserrors = false
 		if aliasShadow != alias.Text {
 			haserrors = config.Edit("STRING", alias.Text)
@@ -104,16 +105,16 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 				config.Encrypt(alias.Text, config.MySecret)
 				config.FyneApp.Preferences().SetString("Alias", config.Encrypt(alias.Text, config.MySecret))
 			} else {
-				errors.SetText(config.GetLangs("ls-err5"))
+				errors.SetText("Invalid Alias")
 			}
 		}
 
 		if serverShadow != server.Text {
-			haserrors = config.Edit("URL", server.Text)
+			haserrors = config.Edit("SIP", server.Text)
 			if !haserrors {
 				config.FyneApp.Preferences().SetString("Server", config.Encrypt(server.Text, config.MySecret))
 			} else {
-				errors.SetText(config.GetLangs("ls-err4"))
+				errors.SetText("Invalid Server")
 			}
 
 		}
@@ -128,7 +129,9 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			password.Disable()
 			server.Disable()
 			alias.Disable()
-
+			ca.SetText("")
+			cc.SetText("")
+			ck.SetText("")
 			ca.Disable()
 			ck.Disable()
 			cc.Disable()
@@ -137,19 +140,12 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 		}
 	})
 
-	// security erase
-	SEbutton := widget.NewButtonWithIcon(config.GetLangs("ls-erase"), theme.ContentUndoIcon(), func() {
-		if config.SIPLoggedOn {
-			config.Erase()
-		}
-	})
 	if config.SIPLoggedOn {
 		TPbutton.Disable()
 		TPbutton.Refresh()
 		SSbutton.Disable()
 		SSbutton.Refresh()
-		SEbutton.Enable()
-		SEbutton.Refresh()
+
 	}
 	if !config.SIPLoggedOn {
 		password.Enable()
@@ -163,7 +159,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 
 	vertbox := container.NewVBox(
 
-		widget.NewLabelWithStyle(config.GetLangs("ls-clogon"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle("Logon", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		password,
 		TPbutton,
 		alias,
@@ -176,7 +172,6 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 		cklabel,
 		ck,
 		SSbutton,
-		SEbutton,
 		container.NewHBox(
 			widget.NewHyperlink("newhorizons3000.org", config.ParseURL("https://newhorizons3000.org/")),
 			widget.NewHyperlink("github.com", config.ParseURL("https://github.com/nh3000-org/snats")),

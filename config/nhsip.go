@@ -1,11 +1,22 @@
 package config
 
+import "fyne.io/fyne/v2"
+
+//import "fyne.io/fyne/widget"
+
+//"fyne.io/fyne/v2"
+//"fyne.io/fyne/widget"
+
 // nh3000 fields
 var SIPLoggedOn = false
 
 var SIPCaroot = ""
 var SIPClientCert = ""
 var SIPClientKey = ""
+
+var SIPFyneMainWin fyne.Window
+var SIPFyneApp fyne.App
+var SIPPreferedLanguage = "eng"
 
 // sip fields
 var SipGeneralCallWaiting = true
@@ -43,9 +54,9 @@ var SipServerUseOutboundProxy = false
 var SipServerOutboundProxy = ""
 var SipServerSendInDialogRequestsProxy = false
 
-var SipVoiceMailboxAddress = 9999
+var SipVoiceMailboxAddress = 2000
 var SipVoiceMailMWIType = "Solicited"
-var SipVoiceMailboxUserName = 9999
+var SipVoiceMailboxUserName = 2000
 var SipVoiceMailServer = "192.168.0.15"
 var SipVoiceMailServerUseProxy = false
 var SipVoiceMailSubscruptionDuration = "3600"

@@ -2,6 +2,8 @@ package panes
 
 import (
 	"log"
+	"runtime"
+	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -15,38 +17,42 @@ import (
 func PasswordScreen(_ fyne.Window) fyne.CanvasObject {
 
 	password := widget.NewPasswordEntry()
-	password.SetPlaceHolder(config.GetLangs("ps-password"))
+	password.SetPlaceHolder("Original Password")
 
 	passwordc1 := widget.NewPasswordEntry()
-	passwordc1.SetPlaceHolder(config.GetLangs("ps-passwordc1"))
+	passwordc1.SetPlaceHolder("New Password")
 	passwordc1.Disable()
 
 	passwordc2 := widget.NewPasswordEntry()
-	passwordc2.SetPlaceHolder(config.GetLangs("ps-passwordc2"))
+	passwordc2.SetPlaceHolder("New Password Again")
 	passwordc2.Disable()
 	errors := widget.NewLabel("...")
+	runtime.GC()
+	runtime.ReadMemStats(&memoryStats)
+	config.SIPFyneMainWin.SetTitle("Password " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+
 	// try the password
-	tpbutton := widget.NewButton(config.GetLangs("ps-trypassword"), func() {
+	tpbutton := widget.NewButton("Try Password", func() {
 		var iserrors = false
 
 		pwh, err := bcrypt.GenerateFromPassword([]byte(password.Text), bcrypt.DefaultCost)
 		config.PasswordHash = string(pwh)
 		if err != nil {
 			iserrors = true
-			errors.SetText(config.GetLangs("ps-err1"))
+			errors.SetText("Invalid Password")
 		}
 
 		myhash, err1 := config.LoadHashWithDefault("config.hash", "123456")
 		config.PasswordHash = myhash
 		if err1 {
-			errors.SetText(config.GetLangs("ps-err2"))
+			errors.SetText("Password Invalid")
 		}
 
 		// Comparing the password with the hash
 		if err := bcrypt.CompareHashAndPassword([]byte(config.PasswordHash), []byte(password.Text)); err != nil {
 
 			iserrors = true
-			errors.SetText(config.GetLangs("ps-err4"))
+			errors.SetText("Passwords Mismatch")
 		}
 		if !iserrors {
 
@@ -59,28 +65,28 @@ func PasswordScreen(_ fyne.Window) fyne.CanvasObject {
 		}
 	})
 
-	cpbutton := widget.NewButton(config.GetLangs("ps-chgpassword"), func() {
+	cpbutton := widget.NewButton("Change Password", func() {
 		var iserrors = false
 
 		if config.Edit("STRING", passwordc1.Text) {
 			iserrors = true
-			errors.SetText(config.GetLangs("ps-err6"))
+			errors.SetText("Password Blank Error")
 		}
 
 		if config.Edit("PASSWORD", passwordc1.Text) {
 			iserrors = true
-			errors.SetText(config.GetLangs("ps-err7"))
+			errors.SetText("Password Error")
 		}
 		if passwordc1.Text != passwordc2.Text {
 			iserrors = true
-			errors.SetText(config.GetLangs("ps-err8"))
+			errors.SetText("Password Mismatch")
 		}
 		if !iserrors {
 			pwh, err := bcrypt.GenerateFromPassword([]byte(passwordc1.Text), bcrypt.DefaultCost)
 			config.PasswordHash = string(pwh)
 
 			if err != nil {
-				errors.SetText(config.GetLangs("ps-err9") + err.Error())
+				errors.SetText("Password Hash " + err.Error())
 				log.Fatal(err)
 			}
 
@@ -88,7 +94,7 @@ func PasswordScreen(_ fyne.Window) fyne.CanvasObject {
 
 		_, err := config.SaveHash("config.hash", config.PasswordHash)
 		if err {
-			errors.SetText(config.GetLangs("ps-err10"))
+			errors.SetText("Could Not Save to File System")
 			iserrors = true
 		}
 
@@ -100,14 +106,18 @@ func PasswordScreen(_ fyne.Window) fyne.CanvasObject {
 		passwordc2.Disable()
 		cpbutton.Disable()
 	}
+	runtime.GC()
+	runtime.ReadMemStats(&memoryStats)
+	config.SIPFyneMainWin.SetTitle("Saved " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+
 	return container.NewVBox(
-		widget.NewLabelWithStyle(config.GetLangs("ps-title1"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle("Password Reset", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		widget.NewLabelWithStyle("config.json", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
-		widget.NewLabelWithStyle(config.GetLangs("ps-title2"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle("Change Local Encryption Password", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 
 		password,
 		tpbutton,
-		widget.NewLabelWithStyle(config.GetLangs("ps-title3"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle("Enter Passwords To Change", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		passwordc1,
 		passwordc2,
 		cpbutton,

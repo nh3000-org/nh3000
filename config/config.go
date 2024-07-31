@@ -106,6 +106,22 @@ func Edit(action string, value string) bool {
 
 		return false
 	}
+	if action == "SIP" {
+		valid := strings.Contains(strings.ToLower(value), "sip://")
+		if !valid {
+			return true
+		}
+		valid2 := strings.Contains(value, ".")
+		if !valid2 {
+			return true
+		}
+		valid3 := strings.Contains(value, ":")
+		if !valid3 {
+			return true
+		}
+
+		return false
+	}
 	if action == "STRING" {
 		return len(value) == 0
 	}

@@ -18,6 +18,8 @@ package main
 import (
 	"log"
 	"os"
+	"runtime"
+	"strconv"
 
 	"strings"
 
@@ -33,6 +35,7 @@ import (
 )
 
 var TopWindow fyne.Window
+var memoryStats runtime.MemStats
 
 type Pane struct {
 	Title, Intro string
@@ -41,17 +44,16 @@ type Pane struct {
 	SupportWeb   bool
 }
 
-//var Panes = map[string]Pane{}
-//var PanesIndex = map[string][]string{}
-
 func main() {
 	var a = app.NewWithID("org.nh3000.nh3000.SIP")
 	config.FyneApp = a
-	var w = a.NewWindow("NH3000 SIP")
-	config.FyneMainWin = w
-	config.PreferedLanguage = "eng"
+	runtime.GC()
+	runtime.ReadMemStats(&memoryStats)
+	var w = a.NewWindow("NH3000 SIP" + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+	config.SIPFyneMainWin = w
+	config.SIPPreferedLanguage = "eng"
 	if strings.HasPrefix(os.Getenv("LANG"), "en") {
-		config.PreferedLanguage = "eng"
+		config.SIPPreferedLanguage = "eng"
 	}
 	if strings.HasPrefix(os.Getenv("LANG"), "sp") {
 		config.PreferedLanguage = "spa"
@@ -73,26 +75,26 @@ func main() {
 	TopWindow = w
 	w.SetMaster()
 
-	intro := widget.NewLabel(config.GetLangs("mn-intro-1") + "\n" + "nats.io" + config.GetLangs("mn-intro-2"))
+	intro := widget.NewLabel("Intro" + "\n" + "nats.io" + "Intro2")
 	intro.Wrapping = fyne.TextWrapWord
 	var Panes = map[string]Pane{
-		"logon":    {config.GetLangs("ls-title"), "", theme.LoginIcon(), panes.LogonScreen, true},
-		"phone":    {config.GetLangs("ms-title"), "", theme.MailSendIcon(), panes.PhonesScreen, true},
-		"settings": {config.GetLangs("ss-title"), "", theme.SettingsIcon(), panes.SettingsScreen, true},
-		"password": {config.GetLangs("ps-title"), "", theme.DocumentIcon(), panes.PasswordScreen, true},
+		"logon":    {"Logon", "", theme.LoginIcon(), panes.LogonScreen, true},
+		"phone":    {"Phone", "", theme.MailSendIcon(), panes.PhonesScreen, true},
+		"settings": {"Setings", "", theme.SettingsIcon(), panes.SettingsScreen, true},
+		"password": {"Password", "", theme.DocumentIcon(), panes.PasswordScreen, true},
 		//"encdec":   {config.GetLangs("es-title"), "", theme.CheckButtonIcon(), panes.EncdecScreen, true},
 	}
 
-	config.FyneMainWin.SetContent(container.NewAppTabs(
+	config.SIPFyneMainWin.SetContent(container.NewAppTabs(
 		container.NewTabItemWithIcon(Panes["logon"].Title, Panes["logon"].Icon, panes.LogonScreen(config.FyneMainWin)),
-		container.NewTabItemWithIcon(Panes["phone"].Title, Panes["messages"].Icon, panes.PhonesScreen(config.FyneMainWin)),
+		container.NewTabItemWithIcon(Panes["phone"].Title, Panes["phone"].Icon, panes.PhonesScreen(config.FyneMainWin)),
 		//container.NewTabItemWithIcon(Panes["encdec"].Title, Panes["encdec"].Icon, panes.EncdecScreen(config.FyneMainWin)),
 		container.NewTabItemWithIcon(Panes["settings"].Title, Panes["settings"].Icon, panes.SettingsScreen(config.FyneMainWin)),
 		container.NewTabItemWithIcon(Panes["password"].Title, Panes["password"].Icon, panes.PasswordScreen(config.FyneMainWin)),
 	))
 
-	config.FyneMainWin.Resize(fyne.NewSize(640, 480))
-	config.FyneMainWin.ShowAndRun()
+	config.SIPFyneMainWin.Resize(fyne.NewSize(640, 480))
+	config.SIPFyneMainWin.ShowAndRun()
 }
 
 // handle app close
