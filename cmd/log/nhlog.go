@@ -172,7 +172,11 @@ func main() {
 	MyLogAlias = *logAlias
 	fmt.Println("====================================================== ")
 	fmt.Println("EX: tail -f log.file | nhlog ", " -loglang ", *logLang, " -serverip ", *ServerIP, " -logpattern ", *logPattern, " -logalias ", *logAlias)
+	fmt.Println("- serverip - NATS nats://xxxxx.yyy:port")
+	fmt.Println(" -logalias - make unique for each instance, become DEVICE.device in NATS")
 	fmt.Println("====================================================== ")
+	
+	config.CheckDevice(MyLogAlias)
 	r := bufio.NewReader(os.Stdin)
 	buf := make([]byte, 0, 4*1024)
 	for {
@@ -189,7 +193,7 @@ func main() {
 
 		if int64(len(buf)) != 0 {
 			if strings.Contains(string(buf), *logPattern) {
-				config.Send(string(buf), MyLogAlias)
+				config.Send("EVENTS", "events", string(buf), "[logger]" + MyLogAlias)
 			}
 		}
 		if err != nil && err != io.EOF {

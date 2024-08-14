@@ -101,7 +101,7 @@ func logLifecycle() {
 
 	config.FyneApp.Lifecycle().SetOnStopped(func() {
 		if config.LoggedOn {
-			config.Send(config.GetLangs("ls-dis"), config.NatsAlias)
+			config.Send("MESSAGES", "messages", config.GetLangs("ls-dis"), config.NatsAlias)
 		}
 		if config.NatsReceivingMessages {
 			config.QuitReceive <- true

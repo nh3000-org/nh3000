@@ -184,7 +184,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			config.NatsAlias = alias.Text
 
 			config.NatsServer = server.Text
-			config.NatsQueue = queue.Text
+			//config.NatsQueue = queue.Text
 			config.NatsQueuePassword = queuepassword.Text
 			config.NatsCaroot = ca.Text
 			config.NatsClientcert = cc.Text
@@ -213,9 +213,9 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			ca.SetText("")
 			ck.SetText("")
 			cc.SetText("")
-			go config.ReceiveJS()
+			go config.ReceiveMESSAGE()
 
-			config.Send(config.GetLangs("ls-con"), config.NatsAlias)
+			config.Send("MESSAGES", "messages", config.GetLangs("ls-con"), config.NatsAlias)
 
 		}
 	})

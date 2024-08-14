@@ -46,14 +46,14 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 				mymessageshort = strings.ReplaceAll(config.NatsMessages[id].MSmessage, "\n", ".")
 				mymessage = mymessageshort[0:100]
 			}
-			item.(*fyne.Container).Objects[0].(*widget.Label).SetText(config.NatsMessages[id].MSalias + " - " + mymessage)
+			item.(*fyne.Container).Objects[0].(*widget.Label).SetText(config.NatsMessages[id].MSsubject + " " + config.NatsMessages[id].MSalias + " - " + mymessage)
 		},
 	)
 	config.FyneMessageList = List
 	List.OnSelected = func(id widget.ListItemID) {
 
-		Details.SetText(config.NatsMessages[id].MSmessage + "\n.................." + config.NatsMessages[id].MShostname + config.NatsMessages[id].MSipadrs + config.NatsMessages[id].MSnodeuuid + config.NatsMessages[id].MSiduuid + config.NatsMessages[id].MSdate)
-		dlg := fyne.CurrentApp().NewWindow(config.NatsMessages[id].MSalias + config.NatsMessages[id].MSdate)
+		Details.SetText(config.NatsMessages[id].MSmessage + "\n.................." + "\n" + config.NatsMessages[id].MSsubject + "\n" + config.NatsMessages[id].MSos + "\n" + config.NatsMessages[id].MShostname + "\n" + config.NatsMessages[id].MSipadrs + "\n" + config.NatsMessages[id].MSnodeuuid + "\n" + config.NatsMessages[id].MSiduuid + "\n" + config.NatsMessages[id].MSdate)
+		dlg := fyne.CurrentApp().NewWindow(config.NatsMessages[id].MSsubject + " " + config.NatsMessages[id].MSos + " " + config.NatsMessages[id].MSalias + config.NatsMessages[id].MSdate)
 		DetailsVW := container.NewScroll(DetailsBorder)
 		DetailsVW.SetMinSize(fyne.NewSize(300, 240))
 		DetailsBottom := container.NewBorder(cpybutton, nil, nil, nil, nil)
@@ -65,7 +65,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 		if !config.LoggedOn {
 			Errors.SetText(config.GetLangs("cs-lf"))
 		}
-		config.Send(message.Text, config.NatsAlias)
+		config.Send("MESSAGES", "messages", message.Text, config.NatsAlias)
 		message.SetText("")
 	})
 	topbox := container.NewHSplit(
