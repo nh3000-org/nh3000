@@ -11,7 +11,10 @@ import (
 
 	"os"
 )
-
+/*
+todo: use circl from cloudfare to encrypt data
+post quantum  crystals-kyber, crystals-dilithium, sphincs=, FALCON
+*/
 const BUFFER_SIZE int = 4096
 const IV_SIZE int = 16
 

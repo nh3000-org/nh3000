@@ -396,7 +396,7 @@ func ReceiveMESSAGE() {
 
 	}
 	cons, err := jsstream.CreateOrUpdateConsumer(ctx, jetstream.ConsumerConfig{
-		Durable:   "messages",
+		Durable:   "messages" + NatsAlias,
 		AckPolicy: jetstream.AckNonePolicy,
 		//DeliverPolicy: jetstream.DeliverByStartSequencePolicy,
 	})
@@ -407,13 +407,16 @@ func ReceiveMESSAGE() {
 	for {
 		select {
 		case <-QuitReceive:
-			return
+			for {
+				jsstream.DeleteConsumer(ctx, "messages"+NatsAlias)
+				return
+			}
 
 		default:
 			for {
 				//_, errsub := cons.Consume(func(msg jetstream.Msg) {
 				msg, errsub := cons.Next()
-				log.Println("Errsub ", errsub)
+				//log.Println("Errsub ", errsub)
 				if errsub != nil {
 					time.Sleep(20 * time.Second)
 				}
@@ -476,6 +479,7 @@ func ReceiveMESSAGE() {
 		}
 
 	}
+
 }
 
 // thread for receiving messages
