@@ -38,8 +38,9 @@ var NatsUserDevicesPassword = "PASSWORD"
 
 var NatsQueuePassword = "987654321098765432109876"
 var NatsQueueDurable = "snatsdurable"
-//var NatsQueue = "MESSAGES"
-var NatsQueues = []string{"MESSAGES","EVENTS", "COMMANDS", "DEVICES"}
+
+// var NatsQueue = "MESSAGES"
+var NatsQueues = []string{"MESSAGES", "EVENTS", "COMMANDS", "DEVICES"}
 
 var NatsNodeUUID string
 var NatsAlias string
