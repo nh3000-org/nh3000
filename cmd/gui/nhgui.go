@@ -104,7 +104,8 @@ func logLifecycle() {
 			config.Send("MESSAGES", "messages", config.GetLangs("ls-dis"), config.NatsAlias)
 		}
 		if config.NatsReceivingMessages {
-			config.QuitReceive <- true
+			log.Println("EXITING")
+			config.QuitReceive = true
 		}
 	})
 

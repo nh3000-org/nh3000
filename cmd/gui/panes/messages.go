@@ -1,6 +1,7 @@
 package panes
 
 import (
+	//"log"
 	"strings"
 
 	"github.com/nh3000-org/nh3000/config"
@@ -13,6 +14,9 @@ import (
 
 var mymessage = ""
 var mymessageshort = ""
+var selectedms int
+var selectedseq uint64
+var selecteduuid string
 
 func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 
@@ -31,6 +35,15 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 
 	cpybutton := widget.NewButtonWithIcon(config.GetLangs("ms-cpy"), theme.ContentCopyIcon(), func() {
 		win.Clipboard().SetContent(Details.Text)
+	})
+	delbutton := widget.NewButtonWithIcon(config.GetLangs("ms-del"), theme.ContentCopyIcon(), func() {
+
+		//log.Println("message id ", selectedms)
+		//log.Println("sequence id ", selectedseq)
+		config.DeleteNatsMessage("MESSAGES", selectedseq)
+		delete(config.NatsMessages, selectedms)
+		delete(config.NatsMessagesIndex, selecteduuid)
+
 	})
 	List := widget.NewList(
 		func() int {
@@ -51,12 +64,14 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 	)
 	config.FyneMessageList = List
 	List.OnSelected = func(id widget.ListItemID) {
-
+		selectedms = id
+		selectedseq = config.NatsMessages[id].MSsequence
+		selecteduuid = config.NatsMessages[id].MSnodeuuid
 		Details.SetText(config.NatsMessages[id].MSmessage + "\n.................." + "\n" + config.NatsMessages[id].MSsubject + "\n" + config.NatsMessages[id].MSos + "\n" + config.NatsMessages[id].MShostname + "\n" + config.NatsMessages[id].MSipadrs + "\n" + config.NatsMessages[id].MSnodeuuid + "\n" + config.NatsMessages[id].MSiduuid + "\n" + config.NatsMessages[id].MSdate)
 		dlg := fyne.CurrentApp().NewWindow(config.NatsMessages[id].MSsubject + " " + config.NatsMessages[id].MSos + " " + config.NatsMessages[id].MSalias + config.NatsMessages[id].MSdate)
 		DetailsVW := container.NewScroll(DetailsBorder)
 		DetailsVW.SetMinSize(fyne.NewSize(300, 240))
-		DetailsBottom := container.NewBorder(cpybutton, nil, nil, nil, nil)
+		DetailsBottom := container.NewBorder(cpybutton, delbutton, nil, nil, nil)
 		dlg.SetContent(container.NewBorder(DetailsVW, DetailsBottom, nil, nil, nil))
 		dlg.Show()
 		List.Unselect(id)

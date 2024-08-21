@@ -176,7 +176,7 @@ func main() {
 	fmt.Println(" -logalias - make unique for each instance, become DEVICE.device in NATS")
 	fmt.Println("====================================================== ")
 	
-	config.CheckDevice(MyLogAlias)
+	config.CheckDEVICE(MyLogAlias)
 	r := bufio.NewReader(os.Stdin)
 	buf := make([]byte, 0, 4*1024)
 	for {

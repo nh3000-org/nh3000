@@ -65,7 +65,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 
 	TPbutton := widget.NewButtonWithIcon(config.GetLangs("ls-trypass"), theme.LoginIcon(), func() {
 		errors.SetText("...")
-		config.NatsReceivingMessages = false
+		
 		var iserrors = false
 		ph, _ := config.LoadHashWithDefault("config.hash", "123456")
 
@@ -214,16 +214,17 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			ck.SetText("")
 			cc.SetText("")
 			go config.ReceiveMESSAGE()
+			config.NatsReceivingMessages = true
 
 			config.Send("MESSAGES", "messages", config.GetLangs("ls-con"), config.NatsAlias)
-
+			go config.CheckDEVICE(config.NatsAlias)
 		}
 	})
 
-	// security erase
+	// Setup
 	SEbutton := widget.NewButtonWithIcon(config.GetLangs("ls-erase"), theme.ContentUndoIcon(), func() {
 		if config.LoggedOn {
-			config.Erase()
+			config.NatsSetup()
 		}
 	})
 	if config.LoggedOn {
