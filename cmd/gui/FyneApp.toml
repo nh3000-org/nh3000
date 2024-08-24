@@ -6,7 +6,5 @@ Website = "https://newhorizons3000.org"
   ID = "org.nh3000.nh3000"
   Version = "1.0.0"
   Build = 39
-  Name = "nh3000"
-  ID = "org.nh3000.nh3000"
-  Version = "1.0.0"
-  Build = 41
+
+

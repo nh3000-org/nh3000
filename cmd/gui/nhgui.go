@@ -55,13 +55,11 @@ func main() {
 	}
 	if strings.HasPrefix(os.Getenv("LANG"), "sp") {
 		config.PreferedLanguage = "spa"
-
 	}
 	if strings.HasPrefix(os.Getenv("LANG"), "hn") {
 		config.PreferedLanguage = "hin"
-
 	}
-
+	config.PreferedLanguage = config.Decrypt(config.FyneApp.Preferences().StringWithFallback("PreferedLanguage", config.Encrypt(config.PreferedLanguage, config.MySecret)), config.MySecret)
 	MyLogo, iconerr := fyne.LoadResourceFromPath("Icon.png")
 	if iconerr != nil {
 		log.Println("Icon.png error ", iconerr.Error())

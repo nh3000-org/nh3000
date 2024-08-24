@@ -29,6 +29,7 @@ type MessageStore struct {
 	MSalias     string // alias
 	MShostname  string // hostname
 	MSipadrs    string // ip address
+	MSmacid     string // macids
 	MSmessage   string // message payload
 	MSnodeuuid  string // unique id
 	MSdate      string // message date
@@ -208,13 +209,13 @@ func docerts() *tls.Config {
 func Send(queue string, subject string, m string, alias string) bool {
 
 	EncMessage := MessageStore{}
-	EncMessage.MSsubject = "[" + queue + "]"
+	EncMessage.MSsubject = queue
 	EncMessage.MSos = runtime.GOOS
 	name, err := os.Hostname()
 	if err != nil {
 		EncMessage.MShostname = getLangsNats("ms-nhn")
 	} else {
-		EncMessage.MShostname = getLangsNats("ms-hn") + name
+		EncMessage.MShostname = name
 	}
 
 	ifas, err := net.Interfaces()
@@ -222,41 +223,39 @@ func Send(queue string, subject string, m string, alias string) bool {
 		EncMessage.MShostname += "-  " + getLangsNats("ms-carrier")
 	}
 	if err == nil {
-		var as []string
+		//var as []string
 		for _, ifa := range ifas {
 			a := ifa.HardwareAddr.String()
 			if a != "" {
-				as = append(as, a)
+				EncMessage.MSmacid += a + ", "
 			}
 		}
-		EncMessage.MShostname += getLangsNats("ms-mi")
-		for i, s := range as {
-			EncMessage.MShostname += "- " + strconv.Itoa(i) + " : " + s
-		}
+
 		addrs, _ := net.InterfaceAddrs()
-		EncMessage.MShostname += getLangsNats("ms-ad")
 		for _, addr := range addrs {
-			EncMessage.MShostname += "- " + addr.String()
+			EncMessage.MSipadrs += addr.String() + ", "
 		}
 	}
 	EncMessage.MSalias = alias
-	EncMessage.MSnodeuuid = getLangsNats("ms-ni") + NatsNodeUUID
+	EncMessage.MSnodeuuid = NatsNodeUUID
 	msiduuid := uuid.New().String()
-	EncMessage.MSiduuid = getLangsNats("ms-msg") + msiduuid
+	EncMessage.MSiduuid = msiduuid
 	//log.Println("in send ", m, " ", msiduuid)
-	EncMessage.MSdate = getLangsNats("ms-on") + time.Now().Format(time.UnixDate)
+	EncMessage.MSdate = time.Now().Format(time.UnixDate)
 	EncMessage.MSmessage = m
 	jsonmsg, jsonerr := json.Marshal(EncMessage)
 
 	if jsonerr != nil {
 		if FyneMessageWin != nil {
 			FyneMessageWin.SetTitle(getLangsNats("ms-err8") + jsonerr.Error())
+
 		}
+
 		log.Println(getLangsNats("ms-err8"), jsonerr.Error())
 	}
-	var s = Encrypt(string(jsonmsg), NatsQueuePassword)
+	//var s = Encrypt(string(jsonmsg), NatsQueuePassword)
 	//log.Println("sending 2 ", s)
-	Sendjs(queue, subject, s)
+	Sendjs(queue, subject, Encrypt(string(jsonmsg), NatsQueuePassword))
 	runtime.GC()
 	return false
 }
@@ -290,7 +289,7 @@ func Sendjs(queue string, subject string, m string) {
 	}
 	//maxage, _ := time.ParseDuration(NatsMsgMaxAge)
 	ctx, ctxcancel := context.WithCancel(context.Background())
-	log.Println("sendjs publish ", subject)
+	//log.Println("sendjs publish ", subject)
 	_, puberr := sendjs.Publish(ctx, subject, []byte(m))
 	if puberr != nil {
 		if FyneMessageWin != nil {

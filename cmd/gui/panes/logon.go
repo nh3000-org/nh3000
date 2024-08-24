@@ -65,7 +65,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 
 	TPbutton := widget.NewButtonWithIcon(config.GetLangs("ls-trypass"), theme.LoginIcon(), func() {
 		errors.SetText("...")
-		
+
 		var iserrors = false
 		ph, _ := config.LoadHashWithDefault("config.hash", "123456")
 
@@ -87,7 +87,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			errors.SetText("...")
 
 			var preferedlanguageShadow = config.Decrypt(config.FyneApp.Preferences().StringWithFallback("eng", config.Encrypt(config.PreferedLanguage, config.MySecret)), config.MySecret)
-			config.PreferedLanguage = config.Decrypt(preferedlanguageShadow, config.MySecret)
+			config.PreferedLanguage = preferedlanguageShadow
 
 			var nodeuuidShadow = config.FyneApp.Preferences().StringWithFallback("NatsNodeUUID", config.Encrypt(uuid.New().String(), config.MySecret))
 			nodeuuid = config.Decrypt(nodeuuidShadow, config.MySecret)
