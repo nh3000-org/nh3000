@@ -52,7 +52,7 @@ var NatsMessagesIndex = make(map[string]bool)
 
 var fyneFilterFound = false
 
-var QuitReceive = false
+//var QuitReceive = false
 
 var MessageToSend string
 

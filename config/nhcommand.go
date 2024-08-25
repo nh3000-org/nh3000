@@ -6,6 +6,6 @@ type CommandStore struct {
 	CMDinterval string // how often
 	CMDcommand  string // command to execute
 	CMDexpected string // expected result from command
-	CMDtimeout  int    // time to wait in seconds
+	CMDtimeout  int    // time to wait in seconds, 0 one ti,e
 
 }

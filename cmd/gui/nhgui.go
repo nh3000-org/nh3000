@@ -101,10 +101,10 @@ func logLifecycle() {
 		if config.LoggedOn {
 			config.Send("MESSAGES", "messages", config.GetLangs("ls-dis"), config.NatsAlias)
 		}
-		if config.NatsReceivingMessages {
-			log.Println("EXITING")
-			config.QuitReceive = true
-		}
+		/* 		if config.NatsReceivingMessages {
+			//log.Println("EXITING")
+			//config.QuitReceive = true
+		} */
 	})
 
 }
