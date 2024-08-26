@@ -7,6 +7,7 @@ type DeviceStore struct {
 	DSipadrs    string // ip address
 	DSmacid     string // macids
 	DSnodeuuid  string // unique id
+	DSmessage   string // message payload
 	DSdate      string // message date
 	DSsubject   string // message subject
 	DSos        string // device os
