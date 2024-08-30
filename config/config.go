@@ -9,6 +9,8 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/storage"
+	//"github.com/nats-io/nats.go"
+	//"github.com/nats-io/nats.go/jetstream"
 )
 
 /*
@@ -47,6 +49,9 @@ var NatsAlias string
 var NatsReceivingMessages bool
 
 var NatsMsgMaxAge string
+
+//var NatsCONSUMER nats.JetStream
+//var NatsJETSTREAM  nats.JetStream
 
 // default encryption
 var KeyAes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}  // must be 16 bytes
