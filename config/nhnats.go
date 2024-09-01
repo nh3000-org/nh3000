@@ -139,11 +139,11 @@ func NewNatsJSdevices() (*Natsjs, error) {
 	}
 	jsstream, err := jetst.CreateOrUpdateStream(ctxdevice, jetstream.StreamConfig{
 		Name:     "DEVICES",
-		Subjects: []string{"devices"},
+		Subjects: []string{"devices.*"},
 	})
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("devices ", err)
 	}
 	d.Js = jsstream
 	/* 	dcerror := jsstream.DeleteConsumer(ctxmessage, "messages"+NatsAlias)
@@ -156,7 +156,7 @@ func NewNatsJSdevices() (*Natsjs, error) {
 		//DeliverPolicy: jetstream.DeliverByStartSequencePolicy,
 	})
 	if conserr != nil {
-		log.Fatal(err)
+		log.Fatal("devices ", err)
 	}
 	d.Con = cons
 	return d, nil
@@ -545,8 +545,9 @@ func DeleteNatsMessage(queue string, seq uint64) {
 func CheckDEVICE(a *Natsjs, alias string) {
 	b, _ := NewNatsJSdevices()
 	consdevice, errdevice := b.Js.CreateOrUpdateConsumer(a.Ctx, jetstream.ConsumerConfig{
-		Durable:   "devices" + NatsAlias,
-		AckPolicy: jetstream.AckNonePolicy,
+		Durable:       "devices" + alias,
+		AckPolicy:     jetstream.AckNonePolicy,
+		FilterSubject: "devices." + alias,
 		//DeliverPolicy: jetstream.DeliverByStartSequencePolicy,
 	})
 	if errdevice != nil {
@@ -557,7 +558,7 @@ func CheckDEVICE(a *Natsjs, alias string) {
 		//_, errsub := cons.Consume(func(msg jetstream.Msg) {
 		msgdevice, errsubdevice := consdevice.Next()
 		//log.Println("Errsub ", errsub)
-
+		log.Println("DEVICE Receive ")
 		if errsubdevice == nil {
 			runtime.GC()
 			runtime.ReadMemStats(&memoryStats)
@@ -581,7 +582,7 @@ func CheckDEVICE(a *Natsjs, alias string) {
 
 	}
 	if !devicefound {
-		Send("DEVICES", "devices", "Add", alias)
+		Send("DEVICES", "devices."+alias, "Add", alias)
 	}
 
 	dcerror := b.Js.DeleteConsumer(b.Ctx, "devices"+alias)
@@ -630,9 +631,10 @@ func SetupDetails(queue string, age string) {
 // security erase jetstream data
 func NatsSetup() {
 
-	SetupDetails("MESSAGES", "96h")
-	SetupDetails("EVENTS", "96h")
-	SetupDetails("COMMANDS", "204800h")
-	SetupDetails("DEVICES", "2048000h")
+	SetupDetails("MESSAGES", "2048000h")
+	SetupDetails("EVENTS", "2048000h")
+	SetupDetails("COMMANDS", "2048000h")
+	SetupDetails("DEVICES", "20480000h")
+	SetupDetails("AUTHORIZATIONS", "20480000h")
 	NatsMessages = nil
 }

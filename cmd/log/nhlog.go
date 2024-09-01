@@ -175,8 +175,14 @@ func main() {
 	fmt.Println("- serverip - NATS nats://xxxxx.yyy:port")
 	fmt.Println(" -logalias - make unique for each instance, become DEVICE.device in NATS")
 	fmt.Println("====================================================== ")
-	
-	config.CheckDEVICE(MyLogAlias)
+	log.Println("log.go init")
+	a, err := config.NewNatsJSdevices()
+	if err != nil {
+		log.Println("log.go 0", err)
+	}
+	log.Println("log.go 1 ", MyLogAlias)
+	config.CheckDEVICE(a, MyLogAlias)
+
 	r := bufio.NewReader(os.Stdin)
 	buf := make([]byte, 0, 4*1024)
 	for {
@@ -193,7 +199,8 @@ func main() {
 
 		if int64(len(buf)) != 0 {
 			if strings.Contains(string(buf), *logPattern) {
-				config.Send("EVENTS", "events", string(buf), "[logger]" + MyLogAlias)
+				log.Println("log.go 2")
+				config.Send("EVENTS", "events", string(buf), "[logger]"+MyLogAlias)
 			}
 		}
 		if err != nil && err != io.EOF {
