@@ -99,7 +99,7 @@ func logLifecycle() {
 
 	config.FyneApp.Lifecycle().SetOnStopped(func() {
 		if config.LoggedOn {
-			config.Send("MESSAGES", "messages", config.GetLangs("ls-dis"), config.NatsAlias)
+			config.Send("MESSAGES", "messages."+ config.NatsAlias, config.GetLangs("ls-dis"), config.NatsAlias)
 			config.DeleteConsumer("MESSAGES", "messages")
 		}
 	})

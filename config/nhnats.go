@@ -78,7 +78,7 @@ func NewNatsJSmessages() (*Natsjs, error) {
 	}
 	jsstream, err := jetst.CreateOrUpdateStream(ctxmessage, jetstream.StreamConfig{
 		Name:     "MESSAGES",
-		Subjects: []string{"messages"},
+		Subjects: []string{"messages.*"},
 	})
 
 	if err != nil {
