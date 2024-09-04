@@ -119,8 +119,8 @@ func NewNatsJSdevices() (*Natsjs, error) {
 		AllowReconnect: true,
 		MaxReconnect:   1000,
 		Timeout:        2048 * time.Hour,
-		User:           NatsUser,
-		Password:       NatsUserPassword,
+		User:           NatsUserDevices,
+		Password:       NatsUserDevicesPassword,
 	}
 	natsconnect, connecterr := natsopts.Connect()
 	if connecterr != nil {
@@ -321,7 +321,7 @@ func docerts() *tls.Config {
 }
 
 // send message to nats
-func Send(queue string, subject string, m string, alias string) bool {
+func Send(user, password, queue, subject, m, alias string) bool {
 
 	EncMessage := MessageStore{}
 	EncMessage.MSsubject = queue
@@ -364,12 +364,12 @@ func Send(queue string, subject string, m string, alias string) bool {
 		}
 		log.Println(getLangsNats("ms-err8"), jsonerr.Error())
 	}
-	SendMessage(queue, subject, Encrypt(string(jsonmsg), NatsQueuePassword))
+	SendMessage(user, password, queue, subject, Encrypt(string(jsonmsg), NatsQueuePassword))
 	runtime.GC()
 	return false
 }
 
-func SendMessage(queue string, subject string, m string) {
+func SendMessage(user, password, queue, subject, m string) {
 	var certpool = docerts()
 	sendnatsopts := nats.Options{
 		Name:           NatsAlias,
@@ -379,8 +379,8 @@ func SendMessage(queue string, subject string, m string) {
 		AllowReconnect: true,
 		MaxReconnect:   1000,
 		Timeout:        2048 * time.Hour,
-		User:           NatsUser,
-		Password:       NatsUserPassword,
+		User:           user,
+		Password:       password,
 	}
 	sendnatsconnect, sendconnecterr := sendnatsopts.Connect()
 	if sendconnecterr != nil {
@@ -582,7 +582,7 @@ func CheckDEVICE(a *Natsjs, alias string) {
 
 	}
 	if !devicefound {
-		Send("DEVICES", "devices."+alias, "Add", alias)
+		Send(NatsUserDevices, NatsUserDevicesPassword, "DEVICES", "devices."+alias, "Add", alias)
 	}
 
 	dcerror := b.Js.DeleteConsumer(b.Ctx, "devices"+alias)

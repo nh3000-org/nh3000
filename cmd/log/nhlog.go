@@ -200,7 +200,8 @@ func main() {
 		if int64(len(buf)) != 0 {
 			if strings.Contains(string(buf), *logPattern) {
 				log.Println("log.go 2")
-				config.Send("EVENTS", "events", string(buf), "[logger]"+MyLogAlias)
+				//b, err := config.NewNatsJSmessages()
+				config.Send(config.NatsUser, config.NatsUserPassword, "EVENTS", "events", string(buf), "[logger]"+MyLogAlias)
 			}
 		}
 		if err != nil && err != io.EOF {

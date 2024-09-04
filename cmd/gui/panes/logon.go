@@ -219,7 +219,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			go config.ReceiveMESSAGE(jsm)
 			config.NatsReceivingMessages = true
 
-			config.Send("MESSAGES", "messages."+config.NatsAlias, config.GetLangs("ls-con"), config.NatsAlias)
+			config.Send(config.NatsUser, config.NatsUserPassword, "MESSAGES", "messages."+config.NatsAlias, config.GetLangs("ls-con"), config.NatsAlias)
 			go config.CheckDEVICE(jsd, config.NatsAlias)
 		}
 	})
