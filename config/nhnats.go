@@ -555,10 +555,9 @@ func CheckDEVICE(a *Natsjs, alias string) {
 	}
 	messageloop = true
 	for messageloop {
-		//_, errsub := cons.Consume(func(msg jetstream.Msg) {
+
 		msgdevice, errsubdevice := consdevice.Next()
-		//log.Println("Errsub ", errsub)
-		log.Println("DEVICE Receive ")
+
 		if errsubdevice == nil {
 			runtime.GC()
 			runtime.ReadMemStats(&memoryStats)
@@ -567,7 +566,7 @@ func CheckDEVICE(a *Natsjs, alias string) {
 			ms = MessageStore{}
 			err1 := json.Unmarshal([]byte(string(Decrypt(string(msgdevice.Data()), NatsQueuePassword))), &ms)
 			if err1 != nil {
-				log.Println("DEVICE ReceiveMESSAGE Un Marhal", err1)
+				log.Println("DEVICE Receive Un Marhal", err1)
 			}
 			if ms.MSalias == alias {
 				devicefound = true
