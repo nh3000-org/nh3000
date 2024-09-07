@@ -42,7 +42,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 
 		//log.Println("message id ", selectedms)
 		//log.Println("sequence id ", selectedseq)
-		config.DeleteNatsMessage( "MESSAGES", selectedseq)
+		config.DeleteNatsMessage("MESSAGES", "messages", selectedseq)
 		delete(config.NatsMessages, selectedms)
 		delete(config.NatsMessagesIndex, selecteduuid)
 
@@ -82,7 +82,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 		if !config.LoggedOn {
 			Errors.SetText(config.GetLangs("cs-lf"))
 		}
-		config.Send(config.NatsUser, config.NatsUserPassword,"MESSAGES", "messages", message.Text, config.NatsAlias)
+		config.Send(config.NatsUser, config.NatsUserPassword, "MESSAGES", "messages", message.Text, config.NatsAlias)
 		message.SetText("")
 	})
 	topbox := container.NewHSplit(

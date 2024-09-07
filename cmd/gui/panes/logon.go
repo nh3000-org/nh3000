@@ -213,9 +213,9 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			ca.SetText("")
 			ck.SetText("")
 			cc.SetText("")
-			jsm, _ := config.NewNatsJSmessages()
+			jsm, _ := config.NewNatsJS("MESSAGES", "messages", config.NatsAlias)
 			//config.NatsJETSTREAM = jsm
-			jsd, _ := config.NewNatsJSdevices()
+			jsd, _ := config.NewNatsJS("DEVICES", "devices", config.NatsAlias)
 			go config.ReceiveMESSAGE(jsm)
 			config.NatsReceivingMessages = true
 

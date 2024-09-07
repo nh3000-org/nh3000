@@ -17,26 +17,22 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"flag"
-	"fmt"
 	"io"
 	"log"
-	"net"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/nh3000-org/nh3000/config"
 )
 
-var idcount int
+// var idcount int
+// var authorized bool
 var MyLogLang string
 var MyLogAlias string
 
-type MessageStore struct {
+/* type MessageStore struct {
 	MSiduuid   string
 	MSalias    string
 	MShostname string
@@ -44,7 +40,7 @@ type MessageStore struct {
 	MSmessage  string
 	MSnodeuuid string
 	MSdate     string
-}
+} */
 
 // eng esp cmn hin
 var MyLogLangs = map[string]string{
@@ -110,50 +106,6 @@ func GetLogLangs(mystring string) string {
 	return value
 }
 
-// send message to nats
-func Send(m string) []byte {
-	EncMessage := MessageStore{}
-	name, err := os.Hostname()
-	if err != nil {
-		EncMessage.MShostname = "\n" + GetLogLangs("fm-nhn")
-	} else {
-		EncMessage.MShostname = "\n" + GetLogLangs("fm-hn") + " - " + name
-	}
-	ifas, err := net.Interfaces()
-	if err == nil {
-		var as []string
-		for _, ifa := range ifas {
-			a := ifa.HardwareAddr.String()
-			if a != "" {
-				as = append(as, a)
-			}
-		}
-		EncMessage.MShostname += "\n" + GetLogLangs("fm-mi")
-		for i, s := range as {
-			EncMessage.MShostname += "\n- " + strconv.Itoa(i) + " : " + s
-		}
-		addrs, _ := net.InterfaceAddrs()
-		EncMessage.MShostname += "\n" + GetLogLangs("fm-ad")
-		for _, addr := range addrs {
-			EncMessage.MShostname += "\n- " + addr.String()
-		}
-	}
-	EncMessage.MSalias = MyLogAlias
-	idcount++
-	EncMessage.MSnodeuuid = "\n" + GetLogLangs("fm-ni") + " - " + strconv.Itoa(idcount)
-	iduuid := uuid.New().String()
-	EncMessage.MSiduuid = "\n" + GetLogLangs("fm-msg") + " - " + iduuid[0:8]
-	EncMessage.MSdate = "\n" + GetLogLangs("fm-on") + " -" + time.Now().Format(time.UnixDate)
-	EncMessage.MSmessage = m
-	jsonmsg, jsonerr := json.Marshal(EncMessage)
-	if jsonerr != nil {
-		log.Println(GetLogLangs("fm-fm"), jsonerr)
-	}
-	ejson := config.Encrypt(string(jsonmsg), config.NatsQueuePassword)
-
-	return []byte(ejson)
-}
-
 // main loop for receiving pipe
 func main() {
 	MyLogLang = "eng"
@@ -170,19 +122,31 @@ func main() {
 	ServerIP := flag.String("serverip", config.NatsServer, GetLogLangs("fl-si"))
 	flag.Parse()
 	MyLogAlias = *logAlias
-	fmt.Println("====================================================== ")
-	fmt.Println("EX: tail -f log.file | nhlog ", " -loglang ", *logLang, " -serverip ", *ServerIP, " -logpattern ", *logPattern, " -logalias ", *logAlias)
-	fmt.Println("- serverip - NATS nats://xxxxx.yyy:port")
-	fmt.Println(" -logalias - make unique for each instance, become DEVICE.device in NATS")
-	fmt.Println("====================================================== ")
-	log.Println("log.go init")
-	a, err := config.NewNatsJSdevices()
-	if err != nil {
-		log.Println("log.go 0", err)
-	}
-	log.Println("log.go 1 ", MyLogAlias)
-	config.CheckDEVICE(a, MyLogAlias)
 
+	log.Println("nhlog.go EX: tail -f log.file | nhlog -loglang ", *logLang, " -serverip ", *ServerIP, " -logpattern ", *logPattern, " -logalias ", *logAlias)
+	log.Println("nhlog.go -serverip - NATS nats://xxxxx.yyy:port")
+	log.Println("nhlog.go -logalias - make unique for each instance, become DEVICE.device in NATS")
+	log.Println("nhlog.go This device alias must be authorized to continue")
+	log.Println("nhlog.go Init for ", MyLogAlias)
+	a, err := config.NewNatsJS("DEVICES", "devices", MyLogAlias)
+	if err != nil {
+		log.Println("nhlog.go Nats-JS ", err)
+	}
+	devicefound := config.CheckDEVICE(a, MyLogAlias)
+	if !devicefound {
+		log.Fatalln("nhlog.go DEVICE added, needs authorization ", MyLogAlias)
+	}
+	if devicefound {
+		auth, autherr := config.NewNatsJS("AUTHORIZATIONS", "authorizations", MyLogAlias)
+		if autherr != nil {
+			log.Fatalln("nhlog.go nats connect error:", MyLogAlias, " ", autherr)
+
+		}
+		if !config.CheckAUTHORIZATIONS(auth, MyLogAlias) {
+			log.Fatalln("nhlog.go ** Not Authorizated **", MyLogAlias)
+		}
+	}
+	log.Panicln("nhlog.go waiting for piped input ", MyLogAlias)
 	r := bufio.NewReader(os.Stdin)
 	buf := make([]byte, 0, 4*1024)
 	for {
@@ -199,13 +163,13 @@ func main() {
 
 		if int64(len(buf)) != 0 {
 			if strings.Contains(string(buf), *logPattern) {
-				log.Println("log.go 2")
-				//b, err := config.NewNatsJSmessages()
+				log.Println("nhlog.go Received Piped Input ", string(buf))
+
 				config.Send(config.NatsUser, config.NatsUserPassword, "EVENTS", "events", string(buf), "[logger]"+MyLogAlias)
 			}
 		}
 		if err != nil && err != io.EOF {
-			log.Println("log.go ", err)
+			log.Println("nhlog.go Piped Buffer ", err)
 		}
 	}
 }

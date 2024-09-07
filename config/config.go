@@ -37,6 +37,8 @@ var NatsUserEvents = "natsevents"
 var NatsUserEventsPassword = "PASSWORD"
 var NatsUserDevices = "natsdevices"
 var NatsUserDevicesPassword = "PASSWORD"
+var NatsUserAuthorizations = "natsauthorizations"
+var NatsUserAuthorizationsPassword = "PASSWORD"
 
 var NatsQueuePassword = "987654321098765432109876"
 var NatsQueueDurable = "snatsdurable"
