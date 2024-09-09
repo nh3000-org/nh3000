@@ -88,7 +88,7 @@ func NewNatsJS(queue, subject, alias string) (*Natsjs, error) {
 	   		log.Println("dc ", dcerror)
 	   	} */
 	cons, conserr := jsstream.CreateOrUpdateConsumer(ctxdevice, jetstream.ConsumerConfig{
-		Durable:   subject + alias,
+		Durable:   subject,
 		AckPolicy: jetstream.AckNonePolicy,
 		//DeliverPolicy: jetstream.DeliverByStartSequencePolicy,
 	})
@@ -559,11 +559,11 @@ func DeleteNatsMessage(queue, subject string, seq uint64) {
 	}
 }
 
-func CheckDEVICE(a *Natsjs, alias string) bool {
+func CheckDEVICE(b *Natsjs, alias string) bool {
 	devicefound = false
-	b, _ := NewNatsJS("DEVICES", "devices", alias)
+
 	consdevice, errdevice := b.Js.CreateOrUpdateConsumer(a.Ctx, jetstream.ConsumerConfig{
-		Durable:       "devices" + alias,
+		Durable:       "devices",
 		AckPolicy:     jetstream.AckNonePolicy,
 		FilterSubject: "devices." + alias,
 		//DeliverPolicy: jetstream.DeliverByStartSequencePolicy,
@@ -599,10 +599,10 @@ func CheckDEVICE(a *Natsjs, alias string) bool {
 
 	}
 	if !devicefound {
-		Send(NatsUserDevices, NatsUserDevicesPassword, "DEVICES", "devices."+alias, "Add", alias)
+		Send(NatsUser, NatsUserPassword, "DEVICES", "devices."+alias, "Add", alias)
 	}
 
-	dcerror := b.Js.DeleteConsumer(b.Ctx, "devices."+alias)
+	dcerror := b.Js.DeleteConsumer(b.Ctx, "devices")
 	if dcerror != nil {
 		log.Println("nhnats.go Consumer not found:", dcerror)
 	}

@@ -49,7 +49,7 @@ func DevicesScreen(win fyne.Window) fyne.CanvasObject {
 		config.Send(config.NatsUser, config.NatsUserPassword, "AUTHORIZATIONS", "authorizations."+selectedalias, "AUTHORIZED", config.NatsAlias)
 
 	})
-	a, aerr := config.NewNatsJS("DEVICES", "devices", config.NatsAlias)
+	a, aerr := config.NewNatsJS("DEVICES", "devices" + config.NatsAlias, config.NatsAlias)
 	if aerr != nil {
 		log.Println("devices err ", aerr)
 	}
