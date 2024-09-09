@@ -44,7 +44,7 @@ var NatsQueuePassword = "987654321098765432109876"
 var NatsQueueDurable = "snatsdurable"
 
 // var NatsQueue = "MESSAGES"
-var NatsQueues = []string{"MESSAGES", "EVENTS", "COMMANDS", "DEVICES"}
+//var NatsQueues = []string{"MESSAGES", "EVENTS", "COMMANDS", "DEVICES"}
 
 var NatsNodeUUID string
 var NatsAlias string
@@ -64,10 +64,13 @@ const Password = "123456" // default password shipped with app
 var PasswordHash string
 var PreferedLanguage string
 var FyneMessageWin fyne.Window
+var FyneDeviceWin fyne.Window
 var FyneMainWin fyne.Window
 var FyneApp fyne.App
 var FyneMessageList fyne.Widget
+var FyneDeviceList fyne.Widget
 var FyneFilter bool
+var FyneFilterDevices bool
 
 var LoggedOn bool
 

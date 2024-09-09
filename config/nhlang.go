@@ -215,7 +215,7 @@ var MyLangs = map[string]string{
 	"eng-ms-mm":       "Enter Message For Encryption",
 	"spa-ms-mm":       "Ingrese el Mensaje Para el Cifrado",
 	"hin-ms-mm":       "एन्क्रिप्शन के लिए संदेश दर्ज करें",
-		"eng-ms-del":       "Secure Erase Message",
+	"eng-ms-del":       "Secure Erase Message",
 	"spa-ms-del":       "Mensaje de Borrado Seguro",
 	"hin-ms-del":       "संदेश को सुरक्षित रूप से मिटाएँ",
 	"eng-ms-header1":  "Select An Item From The List",
@@ -333,6 +333,17 @@ var MyLangs = map[string]string{
 	"eng-ms-dis":      "Disconnected",
 	"spa-ms-dis":      "Desconectada",
 	"hin-ms-dis":      "डिस्कनेक्ट किया गया",
+
+	"eng-dv-title":    "Devices",
+	"spa-dv-title":    "Dispositivos",
+	"hin-dv-title":    "उपकरण",
+	"eng-dv-mm":       "Enter Message For Encryption",
+	"spa-dv-mm":       "Ingrese el Mensaje Para el Cifrado",
+	"hin-dv-mm":       "एन्क्रिप्शन के लिए संदेश दर्ज करें",
+	"eng-dv-del":       "Secure Erase Message",
+	"spa-dv-del":       "Mensaje de Borrado Seguro",
+	"hin-dv-del":       "संदेश को सुरक्षित रूप से मिटाएँ",
+
 
 	"eng-es-title":   "Enc/Dec",
 	"spa-es-title":   "Codificar/Descodificar",
