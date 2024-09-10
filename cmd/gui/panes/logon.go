@@ -213,14 +213,12 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			ca.SetText("")
 			ck.SetText("")
 			cc.SetText("")
-			jsm, _ := config.NewNatsJS("MESSAGES", "messages", config.NatsAlias)
-			//config.NatsJETSTREAM = jsm
-			jsd, _ := config.NewNatsJS("DEVICES", "devices", config.NatsAlias)
-			go config.ReceiveMESSAGE(jsm)
+
+			go config.ReceiveMESSAGE()
 			config.NatsReceivingMessages = true
 
 			config.Send(config.NatsUser, config.NatsUserPassword, "MESSAGES", "messages."+config.NatsAlias, config.GetLangs("ls-con"), config.NatsAlias)
-			go config.CheckDEVICE(jsd, config.NatsAlias)
+			go config.CheckDEVICE(config.NatsAlias)
 		}
 	})
 

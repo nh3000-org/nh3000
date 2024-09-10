@@ -383,8 +383,8 @@ func DeleteConsumer(queue, subject string) {
 }
 
 // thread for receiving messages
-func ReceiveMESSAGE(a *Natsjs) {
-
+func ReceiveMESSAGE() {
+	a, _ := NewNatsJS("MESSAGES", "messages", NatsAlias)
 	for {
 
 		select {
@@ -559,10 +559,10 @@ func DeleteNatsMessage(queue, subject string, seq uint64) {
 	}
 }
 
-func CheckDEVICE(b *Natsjs, alias string) bool {
+func CheckDEVICE(alias string) bool {
 	devicefound = false
-
-	consdevice, errdevice := b.Js.CreateOrUpdateConsumer(a.Ctx, jetstream.ConsumerConfig{
+	b, _ := NewNatsJS("DEVICES", "devices", alias)
+	consdevice, errdevice := b.Js.CreateOrUpdateConsumer(b.Ctx, jetstream.ConsumerConfig{
 		Durable:       "devices",
 		AckPolicy:     jetstream.AckNonePolicy,
 		FilterSubject: "devices." + alias,
