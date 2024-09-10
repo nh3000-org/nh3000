@@ -384,6 +384,7 @@ func DeleteConsumer(queue, subject string) {
 
 // thread for receiving messages
 func ReceiveMESSAGE() {
+	NatsReceivingMessages = true
 	a, _ := NewNatsJS("MESSAGES", "messages", NatsAlias)
 	for {
 
