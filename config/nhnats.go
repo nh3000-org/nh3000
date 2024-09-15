@@ -36,17 +36,20 @@ type MessageStore struct {
 	MSelementid int    // order in array
 }
 type Natsjs struct {
-	Nc  *nats.Conn
-	Js  jetstream.Stream
-	Con jetstream.Consumer
-	Ctx context.Context
+	Nc     *nats.Conn
+	Js     jetstream.Stream
+	Con    jetstream.Consumer
+	Ctx    context.Context
+	Ctxcan context.CancelFunc
 }
 
 func NewNatsJS(queue, subject, alias string) (*Natsjs, error) {
 	var d = new(Natsjs)
+	log.Println("NewNasJS q ", queue, " s ", subject, " a ", alias)
 	var certpool = docerts()
 	//var lastseq uint64
-	ctxdevice, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctxdevice, ctxcan := context.WithTimeout(context.Background(), 10*time.Second)
+	d.Ctxcan = ctxcan
 	d.Ctx = ctxdevice
 	//defer canceldevice()
 	natsopts := nats.Options{
@@ -309,6 +312,7 @@ func Send(user, password, queue, subject, m, alias string) bool {
 }
 
 func SendMessage(user, password, queue, subject, m string) {
+	log.Println("send subject ", subject, " queue ", queue, "user ", user, password)
 	var certpool = docerts()
 	sendnatsopts := nats.Options{
 		Name:           NatsAlias,
@@ -384,12 +388,15 @@ func DeleteConsumer(queue, subject string) {
 
 // thread for receiving messages
 func ReceiveMESSAGE() {
+	log.Println("RECIEVEMESSAGE")
 	NatsReceivingMessages = true
 	a, _ := NewNatsJS("MESSAGES", "messages", NatsAlias)
+
 	for {
 
 		select {
-
+		case <- MsgCancel:
+			return
 		default:
 			for {
 
@@ -461,8 +468,13 @@ func ReceiveMESSAGE() {
 }
 
 // thread for receiving messages
-func ReceiveDEVICE(a *Natsjs) {
-
+func ReceiveDEVICE(alias string) {
+	log.Println("RECIEVEDEVICE")
+	a, _ := NewNatsJS("DEVICES", "devices"+alias, alias)
+	
+	//if aerr != nil {
+	//	log.Println("ReceiveDEVICE err ", aerr)
+	//}
 	for {
 
 		select {
@@ -562,6 +574,7 @@ func DeleteNatsMessage(queue, subject string, seq uint64) {
 
 func CheckDEVICE(alias string) bool {
 	devicefound = false
+	log.Println("CHECKDEVICE")
 	b, _ := NewNatsJS("DEVICES", "devices", alias)
 	consdevice, errdevice := b.Js.CreateOrUpdateConsumer(b.Ctx, jetstream.ConsumerConfig{
 		Durable:       "devices",
@@ -613,6 +626,7 @@ func CheckDEVICE(alias string) bool {
 var deviceauthorized bool
 
 func CheckAUTHORIZATIONS(a *Natsjs, alias string) bool {
+	log.Println("CHECKAUTHORIZATIONS")
 	deviceauthorized = false
 	b, _ := NewNatsJS("AUTHORIZATIONS", "authorizations", alias)
 	consauthorizations, errdevice := b.Js.CreateOrUpdateConsumer(a.Ctx, jetstream.ConsumerConfig{

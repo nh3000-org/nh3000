@@ -39,7 +39,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 		win.Clipboard().SetContent(Details.Text)
 	})
 	delbutton := widget.NewButtonWithIcon(config.GetLangs("ms-del"), theme.ContentCopyIcon(), func() {
-		config.DeleteNatsMessage("MESSAGES", "messages", selectedseq)
+		config.DeleteNatsMessage("MESSAGES", "messages.", selectedseq)
 		delete(config.NatsMessages, selectedms)
 		delete(config.NatsMessagesIndex, selecteduuid)
 	})
@@ -78,7 +78,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 		if !config.LoggedOn {
 			Errors.SetText(config.GetLangs("cs-lf"))
 		}
-		config.Send(config.NatsUser, config.NatsUserPassword, "MESSAGES", "messages", message.Text, config.NatsAlias)
+		config.Send(config.NatsUser, config.NatsUserPassword, "MESSAGES", "messages."+config.NatsAlias, message.Text, config.NatsAlias)
 		message.SetText("")
 	})
 	topbox := container.NewHSplit(

@@ -3,7 +3,7 @@ package panes
 import (
 	//"log"
 	"bytes"
-	"log"
+	//"log"
 	"strings"
 
 	"github.com/nh3000-org/nh3000/config"
@@ -44,16 +44,14 @@ func DevicesScreen(win fyne.Window) fyne.CanvasObject {
 		delete(config.NatsMessagesDevice, selectedms)
 		delete(config.NatsMessagesIndexDevice, selecteduuid)
 	})
-	authbutton := widget.NewButtonWithIcon(config.GetLangs("ms-del"), theme.ContentCopyIcon(), func() {
+	authbutton := widget.NewButtonWithIcon(config.GetLangs("ms-auth"), theme.ContentCopyIcon(), func() {
 
 		config.Send(config.NatsUser, config.NatsUserPassword, "AUTHORIZATIONS", "authorizations."+selectedalias, "AUTHORIZED", config.NatsAlias)
 
 	})
-	a, aerr := config.NewNatsJS("DEVICES", "devices" + config.NatsAlias, config.NatsAlias)
-	if aerr != nil {
-		log.Println("devices err ", aerr)
-	}
-	go config.ReceiveDEVICE(a)
+	//a, aerr := config.NewNatsJS("DEVICES", "devices"+config.NatsAlias, config.NatsAlias)
+
+	
 	config.FyneDeviceWin = win
 	List := widget.NewList(
 		func() int {
@@ -72,7 +70,7 @@ func DevicesScreen(win fyne.Window) fyne.CanvasObject {
 			item.(*fyne.Container).Objects[0].(*widget.Label).SetText(config.NatsMessagesDevice[id].MSsubject + " " + config.NatsMessagesDevice[id].MSalias + " - " + mymessage)
 		},
 	)
-	config.FyneMessageList = List
+	config.FyneDeviceList = List
 	List.OnSelected = func(id widget.ListItemID) {
 		selectedmsdevice = id
 		selectedseqdevice = config.NatsMessagesDevice[id].MSsequence
