@@ -48,7 +48,7 @@ func NewNatsJS(queue, subject, alias string) (*Natsjs, error) {
 	log.Println("NewNasJS q ", queue, " s ", subject, " a ", alias)
 	var certpool = docerts()
 	//var lastseq uint64
-	ctxdevice, ctxcan := context.WithTimeout(context.Background(), 10*time.Second)
+	ctxdevice, ctxcan := context.WithTimeout(context.Background(), 1024*time.Hour)
 	d.Ctxcan = ctxcan
 	d.Ctx = ctxdevice
 	//defer canceldevice()
@@ -390,14 +390,18 @@ func DeleteConsumer(queue, subject string) {
 func ReceiveMESSAGE() {
 	log.Println("RECIEVEMESSAGE")
 	NatsReceivingMessages = true
-	a, _ := NewNatsJS("MESSAGES", "messages", NatsAlias)
+	//a, _ := NewNatsJS("MESSAGES", "messages", NatsAlias)
 
 	for {
 
 		select {
 
 		default:
+			a, _ := NewNatsJS("MESSAGES", "messages", NatsAlias)
+			defer a.Ctxcan()
+
 			for {
+
 				if MsgCancel {
 					a.Ctxcan()
 					return
