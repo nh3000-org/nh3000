@@ -55,8 +55,8 @@ var NatsMsgMaxAge string
 
 //var NatsCONSUMER nats.JetStream
 //var NatsJETSTREAM  nats.JetStream
-var MsgCancel = make(chan bool)
-var DevCancel = make(chan bool)
+var MsgCancel = false
+var DevCancel = false
 // default encryption
 var KeyAes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}  // must be 16 bytes
 var KeyHmac = []byte{36, 45, 53, 21, 87, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05} // must be 16 bytes

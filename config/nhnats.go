@@ -91,7 +91,7 @@ func NewNatsJS(queue, subject, alias string) (*Natsjs, error) {
 	   		log.Println("dc ", dcerror)
 	   	} */
 	cons, conserr := jsstream.CreateOrUpdateConsumer(ctxdevice, jetstream.ConsumerConfig{
-		Durable:   subject,
+		Name:      subject + alias,
 		AckPolicy: jetstream.AckNonePolicy,
 		//DeliverPolicy: jetstream.DeliverByStartSequencePolicy,
 	})
@@ -395,11 +395,13 @@ func ReceiveMESSAGE() {
 	for {
 
 		select {
-		case <- MsgCancel:
-			return
+
 		default:
 			for {
-
+				if MsgCancel {
+					a.Ctxcan()
+					return
+				}
 				msg, errsub := a.Con.Next()
 
 				if errsub != nil {
@@ -413,7 +415,7 @@ func ReceiveMESSAGE() {
 					if FyneMessageWin != nil {
 						runtime.GC()
 						runtime.ReadMemStats(&memoryStats)
-						FyneMessageWin.SetTitle("Received " + getLangsNats("ms-nnm") + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+						FyneMessageWin.SetTitle("Recieve Message " + getLangsNats("ms-nnm") + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
 						//yulog.Println("Fetch " + GetLangs("ms-carrier") + " " + err.Error())
 					}
 					msg.Nak()
@@ -470,11 +472,11 @@ func ReceiveMESSAGE() {
 // thread for receiving messages
 func ReceiveDEVICE(alias string) {
 	log.Println("RECIEVEDEVICE")
-	a, _ := NewNatsJS("DEVICES", "devices"+alias, alias)
-	
+	a, _ := NewNatsJS("DEVICES", "devices", alias)
+
 	//if aerr != nil {
 	//	log.Println("ReceiveDEVICE err ", aerr)
-	//}
+	//}time.Sleep(20 * time.Second)
 	for {
 
 		select {
@@ -482,21 +484,26 @@ func ReceiveDEVICE(alias string) {
 		default:
 			for {
 
+				if DevCancel {
+					dcerror := a.Js.DeleteConsumer(a.Ctx, "devices")
+					if dcerror != nil {
+						log.Println("nhnats.go Recieve Device Consumer not found:", dcerror)
+					}
+					a.Ctxcan()
+					return
+				}
+
 				msg, errsub := a.Con.Next()
 
-				if errsub != nil {
-					log.Println("ReceiveDevice ", errsub)
-					time.Sleep(20 * time.Second)
-				}
 				if errsub == nil {
 					meta, _ := msg.Metadata()
 					//lastseq = meta.Sequence.Consumer
-					log.Println("Device seq " + strconv.FormatUint(meta.Sequence.Stream, 10))
+					log.Println("Recieve Device seq " + strconv.FormatUint(meta.Sequence.Stream, 10))
 					//log.Println("Consumer seq " + strconv.FormatUint(meta.Sequence.Consumer, 10))
 					if FyneMessageWin != nil {
 						runtime.GC()
 						runtime.ReadMemStats(&memoryStats)
-						FyneMessageWin.SetTitle("Received " + getLangsNats("ms-nnm") + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+						FyneMessageWin.SetTitle("Recieve Device Received " + getLangsNats("ms-nnm") + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
 						//yulog.Println("Fetch " + GetLangs("ms-carrier") + " " + err.Error())
 					}
 					msg.Nak()
@@ -507,7 +514,7 @@ func ReceiveDEVICE(alias string) {
 						if FyneMessageWin != nil {
 							FyneMessageWin.SetTitle(getLangsNats("ms-mde"))
 						}
-						log.Println("ReceiveJS Un Marhal", err1)
+						log.Println("Receive Device  Un Marhal", err1)
 					}
 					fyneFilterFound = false
 					if FyneFilter {
@@ -541,7 +548,9 @@ func ReceiveDEVICE(alias string) {
 					FyneDeviceList.Refresh()
 
 				}
-
+				if errsub != nil {
+					time.Sleep(20 * time.Second)
+				}
 			}
 
 		}
@@ -577,7 +586,7 @@ func CheckDEVICE(alias string) bool {
 	log.Println("CHECKDEVICE")
 	b, _ := NewNatsJS("DEVICES", "devices", alias)
 	consdevice, errdevice := b.Js.CreateOrUpdateConsumer(b.Ctx, jetstream.ConsumerConfig{
-		Durable:       "devices",
+		Name:          "devices",
 		AckPolicy:     jetstream.AckNonePolicy,
 		FilterSubject: "devices." + alias,
 		//DeliverPolicy: jetstream.DeliverByStartSequencePolicy,
@@ -615,10 +624,10 @@ func CheckDEVICE(alias string) bool {
 	if !devicefound {
 		Send(NatsUser, NatsUserPassword, "DEVICES", "devices."+alias, "Add", alias)
 	}
-
-	dcerror := b.Js.DeleteConsumer(b.Ctx, "devices")
+	//dcerror := jsstream.DeleteConsumer(ctxmessage, subject+NatsAlias)
+	dcerror := b.Js.DeleteConsumer(b.Ctx, "devices"+NatsAlias)
 	if dcerror != nil {
-		log.Println("nhnats.go Consumer not found:", dcerror)
+		log.Println("nhnats.go CheckDevice Consumer not found:", dcerror)
 	}
 	return devicefound
 }

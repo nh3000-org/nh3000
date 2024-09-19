@@ -101,11 +101,12 @@ func logLifecycle() {
 
 	config.FyneApp.Lifecycle().SetOnStopped(func() {
 		if config.LoggedOn {
-			config.MsgCancel <- true
-			config.DevCancel <- true
 			config.Send(config.NatsUser, config.NatsUserPassword, "MESSAGES", "messages."+config.NatsAlias, config.GetLangs("ls-dis"), config.NatsAlias)
-			config.DeleteConsumer("MESSAGES", "messages")
-			config.DeleteConsumer("DEVICES", "devices")
+			config.MsgCancel = true
+			config.DevCancel = true
+
+			//config.DeleteConsumer("MESSAGES", "messages")
+			//config.DeleteConsumer("DEVICES", "devices")
 		}
 	})
 

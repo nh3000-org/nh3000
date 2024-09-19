@@ -185,7 +185,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			}
 			if !haserrors {
 				config.FyneApp.Preferences().StringWithFallback("NatsQueuePassword", config.Encrypt(queuepassword.Text, config.MySecret))
-				log.Println("good ", queuepasswordShadow, ":", queuepassword.Text)
+				//log.Println("good ", queuepasswordShadow, ":", queuepassword.Text)
 			}
 
 		}
