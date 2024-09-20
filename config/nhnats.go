@@ -390,15 +390,16 @@ func DeleteConsumer(queue, subject string) {
 func ReceiveMESSAGE() {
 	log.Println("RECIEVEMESSAGE")
 	NatsReceivingMessages = true
-	//a, _ := NewNatsJS("MESSAGES", "messages", NatsAlias)
+	a, _ := NewNatsJS("MESSAGES", "messages", NatsAlias)
+	//46defer a.Ctxcan()
 
 	for {
 
 		select {
 
 		default:
-			a, _ := NewNatsJS("MESSAGES", "messages", NatsAlias)
-			defer a.Ctxcan()
+			//a, _ := NewNatsJS("MESSAGES", "messages", NatsAlias)
+			//defer a.Ctxcan()
 
 			for {
 
