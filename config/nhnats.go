@@ -48,7 +48,7 @@ func NewNatsJS(queue, subject, alias string) (*Natsjs, error) {
 	log.Println("NewNasJS q ", queue, " s ", subject, " a ", alias)
 	var certpool = docerts()
 	//var lastseq uint64
-	ctxdevice, ctxcan := context.WithTimeout(context.Background(), 1024*time.Hour)
+	ctxdevice, ctxcan := context.WithCancel(context.Background())
 	d.Ctxcan = ctxcan
 	d.Ctx = ctxdevice
 	//defer canceldevice()
@@ -58,8 +58,8 @@ func NewNatsJS(queue, subject, alias string) (*Natsjs, error) {
 		Verbose:        true,
 		TLSConfig:      certpool,
 		AllowReconnect: true,
-		MaxReconnect:   1000,
-		Timeout:        2048 * time.Hour,
+		MaxReconnect:   -1,
+		Timeout:        60 * time.Second,
 		User:           NatsUser,
 		Password:       NatsUserPassword,
 	}
@@ -93,6 +93,7 @@ func NewNatsJS(queue, subject, alias string) (*Natsjs, error) {
 	cons, conserr := jsstream.CreateOrUpdateConsumer(ctxdevice, jetstream.ConsumerConfig{
 		Name:      subject + alias,
 		AckPolicy: jetstream.AckNonePolicy,
+		
 		//DeliverPolicy: jetstream.DeliverByStartSequencePolicy,
 	})
 	if conserr != nil {
@@ -410,6 +411,7 @@ func ReceiveMESSAGE() {
 				msg, errsub := a.Con.Next()
 
 				if errsub != nil {
+					log.Println("ReceiveMessage", errsub)
 					time.Sleep(20 * time.Second)
 				}
 				if errsub == nil {

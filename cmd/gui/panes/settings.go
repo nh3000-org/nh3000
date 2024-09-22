@@ -24,8 +24,15 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 	lalabel := widget.NewLabel(config.GetLangs("ss-la"))
 	la := widget.NewRadioGroup([]string{"eng", "spa", "hin"}, func(string) {})
 	la.Horizontal = true
-	preferredlanguageShadow = config.Decrypt(config.FyneApp.Preferences().StringWithFallback("PreferedLanguage", config.Encrypt("eng", config.MySecret)), config.MySecret)
+
+	//preferredlanguageShadow = config.Decrypt(config.FyneApp.Preferences().StringWithFallback("PreferedLanguage", config.Encrypt("eng", config.MySecret)), config.MySecret)
+	//la.SetSelected(preferredlanguageShadow)
+
+	var swf = config.FyneApp.Preferences().StringWithFallback("PreferredLanguage", config.Encrypt("eng", config.MySecret))
+	preferredlanguageShadow = config.Decrypt(swf, config.MySecret)
+	config.PreferedLanguage = preferredlanguageShadow
 	la.SetSelected(preferredlanguageShadow)
+
 	malabel := widget.NewLabel(config.GetLangs("ss-ma"))
 	ma := widget.NewRadioGroup([]string{"1h", "12h", "24h", "161h", "8372h"}, func(string) {})
 	ma.Horizontal = true
