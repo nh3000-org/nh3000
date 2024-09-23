@@ -43,6 +43,10 @@ type Natsjs struct {
 	Ctxcan context.CancelFunc
 }
 
+// used to manage starting location for consumers
+var startMessageSeq uint64
+var startDeviceSeq uint64
+
 func NewNatsJS(queue, subject, alias string) (*Natsjs, error) {
 	var d = new(Natsjs)
 	log.Println("NewNasJS q ", queue, " s ", subject, " a ", alias)
@@ -83,7 +87,7 @@ func NewNatsJS(queue, subject, alias string) (*Natsjs, error) {
 		Subjects: []string{subject + ".*"},
 	})
 	if err != nil {
-		log.Fatal("NewNatsJS ", err)
+		log.Panicln("NewNatsJS cou Stream ", err)
 	}
 	d.Js = jsstream
 	/* 	dcerror := jsstream.DeleteConsumer(ctxmessage, "messages"+NatsAlias)
@@ -91,13 +95,13 @@ func NewNatsJS(queue, subject, alias string) (*Natsjs, error) {
 	   		log.Println("dc ", dcerror)
 	   	} */
 	cons, conserr := jsstream.CreateOrUpdateConsumer(ctxdevice, jetstream.ConsumerConfig{
-		Name:      subject + alias,
-		AckPolicy: jetstream.AckNonePolicy,
-		
-		//DeliverPolicy: jetstream.DeliverByStartSequencePolicy,
+		Durable:       subject + alias,
+		AckPolicy:     jetstream.AckNonePolicy,
+		DeliverPolicy: jetstream.DeliverByStartSequencePolicy,
+		OptStartSeq:   1,
 	})
 	if conserr != nil {
-		log.Fatal("NewNatsJS ", err)
+		log.Panicln("NewNatsJS couc Consumer", conserr)
 	}
 	d.Con = cons
 	return d, nil
@@ -391,9 +395,10 @@ func DeleteConsumer(queue, subject string) {
 func ReceiveMESSAGE() {
 	log.Println("RECIEVEMESSAGE")
 	NatsReceivingMessages = true
-	a, _ := NewNatsJS("MESSAGES", "messages", NatsAlias)
-	//46defer a.Ctxcan()
 
+	//a, _ := NewNatsJS("MESSAGES", "messages", NatsAlias)
+	//46defer a.Ctxcan()
+	startMessageSeq = 1
 	for {
 
 		select {
@@ -403,6 +408,7 @@ func ReceiveMESSAGE() {
 			//defer a.Ctxcan()
 
 			for {
+				a, _ := NewNatsJS("MESSAGES", "messages", NatsAlias)
 
 				if MsgCancel {
 					a.Ctxcan()
@@ -412,6 +418,7 @@ func ReceiveMESSAGE() {
 
 				if errsub != nil {
 					log.Println("ReceiveMessage", errsub)
+					//a.Ctxcan()
 					time.Sleep(20 * time.Second)
 				}
 				if errsub == nil {
@@ -419,6 +426,7 @@ func ReceiveMESSAGE() {
 					//lastseq = meta.Sequence.Consumer
 					//log.Println("Stream seq " + strconv.FormatUint(meta.Sequence.Stream, 10))
 					//log.Println("Consumer seq " + strconv.FormatUint(meta.Sequence.Consumer, 10))
+					startMessageSeq = meta.Sequence.Consumer
 					if FyneMessageWin != nil {
 						runtime.GC()
 						runtime.ReadMemStats(&memoryStats)
@@ -479,6 +487,7 @@ func ReceiveMESSAGE() {
 // thread for receiving messages
 func ReceiveDEVICE(alias string) {
 	log.Println("RECIEVEDEVICE")
+	startDeviceSeq = 1
 	a, _ := NewNatsJS("DEVICES", "devices", alias)
 
 	//if aerr != nil {
@@ -507,6 +516,7 @@ func ReceiveDEVICE(alias string) {
 					//lastseq = meta.Sequence.Consumer
 					log.Println("Recieve Device seq " + strconv.FormatUint(meta.Sequence.Stream, 10))
 					//log.Println("Consumer seq " + strconv.FormatUint(meta.Sequence.Consumer, 10))
+					startDeviceSeq = meta.Sequence.Consumer
 					if FyneMessageWin != nil {
 						runtime.GC()
 						runtime.ReadMemStats(&memoryStats)
