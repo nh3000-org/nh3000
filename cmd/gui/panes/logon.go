@@ -258,7 +258,10 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			ca.SetText("")
 			ck.SetText("")
 			cc.SetText("")
-			
+			config.CheckQueue(config.NatsUser, config.NatsUserPassword, "MESSAGES")
+			config.CheckQueue(config.NatsUser, config.NatsUserPassword, "DEVICES")
+			config.CheckQueue(config.NatsUser, config.NatsUserPassword, "AUTHENTICATON")
+			config.CheckQueue(config.NatsUser, config.NatsUserPassword, "EVENTS")
 			go config.ReceiveMESSAGE()
 			config.Send(config.NatsUser, config.NatsUserPassword, "MESSAGES", "messages."+config.NatsAlias, config.GetLangs("ls-con"), config.NatsAlias)
 			go config.CheckDEVICE(config.NatsAlias)
