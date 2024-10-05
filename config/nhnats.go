@@ -426,7 +426,11 @@ func ReceiveMESSAGE() {
 			log.Panicln("MESSAGE Consumer", conserr)
 		}
 		msg, errsub := consumer.Next()
-
+		if MsgCancel {
+			a.Js.DeleteConsumer(a.Ctx, "RcvMsg-"+NatsAlias)
+			runtime.GC()
+			return
+		}
 		if errsub == nil {
 			meta, _ := msg.Metadata()
 			//lastseq = meta.Sequence.Consumer
