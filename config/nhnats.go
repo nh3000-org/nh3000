@@ -417,7 +417,7 @@ func ReceiveMESSAGE() {
 			//Durable:           subject + alias,
 			AckPolicy:         jetstream.AckExplicitPolicy,
 			DeliverPolicy:     jetstream.DeliverByStartSequencePolicy,
-			InactiveThreshold: 2048 * time.Hour,
+			InactiveThreshold: 5 * time.Second,
 			FilterSubject:     "messages.*",
 			ReplayPolicy:      jetstream.ReplayInstantPolicy,
 			OptStartSeq:       startseq,
@@ -428,13 +428,14 @@ func ReceiveMESSAGE() {
 		msg, errsub := consumer.Next()
 		if MsgCancel {
 			a.Js.DeleteConsumer(a.Ctx, "RcvMsg-"+NatsAlias)
+			a.Ctxcan()
 			runtime.GC()
 			return
 		}
 		if errsub == nil {
 			meta, _ := msg.Metadata()
 			//lastseq = meta.Sequence.Consumer
-			log.Println("RecieveMESSAGE seq " + strconv.FormatUint(meta.Sequence.Stream, 10))
+			//log.Println("RecieveMESSAGE seq " + strconv.FormatUint(meta.Sequence.Stream, 10))
 			//log.Println("Consumer seq " + strconv.FormatUint(meta.Sequence.Consumer, 10))
 			startseq = meta.Sequence.Stream + 1
 			if FyneMessageWin != nil {
@@ -487,7 +488,7 @@ func ReceiveMESSAGE() {
 		}
 
 		if errsub == nil {
-			log.Println("ReceiveMESSAGE errsub", errsub)
+			//log.Println("ReceiveMESSAGE errsub", errsub)
 
 			a.Js.DeleteConsumer(a.Ctx, "RcvMsg-"+NatsAlias)
 			runtime.GC()
