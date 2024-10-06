@@ -501,93 +501,96 @@ func ReceiveMESSAGE() {
 // thread for receiving messages
 func ReceiveDEVICE(alias string) {
 	log.Println("RECIEVEDEVICE")
-
-	a, _ := NewNatsJS("DEVICES", "devices", "RecDevice-"+alias, 1)
-	consumer, conserr := a.Js.CreateOrUpdateConsumer(a.Ctx, jetstream.ConsumerConfig{
-		Name: "RecDevice-" + alias,
-		//Durable:           subject + alias,
-		AckPolicy:         jetstream.AckExplicitPolicy,
-		DeliverPolicy:     jetstream.DeliverAllPolicy,
-		InactiveThreshold: 2048 * time.Hour,
-		ReplayPolicy:      jetstream.ReplayInstantPolicy,
-		//OptStartSeq:       start,
-	})
-	if conserr != nil {
-		log.Panicln("ReceiveDEVICE Consumer", conserr)
+	startseq = 1
+	a, aerr := NewNatsJS("DEVICES", "devices", "RecDevice-"+alias, 1)
+	if aerr != nil {
+		log.Println("ReceiveDevice ", aerr)
 	}
+
 	//if aerr != nil {
 	//	log.Println("ReceiveDEVICE err ", aerr)
 	//}time.Sleep(20 * time.Second)
 	for {
-		_, errsub := consumer.Consume(func(msg jetstream.Msg) {
-			if MsgCancel {
-				dcerror := a.Jetstream.DeleteConsumer(a.Ctx, "MESSAGES", "RecDev-"+alias)
-				if dcerror != nil {
-					log.Println("RecieveDEVICE Consumer not found:", dcerror)
-				}
-				a.Ctxcan()
-				return
-			}
-
-			msg, errsub := consumer.Next()
-
-			if errsub == nil {
-				meta, _ := msg.Metadata()
-				//lastseq = meta.Sequence.Consumer
-				log.Println("RecieveDEVICE seq " + strconv.FormatUint(meta.Sequence.Stream, 10))
-				//log.Println("Consumer seq " + strconv.FormatUint(meta.Sequence.Consumer, 10))
-
-				if FyneMessageWin != nil {
-					runtime.GC()
-					runtime.ReadMemStats(&memoryStats)
-					FyneMessageWin.SetTitle("RecieveDEVICE Received " + getLangsNats("ms-nnm") + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
-					//yulog.Println("Fetch " + GetLangs("ms-carrier") + " " + err.Error())
-				}
-				msg.Nak()
-				ms = MessageStore{}
-				err1 := json.Unmarshal([]byte(string(Decrypt(string(msg.Data()), NatsQueuePassword))), &ms)
-				if err1 != nil {
-					// send decrypt
-					if FyneMessageWin != nil {
-						FyneMessageWin.SetTitle(getLangsNats("ms-mde"))
-					}
-					log.Println("ReceiveDEVICE Un Marhal", err1)
-				}
-				fyneFilterFound = false
-				if FyneFilter {
-					if strings.Contains(ms.MSmessage, getLangsNats("ms-con")) {
-						fyneFilterFound = true
-					}
-					if strings.Contains(ms.MSmessage, getLangsNats("ms-dis")) {
-						fyneFilterFound = true
-					}
-				}
-				if !fyneFilterFound {
-					//if !CheckNatsMsgByUUID(ms.MSiduuid) {
-					//log.Println("check ", ms.MSiduuid, " ", NatsMessagesIndex[ms.MSiduuid])
-					if !NatsMessagesIndex[ms.MSiduuid] {
-						//log.Println("adding , nats.OrderedConsumer()ms ", ms.MSiduuid)
-						ms.MSsequence = meta.Sequence.Stream
-						ms.MSelementid = len(NatsMessagesDevice)
-						NatsMessagesDevice[len(NatsMessagesDevice)] = ms
-
-						NatsMessagesIndexDevice[ms.MSiduuid] = true
-						//FyneMessageList.Refresh()
-					}
-				}
-
-				if FyneDeviceWin != nil {
-					runtime.GC()
-					runtime.ReadMemStats(&memoryStats)
-					FyneMessageWin.SetTitle(getLangsNats("ms-err6-1") + strconv.Itoa(len(NatsMessages)) + getLangsNats("ms-err6-2") + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
-				}
-				//createstream.DeleteConsumer(ctx, "MESSAGESCONSUMER")
-				FyneDeviceList.Refresh()
-
-			}
+		consumer, conserr := a.Js.CreateConsumer(a.Ctx, jetstream.ConsumerConfig{
+			Name: "RecDevice-" + alias,
+			//Durable:           subject + alias,
+			AckPolicy:         jetstream.AckExplicitPolicy,
+			DeliverPolicy:     jetstream.DeliverByStartSequencePolicy,
+			InactiveThreshold: 5 * time.Second,
+			ReplayPolicy:      jetstream.ReplayInstantPolicy,
+			OptStartSeq:       startseq,
 		})
+		if conserr != nil {
+			log.Panicln("ReceiveDEVICE Consumer", conserr)
+		}
+		msg, errsub := consumer.Next()
+		if MsgCancel {
+			dcerror := a.Jetstream.DeleteConsumer(a.Ctx, "DEVICES", "RecDev-"+alias)
+			if dcerror != nil {
+				log.Println("RecieveDEVICE Consumer not found:", dcerror)
+			}
+			a.Ctxcan()
+			return
+		}
+
+		if errsub == nil {
+			meta, _ := msg.Metadata()
+			//lastseq = meta.Sequence.Consumer
+			log.Println("RecieveDEVICE seq " + strconv.FormatUint(meta.Sequence.Stream, 10))
+			//log.Println("Consumer seq " + strconv.FormatUint(meta.Sequence.Consumer, 10))
+			startseq = meta.Sequence.Stream + 1
+			if FyneMessageWin != nil {
+				runtime.GC()
+				runtime.ReadMemStats(&memoryStats)
+				FyneMessageWin.SetTitle("RecieveDEVICE Received " + getLangsNats("ms-nnm") + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+				//yulog.Println("Fetch " + GetLangs("ms-carrier") + " " + err.Error())
+			}
+			msg.Nak()
+			ms = MessageStore{}
+			err1 := json.Unmarshal([]byte(string(Decrypt(string(msg.Data()), NatsQueuePassword))), &ms)
+			if err1 != nil {
+				// send decrypt
+				if FyneMessageWin != nil {
+					FyneMessageWin.SetTitle(getLangsNats("ms-mde"))
+				}
+				log.Println("ReceiveDEVICE Un Marhal", err1)
+			}
+			fyneFilterFound = false
+			if FyneFilter {
+				if strings.Contains(ms.MSmessage, getLangsNats("ms-con")) {
+					fyneFilterFound = true
+				}
+				if strings.Contains(ms.MSmessage, getLangsNats("ms-dis")) {
+					fyneFilterFound = true
+				}
+			}
+			if !fyneFilterFound {
+				//if !CheckNatsMsgByUUID(ms.MSiduuid) {
+				//log.Println("check ", ms.MSiduuid, " ", NatsMessagesIndex[ms.MSiduuid])
+				if !NatsMessagesIndex[ms.MSiduuid] {
+					//log.Println("adding , nats.OrderedConsumer()ms ", ms.MSiduuid)
+					ms.MSsequence = meta.Sequence.Stream
+					ms.MSelementid = len(NatsMessagesDevice)
+					NatsMessagesDevice[len(NatsMessagesDevice)] = ms
+
+					NatsMessagesIndexDevice[ms.MSiduuid] = true
+					//FyneMessageList.Refresh()
+				}
+			}
+
+			if FyneDeviceWin != nil {
+				runtime.GC()
+				runtime.ReadMemStats(&memoryStats)
+				FyneMessageWin.SetTitle(getLangsNats("ms-err6-1") + strconv.Itoa(len(NatsMessages)) + getLangsNats("ms-err6-2") + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+			}
+			//createstream.DeleteConsumer(ctx, "MESSAGESCONSUMER")
+			FyneDeviceList.Refresh()
+
+		}
+
 		if errsub != nil {
-			log.Println("ReceiveMESSAGE errsub", errsub)
+			a.Js.DeleteConsumer(a.Ctx, "RecDevice-"+NatsAlias)
+			runtime.GC()
 		}
 
 	}
@@ -637,7 +640,7 @@ func CheckDEVICE(alias string) bool {
 		AllowReconnect: false,
 		MaxReconnect:   -1,
 		ReconnectWait:  2,
-		PingInterval:   20 * time.Second,
+		PingInterval:   5 * time.Second,
 		Timeout:        1 * time.Hour,
 		User:           NatsUser,
 		Password:       NatsUserPassword,
