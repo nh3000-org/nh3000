@@ -518,6 +518,7 @@ func ReceiveDEVICE(alias string) {
 			DeliverPolicy:     jetstream.DeliverByStartSequencePolicy,
 			InactiveThreshold: 5 * time.Second,
 			ReplayPolicy:      jetstream.ReplayInstantPolicy,
+			FilterSubject:     "devices.*",
 			OptStartSeq:       startseq,
 		})
 		if conserr != nil {
@@ -525,7 +526,7 @@ func ReceiveDEVICE(alias string) {
 		}
 		msg, errsub := consumer.Next()
 		if MsgCancel {
-			dcerror := a.Jetstream.DeleteConsumer(a.Ctx, "DEVICES", "RecDev-"+alias)
+			dcerror := a.Jetstream.DeleteConsumer(a.Ctx, "DEVICES", "RecDevice-"+alias)
 			if dcerror != nil {
 				log.Println("RecieveDEVICE Consumer not found:", dcerror)
 			}
