@@ -74,24 +74,24 @@ func NewNatsJS(queue, subject, alias string, start uint64) (*Natsjs, error) {
 		log.Println("NewNatsJS  connect" + getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + connecterr.Error())
 	}
 	d.NatsConnect = natsconnect
-	jsctx, ncerr := natsconnect.JetStream()
-	if ncerr != nil {
-		log.Println("NewNatsJS jsctx ", getLangsNats("ms-eraj"), ncerr)
+	/* 	jsctx, ncerr := natsconnect.JetStream()
+	   	if ncerr != nil {
+	   		log.Println("NewNatsJS jsctx ", getLangsNats("ms-eraj"), ncerr)
 
-	}
-	_, streammissing := jsctx.StreamInfo(queue)
-	if streammissing != nil {
-		_, createerr := jsctx.AddStream(&nats.StreamConfig{
-			Name:     queue,
-			Subjects: []string{strings.ToLower(queue)},
-			Storage:  nats.FileStorage,
-			MaxAge:   204800 * time.Hour,
-			FirstSeq: 1,
-		})
-		if createerr != nil {
-			log.Println("NewNatsJS streammissing ", getLangsNats("ms-eraj"), streammissing)
-		}
-	}
+	   	} */
+	/* 	_, streammissing := jsctx.StreamInfo(queue)
+	   	if streammissing != nil {
+	   		_, createerr := jsctx.AddStream(&nats.StreamConfig{
+	   			Name:     queue,
+	   			Subjects: []string{strings.ToLower(queue)},
+	   			Storage:  nats.FileStorage,
+	   			MaxAge:   204800 * time.Hour,
+	   			FirstSeq: 1,
+	   		})
+	   		if createerr != nil {
+	   			log.Println("NewNatsJS streammissing ", getLangsNats("ms-eraj"), streammissing)
+	   		}
+	   	} */
 	jetstream, jetstreamerr := jetstream.New(natsconnect)
 	if jetstreamerr != nil {
 		if FyneMessageWin != nil {
@@ -435,7 +435,7 @@ func ReceiveMESSAGE() {
 		if errsub == nil {
 			meta, _ := msg.Metadata()
 			//lastseq = meta.Sequence.Consumer
-			//log.Println("RecieveMESSAGE seq " + strconv.FormatUint(meta.Sequence.Stream, 10))
+			log.Println("RecieveMESSAGE seq " + strconv.FormatUint(meta.Sequence.Stream, 10))
 			//log.Println("Consumer seq " + strconv.FormatUint(meta.Sequence.Consumer, 10))
 			startseq = meta.Sequence.Stream + 1
 			if FyneMessageWin != nil {
@@ -502,53 +502,50 @@ func ReceiveMESSAGE() {
 func ReceiveDEVICE(alias string) {
 	log.Println("RECIEVEDEVICE")
 	startseq = 1
-	a, aerr := NewNatsJS("DEVICES", "devices", "RecDevice-"+alias, 1)
-	if aerr != nil {
-		log.Println("ReceiveDevice ", aerr)
+	d, derr := NewNatsJS("DEVICES", "devices", "ReceiveDEVICE-"+alias, 1)
+	if derr != nil {
+		log.Println("ReceiveDevice aerr", derr)
 	}
 
-	//if aerr != nil {
-	//	log.Println("ReceiveDEVICE err ", aerr)
-	//}time.Sleep(20 * time.Second)
 	for {
-		consumer, conserr := a.Js.CreateConsumer(a.Ctx, jetstream.ConsumerConfig{
-			Name: "RecDevice-" + alias,
+		consumer, conserr := d.Js.CreateConsumer(d.Ctx, jetstream.ConsumerConfig{
+			Name: "ReceiveDEVICE-" + alias,
 			//Durable:           subject + alias,
 			AckPolicy:         jetstream.AckExplicitPolicy,
 			DeliverPolicy:     jetstream.DeliverByStartSequencePolicy,
-			InactiveThreshold: 5 * time.Second,
-			ReplayPolicy:      jetstream.ReplayInstantPolicy,
+			InactiveThreshold: 2 * time.Second,
 			FilterSubject:     "devices.*",
+			ReplayPolicy:      jetstream.ReplayInstantPolicy,
 			OptStartSeq:       startseq,
 		})
 		if conserr != nil {
 			log.Panicln("ReceiveDEVICE Consumer", conserr)
 		}
-		msg, errsub := consumer.Next()
+		msgdev, errsubdev := consumer.Next()
 		if MsgCancel {
-			dcerror := a.Jetstream.DeleteConsumer(a.Ctx, "DEVICES", "RecDevice-"+alias)
+			dcerror := d.Jetstream.DeleteConsumer(d.Ctx, "DEVICES", "ReceiveDEVICE-"+alias)
 			if dcerror != nil {
 				log.Println("RecieveDEVICE Consumer not found:", dcerror)
 			}
-			a.Ctxcan()
+			d.Ctxcan()
 			return
 		}
 
-		if errsub == nil {
-			meta, _ := msg.Metadata()
+		if errsubdev == nil {
+			meta, _ := msgdev.Metadata()
 			//lastseq = meta.Sequence.Consumer
 			log.Println("RecieveDEVICE seq " + strconv.FormatUint(meta.Sequence.Stream, 10))
 			//log.Println("Consumer seq " + strconv.FormatUint(meta.Sequence.Consumer, 10))
-			startseq = meta.Sequence.Stream + 1
+			startseq = meta.Sequence.Consumer + 1
 			if FyneMessageWin != nil {
 				runtime.GC()
 				runtime.ReadMemStats(&memoryStats)
 				FyneMessageWin.SetTitle("RecieveDEVICE Received " + getLangsNats("ms-nnm") + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
 				//yulog.Println("Fetch " + GetLangs("ms-carrier") + " " + err.Error())
 			}
-			msg.Nak()
+			msgdev.Nak()
 			ms = MessageStore{}
-			err1 := json.Unmarshal([]byte(string(Decrypt(string(msg.Data()), NatsQueuePassword))), &ms)
+			err1 := json.Unmarshal([]byte(string(Decrypt(string(msgdev.Data()), NatsQueuePassword))), &ms)
 			if err1 != nil {
 				// send decrypt
 				if FyneMessageWin != nil {
@@ -589,8 +586,9 @@ func ReceiveDEVICE(alias string) {
 
 		}
 
-		if errsub != nil {
-			a.Js.DeleteConsumer(a.Ctx, "RecDevice-"+NatsAlias)
+		if errsubdev != nil {
+			log.Println("ReceiveDEVICE errsub", errsubdev)
+			d.Js.DeleteConsumer(d.Ctx, "ReceiveDEVICE-"+NatsAlias)
 			runtime.GC()
 		}
 
@@ -630,10 +628,10 @@ func CheckDEVICE(alias string) bool {
 	//log.Println("NewNasJS CheckDevice", queue, " sub ", subject, " alias ", alias)
 	var certpool = docerts()
 	//var lastseq uint64
-	devctx, devctxcan := context.WithTimeout(context.Background(), 10*time.Second)
+	devctx, devctxcan := context.WithTimeout(context.Background(), 5*time.Second)
 	//defer devctxcan()
 
-	natsopts := nats.Options{
+	devnatsopts := nats.Options{
 		Name:           "OPTS-" + NatsAlias,
 		Url:            NatsServer,
 		Verbose:        true,
@@ -641,40 +639,21 @@ func CheckDEVICE(alias string) bool {
 		AllowReconnect: false,
 		MaxReconnect:   -1,
 		ReconnectWait:  2,
-		PingInterval:   5 * time.Second,
-		Timeout:        1 * time.Hour,
+		PingInterval:   2 * time.Second,
+		Timeout:        2 * time.Second,
 		User:           NatsUser,
 		Password:       NatsUserPassword,
 	}
-	natsconnect, connecterr := natsopts.Connect()
-	if connecterr != nil {
+	devnatsconnect, devconnecterr := devnatsopts.Connect()
+	if devconnecterr != nil {
 		if FyneMessageWin != nil {
-			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + connecterr.Error())
+			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + devconnecterr.Error())
 		}
-		log.Println("CheckDEVICE natsconnect" + getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + connecterr.Error())
-	}
-	// check if stream exists, if not create it
-	devcheckstream, devcheckstreamerr := natsconnect.JetStream()
-	if devcheckstreamerr != nil {
-		log.Println("CheckDEVICE devjsctxerr ", getLangsNats("ms-eraj"), devcheckstream)
-
-	}
-	_, devicestreammissing := devcheckstream.StreamInfo("DEVICES")
-	if devicestreammissing != nil {
-		_, createerr := devcheckstream.AddStream(&nats.StreamConfig{
-			Name:     "DEVICES",
-			Subjects: []string{"devices"},
-			Storage:  nats.FileStorage,
-			MaxAge:   204800 * time.Hour,
-			FirstSeq: 1,
-		})
-		if createerr != nil {
-			log.Println("CheckDEVICE stream create", getLangsNats("ms-eraj"), createerr)
-		}
+		log.Println("CheckDEVICE natsconnect" + getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + devconnecterr.Error())
 	}
 
 	// receive the device info
-	devstream, jetstreamerr := jetstream.New(natsconnect)
+	devstream, jetstreamerr := jetstream.New(devnatsconnect)
 	if jetstreamerr != nil {
 		if FyneMessageWin != nil {
 			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + jetstreamerr.Error())
@@ -691,9 +670,9 @@ func CheckDEVICE(alias string) bool {
 	consumedevice, conserr := devjs.CreateOrUpdateConsumer(devctx, jetstream.ConsumerConfig{
 		Name: NatsAlias + "-" + NatsNodeUUID,
 		//Durable:           subject + alias,
-		AckPolicy:         jetstream.AckNonePolicy,
+		AckPolicy:         jetstream.AckExplicitPolicy,
 		DeliverPolicy:     jetstream.DeliverAllPolicy,
-		InactiveThreshold: 5 * time.Second,
+		InactiveThreshold: 1 * time.Second,
 		//OptStartSeq:       start,
 	})
 	if conserr != nil {
