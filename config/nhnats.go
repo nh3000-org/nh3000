@@ -44,9 +44,9 @@ type Natsjs struct {
 	Ctxcan context.CancelFunc
 }
 
-func NewNatsJS(queue, subject, alias string, start uint64) (*Natsjs, error) {
+func NewNatsJS(queue, subject string) (*Natsjs, error) {
 	var d = new(Natsjs)
-	log.Println("NewNasJS q ", queue, " sub ", subject, " alias ", alias)
+	log.Println("NewNasJS q ", queue, " sub ", subject)
 	var certpool = docerts()
 	//var lastseq uint64
 	ctxdevice, ctxcan := context.WithTimeout(context.Background(), 2048*time.Hour)
@@ -54,7 +54,7 @@ func NewNatsJS(queue, subject, alias string, start uint64) (*Natsjs, error) {
 	d.Ctx = ctxdevice
 	//defer canceldevice()
 	natsopts := nats.Options{
-		Name:           "OPTS-" + NatsAlias,
+		//Name:           "OPTS-" + alias,
 		Url:            NatsServer,
 		Verbose:        true,
 		TLSConfig:      certpool,
@@ -74,24 +74,7 @@ func NewNatsJS(queue, subject, alias string, start uint64) (*Natsjs, error) {
 		log.Println("NewNatsJS  connect" + getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + connecterr.Error())
 	}
 	d.NatsConnect = natsconnect
-	/* 	jsctx, ncerr := natsconnect.JetStream()
-	   	if ncerr != nil {
-	   		log.Println("NewNatsJS jsctx ", getLangsNats("ms-eraj"), ncerr)
 
-	   	} */
-	/* 	_, streammissing := jsctx.StreamInfo(queue)
-	   	if streammissing != nil {
-	   		_, createerr := jsctx.AddStream(&nats.StreamConfig{
-	   			Name:     queue,
-	   			Subjects: []string{strings.ToLower(queue)},
-	   			Storage:  nats.FileStorage,
-	   			MaxAge:   204800 * time.Hour,
-	   			FirstSeq: 1,
-	   		})
-	   		if createerr != nil {
-	   			log.Println("NewNatsJS streammissing ", getLangsNats("ms-eraj"), streammissing)
-	   		}
-	   	} */
 	jetstream, jetstreamerr := jetstream.New(natsconnect)
 	if jetstreamerr != nil {
 		if FyneMessageWin != nil {
@@ -405,7 +388,7 @@ func ReceiveMESSAGE() {
 	NatsReceivingMessages = true
 	startseq = 1
 
-	a, aerr := NewNatsJS("MESSAGES", "messages", "RcvMsg-"+NatsAlias, startseq)
+	a, aerr := NewNatsJS("MESSAGES", "messages")
 	if aerr != nil {
 		log.Println("ReceiveMessage loop", aerr)
 	}
@@ -418,7 +401,7 @@ func ReceiveMESSAGE() {
 			AckPolicy:         jetstream.AckExplicitPolicy,
 			DeliverPolicy:     jetstream.DeliverByStartSequencePolicy,
 			InactiveThreshold: 5 * time.Second,
-			FilterSubject:     "messages.*",
+			FilterSubject:     "messages.>",
 			ReplayPolicy:      jetstream.ReplayInstantPolicy,
 			OptStartSeq:       startseq,
 		})
@@ -502,37 +485,40 @@ func ReceiveMESSAGE() {
 func ReceiveDEVICE(alias string) {
 	log.Println("RECIEVEDEVICE")
 	startseq = 1
-	d, derr := NewNatsJS("DEVICES", "devices", "ReceiveDEVICE-"+alias, 1)
-	if derr != nil {
-		log.Println("ReceiveDevice aerr", derr)
+	rcvdev, rcvdeverr := NewNatsJS("DEVICES", "devices")
+	if rcvdeverr != nil {
+		log.Println("ReceiveDevice aerr", rcvdeverr)
 	}
 
 	for {
-		consumer, conserr := d.Js.CreateConsumer(d.Ctx, jetstream.ConsumerConfig{
-			Name: "ReceiveDEVICE-" + alias,
+		rdconsumer, rdconserr := rcvdev.Js.CreateConsumer(rcvdev.Ctx, jetstream.ConsumerConfig{
+			Name: "RcvDEVICE-" + alias,
 			//Durable:           subject + alias,
 			AckPolicy:         jetstream.AckExplicitPolicy,
 			DeliverPolicy:     jetstream.DeliverByStartSequencePolicy,
-			InactiveThreshold: 2 * time.Second,
-			FilterSubject:     "devices.*",
+			InactiveThreshold: 5 * time.Second,
+			FilterSubject:     "devices.>",
 			ReplayPolicy:      jetstream.ReplayInstantPolicy,
 			OptStartSeq:       startseq,
 		})
-		if conserr != nil {
-			log.Panicln("ReceiveDEVICE Consumer", conserr)
+		if rdconserr != nil {
+			log.Panicln("ReceiveDEVICE Consumer", rdconserr)
 		}
-		msgdev, errsubdev := consumer.Next()
+		msgdev, errsubdev := rdconsumer.Next()
 		if MsgCancel {
-			dcerror := d.Jetstream.DeleteConsumer(d.Ctx, "DEVICES", "ReceiveDEVICE-"+alias)
+			dcerror := rcvdev.Jetstream.DeleteConsumer(rcvdev.Ctx, "DEVICES", "ConsumerDEVICE-"+alias)
 			if dcerror != nil {
 				log.Println("RecieveDEVICE Consumer not found:", dcerror)
 			}
-			d.Ctxcan()
+			rcvdev.Ctxcan()
 			return
 		}
 
 		if errsubdev == nil {
-			meta, _ := msgdev.Metadata()
+			meta, merr := msgdev.Metadata()
+			if merr != nil {
+				log.Println("RecieveDEVICE meta ", merr)
+			}
 			//lastseq = meta.Sequence.Consumer
 			log.Println("RecieveDEVICE seq " + strconv.FormatUint(meta.Sequence.Stream, 10))
 			//log.Println("Consumer seq " + strconv.FormatUint(meta.Sequence.Consumer, 10))
@@ -588,7 +574,10 @@ func ReceiveDEVICE(alias string) {
 
 		if errsubdev != nil {
 			log.Println("ReceiveDEVICE errsub", errsubdev)
-			d.Js.DeleteConsumer(d.Ctx, "ReceiveDEVICE-"+NatsAlias)
+			delerr := rcvdev.Js.DeleteConsumer(rcvdev.Ctx, "RcvDEVICE-"+alias)
+			if delerr != nil {
+				log.Println("ReceiveDEVICE delerr", delerr)
+			}
 			runtime.GC()
 		}
 
@@ -598,7 +587,7 @@ func ReceiveDEVICE(alias string) {
 
 // secure delete messages
 func DeleteNatsMessage(queue, subject string, seq uint64) {
-	a, aerr := NewNatsJS(queue, subject, "DelMsg"+NatsAlias, 1)
+	a, aerr := NewNatsJS(queue, subject)
 	//fmt.Printf("%+v\n", a)
 	if aerr != nil {
 		if FyneMessageWin != nil {
@@ -618,8 +607,48 @@ func DeleteNatsMessage(queue, subject string, seq uint64) {
 	}
 	a.Ctxcan()
 }
+func CheckDEVICE(alias string) {
+	log.Println("CHECKDEVICE")
+	devchk, _ := NewNatsJS("DEVICES", "devices")
 
-func CheckDEVICE(alias string) bool {
+	consumedevice, conserr := devchk.Js.CreateOrUpdateConsumer(devchk.Ctx, jetstream.ConsumerConfig{
+		Name: NatsAlias + "-" + NatsNodeUUID,
+		//Durable:           subject + alias,
+		AckPolicy:         jetstream.AckExplicitPolicy,
+		DeliverPolicy:     jetstream.DeliverAllPolicy,
+		InactiveThreshold: 1 * time.Second,
+		FilterSubject:     "devices." + NatsAlias,
+		//OptStartSeq:       start,
+	})
+	if conserr != nil {
+		log.Panicln("CheckDEVICE Consumer", conserr)
+	}
+	//	for {
+	msgdevice, errsubdevice := consumedevice.Next()
+
+	if errsubdevice == nil {
+		runtime.GC()
+		runtime.ReadMemStats(&memoryStats)
+
+		msgdevice.Nak()
+		ms = MessageStore{}
+		err1 := json.Unmarshal([]byte(string(Decrypt(string(msgdevice.Data()), NatsQueuePassword))), &ms)
+		if err1 != nil {
+			log.Println("CheckDEVICE Un Marhal", err1)
+		}
+		if ms.MSalias == alias {
+			devicefound = true
+		}
+
+	}
+	if errsubdevice != nil {
+		log.Println("CheckDEVICE exiting", errsubdevice)
+		Send(NatsUser, NatsUserPassword, "DEVICES", "devices."+alias, "Add", alias)
+		devchk.Ctxcan()
+		return
+	}
+}
+func DEPRECATEDCheckDEVICE(alias string) bool {
 	devicefound = false
 	log.Println("CHECKDEVICE")
 
@@ -628,7 +657,7 @@ func CheckDEVICE(alias string) bool {
 	//log.Println("NewNasJS CheckDevice", queue, " sub ", subject, " alias ", alias)
 	var certpool = docerts()
 	//var lastseq uint64
-	devctx, devctxcan := context.WithTimeout(context.Background(), 5*time.Second)
+	devctx, devctxcan := context.WithTimeout(context.Background(), 2*time.Second)
 	//defer devctxcan()
 
 	devnatsopts := nats.Options{
@@ -673,6 +702,7 @@ func CheckDEVICE(alias string) bool {
 		AckPolicy:         jetstream.AckExplicitPolicy,
 		DeliverPolicy:     jetstream.DeliverAllPolicy,
 		InactiveThreshold: 1 * time.Second,
+		FilterSubject:     "devices." + NatsAlias,
 		//OptStartSeq:       start,
 	})
 	if conserr != nil {
@@ -709,11 +739,11 @@ func CheckDEVICE(alias string) bool {
 	if !devicefound {
 		Send(NatsUser, NatsUserPassword, "DEVICES", "devices."+alias, "Add", alias)
 	}
-	/* 	//dcerror := jsstream.DeleteConsumer(ctxmessage, subject+NatsAlias)
-	   	dcerror := devctx.DeleteConsumer(a.Ctx, NatsAlias+"-"+NatsNodeUUID)
+	//dcerror := jsstream.DeleteConsumer(ctxmessage, subject+NatsAlias)
+	/* 	dcerror := devctx.DeleteConsumer(a.Ctx, NatsAlias+"-"+NatsNodeUUID)
 	   	if dcerror != nil {
 	   		log.Println("nhnats.go CheckDevice Consumer not found:", dcerror)
-	   	} */
+	   	}*/
 	devctxcan()
 	return devicefound
 }
@@ -724,10 +754,10 @@ func CheckAUTHORIZATIONS(a *Natsjs, alias string) bool {
 	log.Println("CHECKAUTHORIZATIONS")
 	time.Sleep(20 * time.Second)
 	deviceauthorized = false
-	b, _ := NewNatsJS("AUTHORIZATIONS", "authorizations", "ChkAuth-"+alias, 1)
+	b, _ := NewNatsJS("AUTHORIZATIONS", "authorizations")
 	consauthorizations, errdevice := b.Js.CreateOrUpdateConsumer(a.Ctx, jetstream.ConsumerConfig{
 		Name:          "authorizations" + alias,
-		AckPolicy:     jetstream.AckNonePolicy,
+		AckPolicy:     jetstream.AckExplicitPolicy,
 		FilterSubject: "authorizations.*" + alias,
 		//DeliverPolicy: jetstream.DeliverByStartSequencePolicy,
 	})
