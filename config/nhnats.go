@@ -483,6 +483,44 @@ func ReceiveMESSAGE() {
 
 // thread for receiving messages
 func ReceiveDEVICE(alias string) {
+	log.Println("CHECKDEVICE")
+	devchk, _ := NewNatsJS("DEVICES", "devices")
+
+	consumedevice, conserr := devchk.Js.CreateOrUpdateConsumer(devchk.Ctx, jetstream.ConsumerConfig{
+		Name: NatsAlias + "-" + NatsNodeUUID,
+		//Durable:           subject + alias,
+		AckPolicy:         jetstream.AckExplicitPolicy,
+		DeliverPolicy:     jetstream.DeliverByStartSequencePolicy,
+		InactiveThreshold: 1 * time.Second,
+		FilterSubject:     "devices." + NatsAlias,
+		OptStartSeq:       1,
+	})
+	if conserr != nil {
+		log.Panicln("CheckDEVICE Consumer", conserr)
+	}
+	//	for {
+	msgdevice, errsubdevice := consumedevice.Next()
+
+	if errsubdevice == nil {
+		runtime.GC()
+		runtime.ReadMemStats(&memoryStats)
+
+		msgdevice.Nak()
+		ms = MessageStore{}
+		err1 := json.Unmarshal([]byte(string(Decrypt(string(msgdevice.Data()), NatsQueuePassword))), &ms)
+		if err1 != nil {
+			log.Println("CheckDEVICE Un Marhal", err1)
+		}
+		if ms.MSalias == alias {
+			devicefound = true
+		}
+	}
+	if errsubdevice != nil {
+		log.Println("CheckDEVICE exiting", errsubdevice)
+		Send(NatsUser, NatsUserPassword, "DEVICES", "devices."+alias, "Add", alias)
+	}
+	devchk.Ctxcan()
+
 	log.Println("RECIEVEDEVICE")
 	startseq = 1
 	rcvdev, rcvdeverr := NewNatsJS("DEVICES", "devices")
@@ -496,7 +534,7 @@ func ReceiveDEVICE(alias string) {
 			//Durable:           subject + alias,
 			AckPolicy:         jetstream.AckExplicitPolicy,
 			DeliverPolicy:     jetstream.DeliverByStartSequencePolicy,
-			InactiveThreshold: 5 * time.Second,
+			InactiveThreshold: 1 * time.Second,
 			FilterSubject:     "devices.>",
 			ReplayPolicy:      jetstream.ReplayInstantPolicy,
 			OptStartSeq:       startseq,
@@ -506,14 +544,21 @@ func ReceiveDEVICE(alias string) {
 		}
 		msgdev, errsubdev := rdconsumer.Next()
 		if MsgCancel {
-			dcerror := rcvdev.Jetstream.DeleteConsumer(rcvdev.Ctx, "DEVICES", "ConsumerDEVICE-"+alias)
+			dcerror := rcvdev.Jetstream.DeleteConsumer(rcvdev.Ctx, "DEVICES", "RcvDEVICE-"+alias)
 			if dcerror != nil {
 				log.Println("RecieveDEVICE Consumer not found:", dcerror)
 			}
 			rcvdev.Ctxcan()
 			return
 		}
-
+		if errsubdev != nil {
+			//log.Println("ReceiveDEVICE errsub", errsubdev)
+			delerr := rcvdev.Js.DeleteConsumer(rcvdev.Ctx, "RcvDEVICE-"+alias)
+			if delerr != nil {
+				log.Println("ReceiveDEVICE delerr", delerr)
+			}
+			runtime.GC()
+		}
 		if errsubdev == nil {
 			meta, merr := msgdev.Metadata()
 			if merr != nil {
@@ -567,18 +612,13 @@ func ReceiveDEVICE(alias string) {
 				runtime.ReadMemStats(&memoryStats)
 				FyneMessageWin.SetTitle(getLangsNats("ms-err6-1") + strconv.Itoa(len(NatsMessages)) + getLangsNats("ms-err6-2") + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
 			}
-			//createstream.DeleteConsumer(ctx, "MESSAGESCONSUMER")
-			FyneDeviceList.Refresh()
-
-		}
-
-		if errsubdev != nil {
-			log.Println("ReceiveDEVICE errsub", errsubdev)
 			delerr := rcvdev.Js.DeleteConsumer(rcvdev.Ctx, "RcvDEVICE-"+alias)
 			if delerr != nil {
 				log.Println("ReceiveDEVICE delerr", delerr)
 			}
 			runtime.GC()
+			FyneDeviceList.Refresh()
+
 		}
 
 	}
@@ -607,7 +647,7 @@ func DeleteNatsMessage(queue, subject string, seq uint64) {
 	}
 	a.Ctxcan()
 }
-func CheckDEVICE(alias string) {
+func DEPCheckDEVICE(alias string) {
 	log.Println("CHECKDEVICE")
 	devchk, _ := NewNatsJS("DEVICES", "devices")
 
