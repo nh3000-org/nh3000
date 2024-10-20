@@ -46,7 +46,7 @@ type Natsjs struct {
 
 func NewNatsJS(queue, subject string) (*Natsjs, error) {
 	var d = new(Natsjs)
-	log.Println("NewNasJS q ", queue, " sub ", subject)
+	//log.Println("NewNasJS q ", queue, " sub ", subject)
 	var certpool = docerts()
 	//var lastseq uint64
 	ctxdevice, ctxcan := context.WithTimeout(context.Background(), 2048*time.Hour)
@@ -335,7 +335,7 @@ func CheckQueue(user, password, queue string) {
 }
 func SendMessage(user, password, queue, subject, m string) {
 
-	log.Println("SendMessage", queue, subject, m)
+	//log.Println("SendMessage", queue, subject, m)
 	certpool := docerts()
 	//var lastseq uint64
 	_, ctxsendcancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -385,7 +385,7 @@ var startseqdev uint64
 var startseqmsg uint64
 
 func ReceiveMESSAGE() {
-	log.Println("RECIEVEMESSAGE")
+	//log.Println("RECIEVEMESSAGE")
 	NatsReceivingMessages = true
 	startseqmsg = 1
 
@@ -419,7 +419,7 @@ func ReceiveMESSAGE() {
 		if errsub == nil {
 			meta, _ := msg.Metadata()
 			//lastseq = meta.Sequence.Consumer
-			log.Println("RecieveMESSAGE seq " + strconv.FormatUint(meta.Sequence.Stream, 10))
+			//log.Println("RecieveMESSAGE seq " + strconv.FormatUint(meta.Sequence.Stream, 10))
 			//log.Println("Consumer seq " + strconv.FormatUint(meta.Sequence.Consumer, 10))
 			startseqmsg = meta.Sequence.Stream + 1
 			if FyneMessageWin != nil {
@@ -566,7 +566,7 @@ func ReceiveDEVICE(alias string) {
 				log.Println("RecieveDEVICE meta ", merr)
 			}
 			//lastseq = meta.Sequence.Consumer
-			log.Println("RecieveDEVICE seq " + strconv.FormatUint(meta.Sequence.Stream, 10))
+			//log.Println("RecieveDEVICE seq " + strconv.FormatUint(meta.Sequence.Stream, 10))
 			//log.Println("Consumer seq " + strconv.FormatUint(meta.Sequence.Consumer, 10))
 			startseqdev = meta.Sequence.Stream + 1
 			if FyneMessageWin != nil {
@@ -649,7 +649,7 @@ func DeleteNatsMessage(queue, subject string, seq uint64) {
 	a.Ctxcan()
 }
 func DEPCheckDEVICE(alias string) {
-	log.Println("CHECKDEVICE")
+	//log.Println("CHECKDEVICE")
 	devchk, _ := NewNatsJS("DEVICES", "devices")
 
 	consumedevice, conserr := devchk.Js.CreateOrUpdateConsumer(devchk.Ctx, jetstream.ConsumerConfig{
@@ -683,7 +683,7 @@ func DEPCheckDEVICE(alias string) {
 
 	}
 	if errsubdevice != nil {
-		log.Println("CheckDEVICE exiting", errsubdevice)
+		//log.Println("CheckDEVICE exiting", errsubdevice)
 		Send(NatsUser, NatsUserPassword, "DEVICES", "devices."+alias, "Add", alias)
 		devchk.Ctxcan()
 		return

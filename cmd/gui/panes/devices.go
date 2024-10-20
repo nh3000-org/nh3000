@@ -44,7 +44,7 @@ func DevicesScreen(win fyne.Window) fyne.CanvasObject {
 		delete(config.NatsMessagesDevice, selectedms)
 		delete(config.NatsMessagesIndexDevice, selecteduuid)
 	})
-	authbutton := widget.NewButtonWithIcon(config.GetLangs("ms-auth"), theme.ContentCopyIcon(), func() {
+	authbutton := widget.NewButtonWithIcon(config.GetLangs("dv-auth"), theme.ContentCopyIcon(), func() {
 
 		config.Send(config.NatsUser, config.NatsUserPassword, "AUTHORIZATIONS", "authorizations."+selectedalias, "AUTHORIZED", config.NatsAlias)
 
