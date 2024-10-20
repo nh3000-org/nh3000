@@ -381,12 +381,13 @@ func SendMessage(user, password, queue, subject, m string) {
 }
 
 // thread for receiving messages
-var startseq uint64
+var startseqdev uint64
+var startseqmsg uint64
 
 func ReceiveMESSAGE() {
 	log.Println("RECIEVEMESSAGE")
 	NatsReceivingMessages = true
-	startseq = 1
+	startseqmsg = 1
 
 	a, aerr := NewNatsJS("MESSAGES", "messages")
 	if aerr != nil {
@@ -403,7 +404,7 @@ func ReceiveMESSAGE() {
 			InactiveThreshold: 5 * time.Second,
 			FilterSubject:     "messages.>",
 			ReplayPolicy:      jetstream.ReplayInstantPolicy,
-			OptStartSeq:       startseq,
+			OptStartSeq:       startseqmsg,
 		})
 		if conserr != nil {
 			log.Panicln("MESSAGE Consumer", conserr)
@@ -420,7 +421,7 @@ func ReceiveMESSAGE() {
 			//lastseq = meta.Sequence.Consumer
 			log.Println("RecieveMESSAGE seq " + strconv.FormatUint(meta.Sequence.Stream, 10))
 			//log.Println("Consumer seq " + strconv.FormatUint(meta.Sequence.Consumer, 10))
-			startseq = meta.Sequence.Stream + 1
+			startseqmsg = meta.Sequence.Stream + 1
 			if FyneMessageWin != nil {
 				runtime.GC()
 				runtime.ReadMemStats(&memoryStats)
@@ -485,7 +486,7 @@ func ReceiveMESSAGE() {
 func ReceiveDEVICE(alias string) {
 	log.Println("CHECKDEVICE")
 	devchk, _ := NewNatsJS("DEVICES", "devices")
-
+	startseqdev = 1
 	consumedevice, conserr := devchk.Js.CreateOrUpdateConsumer(devchk.Ctx, jetstream.ConsumerConfig{
 		Name: NatsAlias + "-" + NatsNodeUUID,
 		//Durable:           subject + alias,
@@ -493,7 +494,7 @@ func ReceiveDEVICE(alias string) {
 		DeliverPolicy:     jetstream.DeliverByStartSequencePolicy,
 		InactiveThreshold: 1 * time.Second,
 		FilterSubject:     "devices." + NatsAlias,
-		OptStartSeq:       1,
+		OptStartSeq:       startseqdev,
 	})
 	if conserr != nil {
 		log.Panicln("CheckDEVICE Consumer", conserr)
@@ -522,7 +523,7 @@ func ReceiveDEVICE(alias string) {
 	devchk.Ctxcan()
 
 	log.Println("RECIEVEDEVICE")
-	startseq = 1
+	startseqdev = 1
 	rcvdev, rcvdeverr := NewNatsJS("DEVICES", "devices")
 	if rcvdeverr != nil {
 		log.Println("ReceiveDevice aerr", rcvdeverr)
@@ -537,7 +538,7 @@ func ReceiveDEVICE(alias string) {
 			InactiveThreshold: 1 * time.Second,
 			FilterSubject:     "devices.>",
 			ReplayPolicy:      jetstream.ReplayInstantPolicy,
-			OptStartSeq:       startseq,
+			OptStartSeq:       startseqdev,
 		})
 		if rdconserr != nil {
 			log.Panicln("ReceiveDEVICE Consumer", rdconserr)
@@ -567,7 +568,7 @@ func ReceiveDEVICE(alias string) {
 			//lastseq = meta.Sequence.Consumer
 			log.Println("RecieveDEVICE seq " + strconv.FormatUint(meta.Sequence.Stream, 10))
 			//log.Println("Consumer seq " + strconv.FormatUint(meta.Sequence.Consumer, 10))
-			startseq = meta.Sequence.Consumer + 1
+			startseqdev = meta.Sequence.Stream + 1
 			if FyneMessageWin != nil {
 				runtime.GC()
 				runtime.ReadMemStats(&memoryStats)
@@ -688,7 +689,7 @@ func DEPCheckDEVICE(alias string) {
 		return
 	}
 }
-func DEPRECATEDCheckDEVICE(alias string) bool {
+func CheckDEVICE(alias string) bool {
 	devicefound = false
 	log.Println("CHECKDEVICE")
 
