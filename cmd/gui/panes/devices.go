@@ -26,9 +26,9 @@ var ErrorsDevice = widget.NewLabel("...")
 
 func DevicesScreen(win fyne.Window) fyne.CanvasObject {
 
-	message := widget.NewMultiLineEntry()
-	message.SetPlaceHolder(config.GetLangs("ms-mm"))
-	message.SetMinRowsVisible(2)
+	//message := widget.NewMultiLineEntry()
+	//message.SetPlaceHolder(config.GetLangs("ms-mm"))
+	//message.SetMinRowsVisible(2)
 
 	Details := widget.NewLabel("")
 	var DetailsBorder = container.NewBorder(Details, nil, nil, nil, nil)
@@ -51,7 +51,6 @@ func DevicesScreen(win fyne.Window) fyne.CanvasObject {
 	})
 	//a, aerr := config.NewNatsJS("DEVICES", "devices"+config.NatsAlias, config.NatsAlias)
 
-	
 	config.FyneDeviceWin = win
 	List := widget.NewList(
 		func() int {
@@ -85,29 +84,29 @@ func DevicesScreen(win fyne.Window) fyne.CanvasObject {
 		dlg.Show()
 		List.Unselect(id)
 	}
-	smbutton := widget.NewButtonWithIcon("", theme.MailSendIcon(), func() {
-		if !config.LoggedOn {
-			Errors.SetText(config.GetLangs("cs-lf"))
-		}
-		config.Send(config.NatsUser, config.NatsUserPassword, "DEVICES", "devices", message.Text, config.NatsAlias)
-		message.SetText("")
-	})
-	topbox := container.NewHSplit(
-		message,
-		smbutton,
-	)
-	topbox.SetOffset(.95)
-	bottombox := container.NewBorder(
+	/* 	smbutton := widget.NewButtonWithIcon("", theme.MailSendIcon(), func() {
+	   		if !config.LoggedOn {
+	   			Errors.SetText(config.GetLangs("cs-lf"))
+	   		}
+	   		config.Send(config.NatsUser, config.NatsUserPassword, "DEVICES", "devices", message.Text, config.NatsAlias)
+	   		message.SetText("")
+	   	})
+	   	topbox := container.NewHSplit(
+	   		message,
+	   		smbutton,
+	   	)
+	   	topbox.SetOffset(.95) */
+	/* 	bottombox := container.NewBorder(
 		nil,
 		Errors,
 		nil,
 		nil,
 		nil,
-	)
+	) */
 
 	return container.NewBorder(
-		topbox,
-		bottombox,
+		nil,
+		Errors,
 		nil,
 		nil,
 		List,
