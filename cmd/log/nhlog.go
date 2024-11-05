@@ -128,16 +128,16 @@ func main() {
 	log.Println("nhlog.go -logalias - make unique for each instance, become DEVICE.device in NATS")
 	log.Println("nhlog.go This device alias must be authorized to continue")
 	log.Println("nhlog.go Init for ", MyLogAlias)
-	a, err := config.NewNatsJS("DEVICES", "devices", MyLogAlias)
-	if err != nil {
-		log.Println("nhlog.go Nats-JS ", err)
-	}
-	devicefound := config.CheckDEVICE(a, MyLogAlias)
+	/* 	a, err := config.NewNatsJS("DEVICES", "devices")
+	   	if err != nil {
+	   		log.Println("nhlog.go Nats-JS ", err)
+	   	} */
+	devicefound := config.CheckDEVICE(MyLogAlias)
 	if !devicefound {
 		log.Fatalln("nhlog.go DEVICE added, needs authorization ", MyLogAlias)
 	}
 	if devicefound {
-		auth, autherr := config.NewNatsJS("AUTHORIZATIONS", "authorizations", MyLogAlias)
+		auth, autherr := config.NewNatsJS("AUTHORIZATIONS", "authorizations")
 		if autherr != nil {
 			log.Fatalln("nhlog.go nats connect error:", MyLogAlias, " ", autherr)
 

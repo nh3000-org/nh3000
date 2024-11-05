@@ -743,7 +743,7 @@ func CheckDEVICE(alias string) bool {
 		AckPolicy:         jetstream.AckExplicitPolicy,
 		DeliverPolicy:     jetstream.DeliverAllPolicy,
 		InactiveThreshold: 1 * time.Second,
-		FilterSubject:     "devices." + NatsAlias,
+		FilterSubject:     "devices." + alias,
 		//OptStartSeq:       start,
 	})
 	if conserr != nil {
@@ -793,13 +793,13 @@ var deviceauthorized bool
 
 func CheckAUTHORIZATIONS(a *Natsjs, alias string) bool {
 	log.Println("CHECKAUTHORIZATIONS")
-	time.Sleep(20 * time.Second)
+
 	deviceauthorized = false
 	b, _ := NewNatsJS("AUTHORIZATIONS", "authorizations")
 	consauthorizations, errdevice := b.Js.CreateOrUpdateConsumer(a.Ctx, jetstream.ConsumerConfig{
 		Name:          "authorizations" + alias,
 		AckPolicy:     jetstream.AckExplicitPolicy,
-		FilterSubject: "authorizations.*" + alias,
+		FilterSubject: "authorizations." + alias,
 		//DeliverPolicy: jetstream.DeliverByStartSequencePolicy,
 	})
 	if errdevice != nil {
@@ -827,13 +827,14 @@ func CheckAUTHORIZATIONS(a *Natsjs, alias string) bool {
 
 		}
 		if errsubauthorizations != nil {
-			messageloop = false
+			messageloop = true
+			log.Println("CheckAUTHORIZATIONS Waiting for Authorization", errsubauthorizations)
+
+			CheckDEVICE(alias)
+			time.Sleep(120 * time.Second)
 		}
 
 	}
-	//	if !deviceauthorized {
-	//		Send(NatsUserDevices, NatsUserDevicesPassword, "DEVICES", "devices."+alias, "Add", alias)
-	//	}
 
 	dcerror := b.Js.DeleteConsumer(b.Ctx, "authorizations"+alias)
 	if dcerror != nil {
