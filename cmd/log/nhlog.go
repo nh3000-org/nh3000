@@ -21,6 +21,8 @@ import (
 	"io"
 	"log"
 	"os"
+	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -115,6 +117,9 @@ func main() {
 	if strings.HasPrefix(os.Getenv("LANG"), "sp") {
 		MyLogLang = "spa"
 	}
+	if strings.HasPrefix(os.Getenv("LANG"), "hn") {
+		MyLogLang = "hin"
+	}
 	logLang := flag.String("loglang", MyLogLang, GetLogLangs("fl-ll"))
 	logAlias := flag.String("logalias", "LOGALIAS", GetLogLangs("fl-la"))
 
@@ -128,48 +133,56 @@ func main() {
 	log.Println("nhlog.go -logalias - make unique for each instance, become DEVICE.device in NATS")
 	log.Println("nhlog.go This device alias must be authorized to continue")
 	log.Println("nhlog.go Init for ", MyLogAlias)
-	/* 	a, err := config.NewNatsJS("DEVICES", "devices")
-	   	if err != nil {
-	   		log.Println("nhlog.go Nats-JS ", err)
-	   	} */
-	devicefound := config.CheckDEVICE(MyLogAlias)
-	if !devicefound {
-		log.Fatalln("nhlog.go DEVICE added, needs authorization ", MyLogAlias)
-	}
-	if devicefound {
-		auth, autherr := config.NewNatsJS("AUTHORIZATIONS", "authorizations")
-		if autherr != nil {
-			log.Fatalln("nhlog.go nats connect error:", MyLogAlias, " ", autherr)
-
-		}
-		if !config.CheckAUTHORIZATIONS(auth, MyLogAlias) {
-			log.Fatalln("nhlog.go ** Not Authorizated **", MyLogAlias)
-		}
-	}
-	log.Panicln("nhlog.go waiting for piped input ", MyLogAlias)
+	var isauth = false
+	var devicefound = false
+	var memoryStats runtime.MemStats
 	r := bufio.NewReader(os.Stdin)
 	buf := make([]byte, 0, 4*1024)
 	for {
-		n, err := r.Read(buf[:cap(buf)])
-		buf = buf[:n]
-		if n == 0 {
-			if err == nil {
-				continue
-			}
-			if err == io.EOF {
-				time.Sleep(time.Minute)
-			}
-		}
+		runtime.GC()
+		runtime.ReadMemStats(&memoryStats)
+		log.Println("Memory: " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
 
-		if int64(len(buf)) != 0 {
-			if strings.Contains(string(buf), *logPattern) {
-				log.Println("nhlog.go Received Piped Input ", string(buf))
-
-				config.Send(config.NatsUser, config.NatsUserPassword, "EVENTS", "events", string(buf), "[logger]"+MyLogAlias)
-			}
+		if !devicefound {
+			devicefound = config.CheckDEVICE(MyLogAlias)
 		}
-		if err != nil && err != io.EOF {
-			log.Println("nhlog.go Piped Buffer ", err)
+		if devicefound {
+			/* 			auth, autherr := config.NewNatsJS("AUTHORIZATIONS", "authorizations")
+			   			if autherr != nil {
+			   				log.Fatalln("nhlog.go nats connect error:", MyLogAlias, " ", autherr)
+
+			   			} */
+			log.Println("Into auth: ")
+			isauth = config.CheckAUTHORIZATIONS(MyLogAlias)
+			log.Println("Outof auth: ")
+			//auth.Ctxcan()
+
+		}
+		if !isauth {
+			time.Sleep(time.Minute)
+		}
+		if isauth {
+			n, err := r.Read(buf[:cap(buf)])
+			buf = buf[:n]
+			if n == 0 {
+				if err == nil {
+					continue
+				}
+				if err == io.EOF {
+					time.Sleep(time.Minute)
+				}
+			}
+
+			if int64(len(buf)) != 0 {
+				if strings.Contains(string(buf), *logPattern) {
+					log.Println("nhlog.go Received Piped Input ", string(buf))
+
+					config.Send(config.NatsUser, config.NatsUserPassword, "EVENTS", "events", string(buf), "[logger]"+MyLogAlias)
+				}
+			}
+			if err != nil && err != io.EOF {
+				log.Println("nhlog.go Piped Buffer ", err)
+			}
 		}
 	}
 }

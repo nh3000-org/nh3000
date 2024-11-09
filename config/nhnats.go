@@ -46,18 +46,14 @@ type Natsjs struct {
 
 func NewNatsJS(queue, subject string) (*Natsjs, error) {
 	var d = new(Natsjs)
-	//log.Println("NewNasJS q ", queue, " sub ", subject)
-	var certpool = docerts()
-	//var lastseq uint64
 	ctxdevice, ctxcan := context.WithTimeout(context.Background(), 2048*time.Hour)
 	d.Ctxcan = ctxcan
 	d.Ctx = ctxdevice
-	//defer canceldevice()
 	natsopts := nats.Options{
 		//Name:           "OPTS-" + alias,
 		Url:            NatsServer,
 		Verbose:        true,
-		TLSConfig:      certpool,
+		TLSConfig:      docerts(),
 		AllowReconnect: true,
 		MaxReconnect:   -1,
 		ReconnectWait:  2,
@@ -93,8 +89,10 @@ func NewNatsJS(queue, subject string) (*Natsjs, error) {
 }
 
 var ms = MessageStore{}
-var devicefound = false
-var messageloop = false
+
+// var devicefound = false
+var messageloopauth = true
+var messageloopdevice = true
 var shortServerName string
 var shortServerName1 string
 var memoryStats runtime.MemStats
@@ -678,6 +676,7 @@ func DEPCheckDEVICE(alias string) {
 			log.Println("CheckDEVICE Un Marhal", err1)
 		}
 		if ms.MSalias == alias {
+			devchk.Ctxcan()
 			devicefound = true
 		}
 
@@ -689,23 +688,26 @@ func DEPCheckDEVICE(alias string) {
 		return
 	}
 }
-func CheckDEVICE(alias string) bool {
-	devicefound = false
-	log.Println("CHECKDEVICE")
 
-	//a, _ := NewNatsJS("DEVICES", "devices", "ChkDev-"+alias, 1)
-	//	var d = new(Natsjs)
-	//log.Println("NewNasJS CheckDevice", queue, " sub ", subject, " alias ", alias)
-	var certpool = docerts()
-	//var lastseq uint64
+var devicefound = false
+
+func CheckDEVICE(alias string) bool {
+	if devicefound {
+		return true
+	}
+	log.Println("CHECKDEVICE")
+	runtime.GC()
+	runtime.ReadMemStats(&memoryStats)
+
+	log.Println("DEVICE Memory Start: " + strconv.FormatUint(memoryStats.Alloc/1024, 10) + " K")
+
 	devctx, devctxcan := context.WithTimeout(context.Background(), 2*time.Second)
-	//defer devctxcan()
 
 	devnatsopts := nats.Options{
 		Name:           "OPTS-" + NatsAlias,
 		Url:            NatsServer,
 		Verbose:        true,
-		TLSConfig:      certpool,
+		TLSConfig:      docerts(),
 		AllowReconnect: false,
 		MaxReconnect:   -1,
 		ReconnectWait:  2,
@@ -749,14 +751,12 @@ func CheckDEVICE(alias string) bool {
 	if conserr != nil {
 		log.Panicln("CheckDEVICE Consumer", conserr)
 	}
-	messageloop = true
-	for messageloop {
+	messageloopdevice = true
+	for messageloopdevice {
 
 		msgdevice, errsubdevice := consumedevice.Next()
 
 		if errsubdevice == nil {
-			runtime.GC()
-			runtime.ReadMemStats(&memoryStats)
 
 			msgdevice.Nak()
 			ms = MessageStore{}
@@ -766,48 +766,56 @@ func CheckDEVICE(alias string) bool {
 			}
 			if ms.MSalias == alias {
 				devicefound = true
-				messageloop = false
+				messageloopdevice = false
 			}
 
 		}
 		if errsubdevice != nil {
 			log.Println("CheckDEVICE exiting", errsubdevice)
-			messageloop = false
+			messageloopdevice = false
 			continue
 		}
 
 	}
 	if !devicefound {
+
 		Send(NatsUser, NatsUserPassword, "DEVICES", "devices."+alias, "Add", alias)
 	}
-	//dcerror := jsstream.DeleteConsumer(ctxmessage, subject+NatsAlias)
-	/* 	dcerror := devctx.DeleteConsumer(a.Ctx, NatsAlias+"-"+NatsNodeUUID)
-	   	if dcerror != nil {
-	   		log.Println("nhnats.go CheckDevice Consumer not found:", dcerror)
-	   	}*/
+
 	devctxcan()
+	runtime.GC()
+	runtime.ReadMemStats(&memoryStats)
+
+	log.Println("DEVICE Memory End: " + strconv.FormatUint(memoryStats.Alloc/1024, 10) + " K")
+
 	return devicefound
 }
 
-var deviceauthorized bool
+var deviceauthorized = false
 
-func CheckAUTHORIZATIONS(a *Natsjs, alias string) bool {
+func CheckAUTHORIZATIONS(alias string) bool {
 	log.Println("CHECKAUTHORIZATIONS")
 
-	deviceauthorized = false
-	b, _ := NewNatsJS("AUTHORIZATIONS", "authorizations")
-	consauthorizations, errdevice := b.Js.CreateOrUpdateConsumer(a.Ctx, jetstream.ConsumerConfig{
-		Name:          "authorizations" + alias,
-		AckPolicy:     jetstream.AckExplicitPolicy,
-		FilterSubject: "authorizations." + alias,
-		//DeliverPolicy: jetstream.DeliverByStartSequencePolicy,
-	})
-	if errdevice != nil {
-		log.Println("nhnats.go AUTHORIZATIONS CheckAUTHORIZATIONS consumer", errdevice)
+	if deviceauthorized {
+		return true
 	}
-	messageloop = true
-	for messageloop {
+	b, _ := NewNatsJS("AUTHORIZATIONS", "authorizations")
+	for messageloopauth {
 
+		runtime.GC()
+		runtime.ReadMemStats(&memoryStats)
+
+		log.Println("AUTHORIZATIONS Memory Start: " + strconv.FormatUint(memoryStats.Alloc/1024, 10) + " K")
+
+		consauthorizations, errdevice := b.Js.CreateOrUpdateConsumer(b.Ctx, jetstream.ConsumerConfig{
+			Name:          "authorizations" + alias,
+			AckPolicy:     jetstream.AckExplicitPolicy,
+			FilterSubject: "authorizations." + alias,
+			//DeliverPolicy: jetstream.DeliverByStartSequencePolicy,
+		})
+		if errdevice != nil {
+			log.Println("CheckAUTHORIZATIONS consumer", errdevice)
+		}
 		msgauthorizations, errsubauthorizations := consauthorizations.Next()
 
 		if errsubauthorizations == nil {
@@ -822,25 +830,30 @@ func CheckAUTHORIZATIONS(a *Natsjs, alias string) bool {
 			}
 			if ms.MSalias == alias {
 				deviceauthorized = true
-				messageloop = false
+				messageloopauth = false
+
 			}
 
 		}
 		if errsubauthorizations != nil {
-			messageloop = true
+			messageloopauth = true
 			log.Println("CheckAUTHORIZATIONS Waiting for Authorization", errsubauthorizations)
 
-			CheckDEVICE(alias)
+			//CheckDEVICE(alias)
+			dcerror := b.Js.DeleteConsumer(b.Ctx, "authorizations"+alias)
+			if dcerror != nil {
+				log.Println("nhnats.go CheckAUTH Consumer not found: ", dcerror)
+			}
+
+			runtime.ReadMemStats(&memoryStats)
+
+			log.Println("AUTHORIZATIONS Memory End: " + strconv.FormatUint(memoryStats.Alloc/1024, 10) + " K")
+
 			time.Sleep(120 * time.Second)
 		}
 
 	}
 
-	dcerror := b.Js.DeleteConsumer(b.Ctx, "authorizations"+alias)
-	if dcerror != nil {
-		log.Println("nhnats.go CheckAUTH Consumer not found: ", dcerror)
-	}
-	a.Ctxcan()
 	return deviceauthorized
 }
 
