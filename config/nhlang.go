@@ -314,9 +314,7 @@ var MyLangs = map[string]string{
 	"eng-ms-erac":     "Erase Connection ",
 	"spa-ms-erac":     "Borrar Conexión ",
 	"hin-ms-erac":     "कनेक्शन मिटाएँ ",
-	"eng-ms-eraj":     "Erase JetStream ",
-	"spa-ms-eraj":     "Borrar JetStream ",
-	"hin-ms-eraj":     "जेटस्ट्रीम मिटाएँ ",
+
 	"eng-ms-dels":     "Delete JetStream ",
 	"spa-ms-dels":     "Eliminar Secuencia ",
 	"hin-ms-dels":     "जेटस्ट्रीम हटाएं ",

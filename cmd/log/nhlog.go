@@ -139,29 +139,34 @@ func main() {
 	r := bufio.NewReader(os.Stdin)
 	buf := make([]byte, 0, 4*1024)
 	for {
-		runtime.GC()
-		runtime.ReadMemStats(&memoryStats)
-		log.Println("Memory: " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
-
-		if !devicefound {
-			devicefound = config.CheckDEVICE(MyLogAlias)
-		}
-		if devicefound {
-			/* 			auth, autherr := config.NewNatsJS("AUTHORIZATIONS", "authorizations")
-			   			if autherr != nil {
-			   				log.Fatalln("nhlog.go nats connect error:", MyLogAlias, " ", autherr)
-
-			   			} */
-			log.Println("Into auth: ")
-			isauth = config.CheckAUTHORIZATIONS(MyLogAlias)
-			log.Println("Outof auth: ")
-			//auth.Ctxcan()
-
-		}
+		//runtime.GC()
+		//runtime.ReadMemStats(&memoryStats)
+		//log.Println("Memory: " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
 		if !isauth {
+			// execute once to register the device
+			if !devicefound {
+				devicefound = config.CheckDEVICE(MyLogAlias)
+			}
+			if devicefound {
+				/* 			auth, autherr := config.NewNatsJS("AUTHORIZATIONS", "authorizations")
+				   			if autherr != nil {
+				   				log.Fatalln("nhlog.go nats connect error:", MyLogAlias, " ", autherr)
+
+				   			} */
+				//log.Println("Into auth: ")
+				isauth = config.CheckAUTHORIZATIONS(MyLogAlias)
+				log.Println("Outof auth: ", isauth)
+				//auth.Ctxcan()
+
+			}
+
 			time.Sleep(time.Minute)
 		}
 		if isauth {
+			runtime.GC()
+			runtime.ReadMemStats(&memoryStats)
+			log.Println("Memory: " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+
 			n, err := r.Read(buf[:cap(buf)])
 			buf = buf[:n]
 			if n == 0 {
@@ -177,7 +182,7 @@ func main() {
 				if strings.Contains(string(buf), *logPattern) {
 					log.Println("nhlog.go Received Piped Input ", string(buf))
 
-					config.Send(config.NatsUser, config.NatsUserPassword, "EVENTS", "events", string(buf), "[logger]"+MyLogAlias)
+					config.Send("events", string(buf), "[logger]"+MyLogAlias)
 				}
 			}
 			if err != nil && err != io.EOF {

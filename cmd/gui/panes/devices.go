@@ -46,7 +46,7 @@ func DevicesScreen(win fyne.Window) fyne.CanvasObject {
 	})
 	authbutton := widget.NewButtonWithIcon(config.GetLangs("dv-auth"), theme.ContentCopyIcon(), func() {
 
-		config.Send(config.NatsUser, config.NatsUserPassword, "AUTHORIZATIONS", "authorizations."+selectedalias, "AUTHORIZED", config.NatsAlias)
+		config.Send("authorizations."+selectedalias, "AUTHORIZED", config.NatsAlias)
 
 	})
 	//a, aerr := config.NewNatsJS("DEVICES", "devices"+config.NatsAlias, config.NatsAlias)

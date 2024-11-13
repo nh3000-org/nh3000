@@ -78,7 +78,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 		if !config.LoggedOn {
 			Errors.SetText(config.GetLangs("cs-lf"))
 		}
-		config.Send(config.NatsUser, config.NatsUserPassword, "MESSAGES", "messages."+config.NatsAlias, message.Text, config.NatsAlias)
+		config.Send("messages."+config.NatsAlias, message.Text, config.NatsAlias)
 		message.SetText("")
 	})
 	topbox := container.NewHSplit(

@@ -71,6 +71,7 @@ func main() {
 	logLifecycle()
 	TopWindow = w
 	w.SetMaster()
+	config.SetupNATS()
 
 	intro := widget.NewLabel(config.GetLangs("mn-intro-1") + "\n" + "nats.io" + config.GetLangs("mn-intro-2"))
 	intro.Wrapping = fyne.TextWrapWord
@@ -101,7 +102,7 @@ func logLifecycle() {
 
 	config.FyneApp.Lifecycle().SetOnStopped(func() {
 		if config.LoggedOn {
-			config.Send(config.NatsUser, config.NatsUserPassword, "MESSAGES", "messages."+config.NatsAlias, config.GetLangs("ls-dis"), config.NatsAlias)
+			config.Send("messages."+config.NatsAlias, config.GetLangs("ls-dis"), config.NatsAlias)
 			config.MsgCancel = true
 			config.DevCancel = true
 
