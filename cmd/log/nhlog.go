@@ -141,27 +141,12 @@ func main() {
 	for {
 		//runtime.GC()
 		//runtime.ReadMemStats(&memoryStats)
-		//log.Println("Memory: " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
-		if !isauth {
-			// execute once to register the device
-			if !devicefound {
-				devicefound = config.CheckDEVICE(MyLogAlias)
-			}
-			if devicefound {
-				/* 			auth, autherr := config.NewNatsJS("AUTHORIZATIONS", "authorizations")
-				   			if autherr != nil {
-				   				log.Fatalln("nhlog.go nats connect error:", MyLogAlias, " ", autherr)
 
-				   			} */
-				//log.Println("Into auth: ")
-				isauth = config.CheckAUTHORIZATIONS(MyLogAlias)
-				log.Println("Outof auth: ", isauth)
-				//auth.Ctxcan()
+		devicefound = config.CheckDEVICE(MyLogAlias)
 
-			}
+		log.Println("isauth: ", isauth, "devicefound: ", devicefound)
+		isauth = config.CheckAUTHORIZATIONS(MyLogAlias)
 
-			time.Sleep(time.Minute)
-		}
 		if isauth {
 			runtime.GC()
 			runtime.ReadMemStats(&memoryStats)

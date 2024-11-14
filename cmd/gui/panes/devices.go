@@ -40,14 +40,16 @@ func DevicesScreen(win fyne.Window) fyne.CanvasObject {
 		win.Clipboard().SetContent(Details.Text)
 	})
 	delbutton := widget.NewButtonWithIcon(config.GetLangs("ms-del"), theme.ContentCopyIcon(), func() {
-		config.DeleteNatsMessage("DEVICES", "devices", selectedseqdevice)
+		config.DeleteNatsMessage(selectedseqdevice)
 		delete(config.NatsMessagesDevice, selectedms)
 		delete(config.NatsMessagesIndexDevice, selecteduuid)
 	})
 	authbutton := widget.NewButtonWithIcon(config.GetLangs("dv-auth"), theme.ContentCopyIcon(), func() {
 
 		config.Send("authorizations."+selectedalias, "AUTHORIZED", config.NatsAlias)
-
+		config.DeleteNatsMessage(selectedseqdevice)
+		delete(config.NatsMessagesDevice, selectedms)
+		delete(config.NatsMessagesIndexDevice, selecteduuid)
 	})
 	//a, aerr := config.NewNatsJS("DEVICES", "devices"+config.NatsAlias, config.NatsAlias)
 
@@ -84,25 +86,6 @@ func DevicesScreen(win fyne.Window) fyne.CanvasObject {
 		dlg.Show()
 		List.Unselect(id)
 	}
-	/* 	smbutton := widget.NewButtonWithIcon("", theme.MailSendIcon(), func() {
-	   		if !config.LoggedOn {
-	   			Errors.SetText(config.GetLangs("cs-lf"))
-	   		}
-	   		config.Send(config.NatsUser, config.NatsUserPassword, "DEVICES", "devices", message.Text, config.NatsAlias)
-	   		message.SetText("")
-	   	})
-	   	topbox := container.NewHSplit(
-	   		message,
-	   		smbutton,
-	   	)
-	   	topbox.SetOffset(.95) */
-	/* 	bottombox := container.NewBorder(
-		nil,
-		Errors,
-		nil,
-		nil,
-		nil,
-	) */
 
 	return container.NewBorder(
 		nil,

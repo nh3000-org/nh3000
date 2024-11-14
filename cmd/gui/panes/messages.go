@@ -39,7 +39,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 		win.Clipboard().SetContent(Details.Text)
 	})
 	delbutton := widget.NewButtonWithIcon(config.GetLangs("ms-del"), theme.ContentCopyIcon(), func() {
-		config.DeleteNatsMessage("MESSAGES", "messages.", selectedseq)
+		config.DeleteNatsMessage(selectedseq)
 		delete(config.NatsMessages, selectedms)
 		delete(config.NatsMessagesIndex, selecteduuid)
 	})

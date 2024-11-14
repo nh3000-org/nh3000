@@ -194,28 +194,6 @@ func getLangsNats(mystring string) string {
 	return value
 }
 
-// delete msg by uuid
-func DEPRECATEDDeleteNatsMsgByUUID(iduuid string) {
-	for i, v := range NatsMessages {
-		if iduuid == v.MSiduuid {
-			delete(NatsMessages, i)
-		}
-	}
-}
-
-/*
-// check msg by uuid
-
-	func CheckNatsMsgByUUID(iduuid string) bool {
-		for _, v := range NatsMessages {
-			//log.Println("id ", iduuid, "v.id ", v.MSiduuid)
-			if iduuid == v.MSiduuid {
-				return true
-			}
-		}
-		return false
-	}
-*/
 func docerts() *tls.Config {
 	RootCAs, _ := x509.SystemCertPool()
 	if RootCAs == nil {
@@ -286,7 +264,13 @@ func Send(subject, m, alias string) bool {
 		}
 		log.Println(getLangsNats("ms-err8"), jsonerr.Error())
 	}
-	SendMessage(subject, Encrypt(string(jsonmsg), NatsQueuePassword), alias)
+
+	snd, _ := NewNatsJS()
+	snd.Jetstream.Publish(snd.Ctx, subject, []byte(Encrypt(string(jsonmsg), NatsQueuePassword)))
+
+	snd.Ctxcan()
+
+	//SendMessage(subject, Encrypt(string(jsonmsg), NatsQueuePassword), alias)
 	runtime.GC()
 	return false
 }
@@ -324,7 +308,7 @@ func SetupNATS() {
 	if streammissing != nil {
 		_, createerr := jsmissingctx.AddStream(&nats.StreamConfig{
 			Name:      "NATS",
-			Subjects:  []string{"messages.*", "events.*", "auth.*", "devices.*"},
+			Subjects:  []string{"messages.*", "events.*", "authorizations.*", "devices.*"},
 			Storage:   nats.FileStorage,
 			MaxAge:    204800 * time.Hour,
 			FirstSeq:  1,
@@ -334,52 +318,6 @@ func SetupNATS() {
 			log.Println("SetupNATS streammissing ", getLangsNats("ms-eraj"), streammissing)
 		}
 	}
-}
-func SendMessage(subject, m, alias string) {
-
-	log.Println("SendMessage", subject, m, alias)
-	certpool := docerts()
-	//var lastseq uint64
-	_, ctxsendcancel := context.WithTimeout(context.Background(), 30*time.Second)
-
-	//defer canceldevice()
-	natsopts := nats.Options{
-		Name:           "OPTS-" + alias,
-		Url:            NatsServer,
-		Verbose:        true,
-		TLSConfig:      certpool,
-		AllowReconnect: true,
-		MaxReconnect:   -1,
-		ReconnectWait:  2,
-		PingInterval:   20 * time.Second,
-		Timeout:        1 * time.Hour,
-		User:           NatsUser,
-		Password:       NatsUserPassword,
-	}
-	//natsconnect, connecterr := nats.Connect(Na)
-	natsconnect, connecterr := natsopts.Connect()
-	if connecterr != nil {
-		if FyneMessageWin != nil {
-			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + connecterr.Error())
-		}
-		log.Println("NewNatsJS  connect" + getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + connecterr.Error())
-	}
-	// Use the JetStream context to produce and consumer messages
-	// that have been persisted.
-	js, err := natsconnect.JetStream(nats.PublishAsyncMaxPending(2560))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	js.AddStream(&nats.StreamConfig{
-		Name:     "SendTo" + NATSSTREAM,
-		Subjects: []string{subject},
-	})
-
-	js.Publish(subject, []byte(m))
-
-	ctxsendcancel()
-	//ctxcancel()
 }
 
 // thread for receiving messages
@@ -462,24 +400,17 @@ func ReceiveMESSAGE() {
 					FyneMessageList.Refresh()
 				}
 			}
-
 			if FyneDeviceWin != nil {
 				runtime.GC()
 				runtime.ReadMemStats(&memoryStats)
 				FyneMessageWin.SetTitle(getLangsNats("ms-err6-1") + strconv.Itoa(len(NatsMessages)) + getLangsNats("ms-err6-2") + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
 			}
-			//createstream.DeleteConsumer(ctx, "MESSAGESCONSUMER")
 			FyneMessageList.Refresh()
-
 		}
 
 		if errsub == nil {
-			//log.Println("ReceiveMESSAGE errsub", errsub)
-
 			a.Js.DeleteConsumer(a.Ctx, "RcvMsg-"+NatsAlias)
 			runtime.GC()
-
-			//time.Sleep(5 * time.Second)
 		}
 	}
 }
@@ -495,8 +426,9 @@ func ReceiveDEVICE(alias string) {
 		AckPolicy:         jetstream.AckExplicitPolicy,
 		DeliverPolicy:     jetstream.DeliverByStartSequencePolicy,
 		InactiveThreshold: 1 * time.Second,
-		FilterSubject:     "devices." + NatsAlias,
-		OptStartSeq:       startseqdev,
+		//FilterSubject:     "devices.*",
+		FilterSubjects: []string{"devices.*", "authorizations.*"},
+		OptStartSeq:    startseqdev,
 	})
 	if conserr != nil {
 		log.Panicln("CheckDEVICE Consumer", conserr)
@@ -538,9 +470,10 @@ func ReceiveDEVICE(alias string) {
 			AckPolicy:         jetstream.AckExplicitPolicy,
 			DeliverPolicy:     jetstream.DeliverByStartSequencePolicy,
 			InactiveThreshold: 1 * time.Second,
-			FilterSubject:     "devices.>",
-			ReplayPolicy:      jetstream.ReplayInstantPolicy,
-			OptStartSeq:       startseqdev,
+			//FilterSubject:     "devices.>",
+			FilterSubjects: []string{"devices.*", "authorizations.*"},
+			ReplayPolicy:   jetstream.ReplayInstantPolicy,
+			OptStartSeq:    startseqdev,
 		})
 		if rdconserr != nil {
 			log.Panicln("ReceiveDEVICE Consumer", rdconserr)
@@ -629,7 +562,7 @@ func ReceiveDEVICE(alias string) {
 }
 
 // secure delete messages
-func DeleteNatsMessage(queue, subject string, seq uint64) {
+func DeleteNatsMessage(seq uint64) {
 	a, aerr := NewNatsJS()
 	//fmt.Printf("%+v\n", a)
 	if aerr != nil {
@@ -718,7 +651,7 @@ func CheckDEVICE(alias string) bool {
 var deviceauthorized = false
 
 func CheckAUTHORIZATIONS(alias string) bool {
-	log.Println("CHECKAUTHORIZATIONS")
+	log.Println("CHECKAUTHORIZATIONS",alias)
 
 	if deviceauthorized {
 		return true
@@ -729,47 +662,11 @@ func CheckAUTHORIZATIONS(alias string) bool {
 
 	log.Println("AUTH Memory Start: " + strconv.FormatUint(memoryStats.Alloc/1024, 10) + " K")
 
-	/* 	authctx, authctxcan := context.WithTimeout(context.Background(), 2*time.Second)
-
-	   	authnatsopts := nats.Options{
-	   		Name:           "OPTSAUTH-" + NatsAlias,
-	   		Url:            NatsServer,
-	   		Verbose:        true,
-	   		TLSConfig:      docerts(),
-	   		AllowReconnect: false,
-	   		MaxReconnect:   -1,
-	   		ReconnectWait:  2,
-	   		PingInterval:   2 * time.Second,
-	   		Timeout:        200 * time.Second,
-	   		User:           NatsUser,
-	   		Password:       NatsUserPassword,
-	   	}
-	   	authnatsconnect, authconnecterr := authnatsopts.Connect()
-	   	if authconnecterr != nil {
-	   		if FyneMessageWin != nil {
-	   			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + authconnecterr.Error())
-	   		}
-	   		log.Println("CheckDEVICE natsconnect" + getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + authconnecterr.Error())
-	   	}
-
-	   	// receive the device info
-	   	authstream, jetstreamerr := jetstream.New(authnatsconnect)
-	   	if jetstreamerr != nil {
-	   		if FyneMessageWin != nil {
-	   			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + jetstreamerr.Error())
-	   		}
-	   		log.Println("CheckDEVICE jetstreamerr ", getLangsNats("ms-err2"), jetstreamerr)
-	   	}
-
-	   	authjs, devjserr := authstream.Stream(authctx, "AUTHORIZATIONS")
-	   	if devjserr != nil {
-	   		log.Println("CheckDEVICE test ", getLangsNats("ms-err2"), devjserr)
-
-	   	} */
 	cd, cderr := NewNatsJS()
 	if cderr != nil {
 		log.Println("CheckDEVICE test ", getLangsNats("ms-err2"), cderr)
 	}
+
 	for messageloopauth {
 
 		runtime.GC()
@@ -817,17 +714,8 @@ func CheckAUTHORIZATIONS(alias string) bool {
 		}
 		if errsubauthorizations != nil {
 			messageloopauth = true
-			//log.Println("CheckAUTHORIZATIONS Waiting for Authorization", errsubauthorizations)
 
-			//CheckDEVICE(alias)
-			dcerror := cd.Js.DeleteConsumer(cd.Ctx, "authorizations"+alias)
-			if dcerror != nil {
-				log.Println("nhnats.go CheckAUTH Consumer not found: ", dcerror)
-			}
-
-
-
-			//log.Println("AUTHORIZATIONS Memory End: " + strconv.FormatUint(memoryStats.Alloc/1024, 10) + " K")
+			cd.Js.DeleteConsumer(cd.Ctx, "authorizations"+alias)
 
 			time.Sleep(120 * time.Second)
 		}
