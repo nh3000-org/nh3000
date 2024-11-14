@@ -729,52 +729,55 @@ func CheckAUTHORIZATIONS(alias string) bool {
 
 	log.Println("AUTH Memory Start: " + strconv.FormatUint(memoryStats.Alloc/1024, 10) + " K")
 
-	authctx, authctxcan := context.WithTimeout(context.Background(), 2*time.Second)
+	/* 	authctx, authctxcan := context.WithTimeout(context.Background(), 2*time.Second)
 
-	authnatsopts := nats.Options{
-		Name:           "OPTSAUTH-" + NatsAlias,
-		Url:            NatsServer,
-		Verbose:        true,
-		TLSConfig:      docerts(),
-		AllowReconnect: false,
-		MaxReconnect:   -1,
-		ReconnectWait:  2,
-		PingInterval:   2 * time.Second,
-		Timeout:        200 * time.Second,
-		User:           NatsUser,
-		Password:       NatsUserPassword,
+	   	authnatsopts := nats.Options{
+	   		Name:           "OPTSAUTH-" + NatsAlias,
+	   		Url:            NatsServer,
+	   		Verbose:        true,
+	   		TLSConfig:      docerts(),
+	   		AllowReconnect: false,
+	   		MaxReconnect:   -1,
+	   		ReconnectWait:  2,
+	   		PingInterval:   2 * time.Second,
+	   		Timeout:        200 * time.Second,
+	   		User:           NatsUser,
+	   		Password:       NatsUserPassword,
+	   	}
+	   	authnatsconnect, authconnecterr := authnatsopts.Connect()
+	   	if authconnecterr != nil {
+	   		if FyneMessageWin != nil {
+	   			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + authconnecterr.Error())
+	   		}
+	   		log.Println("CheckDEVICE natsconnect" + getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + authconnecterr.Error())
+	   	}
+
+	   	// receive the device info
+	   	authstream, jetstreamerr := jetstream.New(authnatsconnect)
+	   	if jetstreamerr != nil {
+	   		if FyneMessageWin != nil {
+	   			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + jetstreamerr.Error())
+	   		}
+	   		log.Println("CheckDEVICE jetstreamerr ", getLangsNats("ms-err2"), jetstreamerr)
+	   	}
+
+	   	authjs, devjserr := authstream.Stream(authctx, "AUTHORIZATIONS")
+	   	if devjserr != nil {
+	   		log.Println("CheckDEVICE test ", getLangsNats("ms-err2"), devjserr)
+
+	   	} */
+	cd, cderr := NewNatsJS()
+	if cderr != nil {
+		log.Println("CheckDEVICE test ", getLangsNats("ms-err2"), cderr)
 	}
-	authnatsconnect, authconnecterr := authnatsopts.Connect()
-	if authconnecterr != nil {
-		if FyneMessageWin != nil {
-			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + authconnecterr.Error())
-		}
-		log.Println("CheckDEVICE natsconnect" + getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + authconnecterr.Error())
-	}
-
-	// receive the device info
-	authstream, jetstreamerr := jetstream.New(authnatsconnect)
-	if jetstreamerr != nil {
-		if FyneMessageWin != nil {
-			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + jetstreamerr.Error())
-		}
-		log.Println("CheckDEVICE jetstreamerr ", getLangsNats("ms-err2"), jetstreamerr)
-	}
-
-	authjs, devjserr := authstream.Stream(authctx, "AUTHORIZATIONS")
-	if devjserr != nil {
-		log.Println("CheckDEVICE test ", getLangsNats("ms-err2"), devjserr)
-
-	}
-
 	for messageloopauth {
 
-		//runtime.GC()
-		//runtime.ReadMemStats(&memoryStats)
+		runtime.GC()
+		runtime.ReadMemStats(&memoryStats)
 
-		//log.Println("AUTHORIZATIONS Memory Start: " + strconv.FormatUint(memoryStats.Alloc/1024, 10) + " K")
+		log.Println("AUTHORIZATIONS Memory Start: " + strconv.FormatUint(memoryStats.Alloc/1024, 10) + " K")
 
-		consumeauth, conserr := authjs.CreateOrUpdateConsumer(authctx, jetstream.ConsumerConfig{
+		consumeauth, conserr := cd.Js.CreateOrUpdateConsumer(cd.Ctx, jetstream.ConsumerConfig{
 			Name: NatsAlias + "-" + alias,
 			//Durable:           subject + alias,
 			AckPolicy:         jetstream.AckExplicitPolicy,
@@ -817,12 +820,12 @@ func CheckAUTHORIZATIONS(alias string) bool {
 			//log.Println("CheckAUTHORIZATIONS Waiting for Authorization", errsubauthorizations)
 
 			//CheckDEVICE(alias)
-			dcerror := authjs.DeleteConsumer(authctx, "authorizations"+alias)
+			dcerror := cd.Js.DeleteConsumer(cd.Ctx, "authorizations"+alias)
 			if dcerror != nil {
 				log.Println("nhnats.go CheckAUTH Consumer not found: ", dcerror)
 			}
 
-			runtime.ReadMemStats(&memoryStats)
+
 
 			//log.Println("AUTHORIZATIONS Memory End: " + strconv.FormatUint(memoryStats.Alloc/1024, 10) + " K")
 
@@ -830,7 +833,7 @@ func CheckAUTHORIZATIONS(alias string) bool {
 		}
 
 	}
-	authctxcan()
+	cd.Ctxcan()
 	return deviceauthorized
 }
 
