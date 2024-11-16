@@ -425,7 +425,7 @@ func ReceiveDEVICE(alias string) {
 		//Durable:           subject + alias,
 		AckPolicy:         jetstream.AckExplicitPolicy,
 		DeliverPolicy:     jetstream.DeliverByStartSequencePolicy,
-		InactiveThreshold: 1 * time.Second,
+		InactiveThreshold: 5 * time.Second,
 		//FilterSubject:     "devices.*",
 		FilterSubjects: []string{"devices.*", "authorizations.*"},
 		OptStartSeq:    startseqdev,
@@ -501,13 +501,13 @@ func ReceiveDEVICE(alias string) {
 				log.Println("RecieveDEVICE meta ", merr)
 			}
 			//lastseq = meta.Sequence.Consumer
-			//log.Println("RecieveDEVICE seq " + strconv.FormatUint(meta.Sequence.Stream, 10))
+			log.Println("RecieveDEVICE seq " + strconv.FormatUint(meta.Sequence.Stream, 10))
 			//log.Println("Consumer seq " + strconv.FormatUint(meta.Sequence.Consumer, 10))
 			startseqdev = meta.Sequence.Stream + 1
-			if FyneMessageWin != nil {
+			if FyneDeviceWin != nil {
 				runtime.GC()
 				runtime.ReadMemStats(&memoryStats)
-				FyneMessageWin.SetTitle("RecieveDEVICE Received " + getLangsNats("ms-nnm") + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+				FyneDeviceWin.SetTitle(" Received " + getLangsNats("ms-nnm") + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
 				//yulog.Println("Fetch " + GetLangs("ms-carrier") + " " + err.Error())
 			}
 			msgdev.Nak()
@@ -539,14 +539,14 @@ func ReceiveDEVICE(alias string) {
 					NatsMessagesDevice[len(NatsMessagesDevice)] = ms
 
 					NatsMessagesIndexDevice[ms.MSiduuid] = true
-					//FyneMessageList.Refresh()
+					FyneDeviceList.Refresh()
 				}
 			}
 
 			if FyneDeviceWin != nil {
 				runtime.GC()
 				runtime.ReadMemStats(&memoryStats)
-				FyneMessageWin.SetTitle(getLangsNats("ms-err6-1") + strconv.Itoa(len(NatsMessages)) + getLangsNats("ms-err6-2") + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+				FyneDeviceWin.SetTitle(getLangsNats("ms-err6-1") + strconv.Itoa(len(NatsMessages)) + getLangsNats("ms-err6-2") + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
 			}
 			delerr := rcvdev.Js.DeleteConsumer(rcvdev.Ctx, "RcvDEVICE-"+alias)
 			if delerr != nil {
@@ -649,9 +649,10 @@ func CheckDEVICE(alias string) bool {
 }
 
 var deviceauthorized = false
+var deviceloopauth = true
 
 func CheckAUTHORIZATIONS(alias string) bool {
-	log.Println("CHECKAUTHORIZATIONS",alias)
+	log.Println("CHECKAUTHORIZATIONS", alias)
 
 	if deviceauthorized {
 		return true
@@ -666,33 +667,28 @@ func CheckAUTHORIZATIONS(alias string) bool {
 	if cderr != nil {
 		log.Println("CheckDEVICE test ", getLangsNats("ms-err2"), cderr)
 	}
-
-	for messageloopauth {
+	consumeauth, conserr := cd.Js.CreateOrUpdateConsumer(cd.Ctx, jetstream.ConsumerConfig{
+		Name: "CheckAUTH" + "-" + alias,
+		//Durable:           subject + alias,
+		AckPolicy:         jetstream.AckExplicitPolicy,
+		DeliverPolicy:     jetstream.DeliverAllPolicy,
+		InactiveThreshold: 5 * time.Second,
+		FilterSubject:     "authorizations." + alias,
+		//OptStartSeq:       start,
+	})
+	if conserr != nil {
+		log.Panicln("CheckAUTHORIZATIONS consumer", conserr)
+	}
+	for deviceloopauth {
 
 		runtime.GC()
 		runtime.ReadMemStats(&memoryStats)
 
 		log.Println("AUTHORIZATIONS Memory Start: " + strconv.FormatUint(memoryStats.Alloc/1024, 10) + " K")
 
-		consumeauth, conserr := cd.Js.CreateOrUpdateConsumer(cd.Ctx, jetstream.ConsumerConfig{
-			Name: NatsAlias + "-" + alias,
-			//Durable:           subject + alias,
-			AckPolicy:         jetstream.AckExplicitPolicy,
-			DeliverPolicy:     jetstream.DeliverAllPolicy,
-			InactiveThreshold: 200 * time.Second,
-			FilterSubject:     "authorizations." + alias,
-			//OptStartSeq:       start,
-		})
-		if conserr != nil {
-
-			log.Println("CheckAUTHORIZATIONS consumer", conserr)
-		}
 		msgauthorizations, errsubauthorizations := consumeauth.Next()
-		log.Println("CheckAUTHORIZATIONS next", "authorizations."+alias, errsubauthorizations)
+		log.Println("CheckAUTHORIZATIONS next", "authorizations."+alias, " error ", errsubauthorizations)
 		if errsubauthorizations == nil {
-			//runtime.GC()
-			//runtime.ReadMemStats(&memoryStats)
-
 			msgauthorizations.Nak()
 			ms = MessageStore{}
 			err1 := json.Unmarshal([]byte(string(Decrypt(string(msgauthorizations.Data()), NatsQueuePassword))), &ms)
@@ -700,20 +696,13 @@ func CheckAUTHORIZATIONS(alias string) bool {
 				log.Println("nhnats.go AUTHORIZATIONS Receive Un Marhal", err1)
 			}
 			log.Println("CheckAUTHORIZATIONS ", ms.MSalias, alias)
-			if ms.MSalias == alias {
-				deviceauthorized = true
-				messageloopauth = false
-
-			}
-			if ms.MSalias != alias {
-				deviceauthorized = false
-				messageloopauth = false
-
-			}
+			deviceauthorized = true
+			deviceloopauth = false
 
 		}
 		if errsubauthorizations != nil {
-			messageloopauth = true
+			log.Println("CheckAUTHORIZATIONS error ", errsubauthorizations, alias)
+			deviceloopauth = true
 
 			cd.Js.DeleteConsumer(cd.Ctx, "authorizations"+alias)
 

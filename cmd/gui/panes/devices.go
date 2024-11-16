@@ -3,6 +3,8 @@ package panes
 import (
 	//"log"
 	"bytes"
+	"log"
+
 	//"log"
 	"strings"
 
@@ -40,6 +42,7 @@ func DevicesScreen(win fyne.Window) fyne.CanvasObject {
 		win.Clipboard().SetContent(Details.Text)
 	})
 	delbutton := widget.NewButtonWithIcon(config.GetLangs("ms-del"), theme.ContentCopyIcon(), func() {
+		log.Println(" del", selectedseqdevice)
 		config.DeleteNatsMessage(selectedseqdevice)
 		delete(config.NatsMessagesDevice, selectedms)
 		delete(config.NatsMessagesIndexDevice, selecteduuid)
@@ -47,11 +50,11 @@ func DevicesScreen(win fyne.Window) fyne.CanvasObject {
 	authbutton := widget.NewButtonWithIcon(config.GetLangs("dv-auth"), theme.ContentCopyIcon(), func() {
 
 		config.Send("authorizations."+selectedalias, "AUTHORIZED", config.NatsAlias)
+		log.Println("auth del", selectedseqdevice)
 		config.DeleteNatsMessage(selectedseqdevice)
 		delete(config.NatsMessagesDevice, selectedms)
 		delete(config.NatsMessagesIndexDevice, selecteduuid)
 	})
-	//a, aerr := config.NewNatsJS("DEVICES", "devices"+config.NatsAlias, config.NatsAlias)
 
 	config.FyneDeviceWin = win
 	List := widget.NewList(

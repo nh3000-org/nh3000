@@ -167,7 +167,7 @@ func main() {
 				if strings.Contains(string(buf), *logPattern) {
 					log.Println("nhlog.go Received Piped Input ", string(buf))
 
-					config.Send("events", string(buf), "[logger]"+MyLogAlias)
+					config.Send("messages."+MyLogAlias, string(buf), "[logger]"+MyLogAlias)
 				}
 			}
 			if err != nil && err != io.EOF {
